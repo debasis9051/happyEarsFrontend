@@ -1,17 +1,26 @@
-import React, { useState } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { Link } from 'react-router-dom';
+import axios from "axios";
+import { useFirebase } from "../contexts/firebase-context";
 
 const Home = () => {
+    const { signInWithGoogleAccountPopup, signOutFromApp, isLoggedIn } = useFirebase()
+
+    console.log(isLoggedIn)
+
     return (
         <div>
 
-            {/* <nav>
-                <ul>
-                    <li><Link to="/">Home</Link></li>
-                    <li><Link to="/signup">Signup</Link></li>
-                    <li><Link to="/login">Login</Link></li>
-                </ul>
-            </nav> */}
+            {/* axios.post("http://localhost:4000/signup", { credential: credentialResponse.credential }, { headers: { 'Content-Type': 'application/json' } })
+            .then((res) => {
+                console.log(res.data);
+            })
+            .catch((err) => {
+                console.log(err)
+            }) */}
+
+            {!isLoggedIn && <button className="btn btn-primary" onClick={() => { signInWithGoogleAccountPopup() }}>Sign In with Google</button>}
+            {isLoggedIn && <button className="btn btn-danger" onClick={() => { signOutFromApp() }}>Logout</button>}
 
             <div className="container py-5">
                 <div className="d-flex flex-wrap gap-2 my-2">
