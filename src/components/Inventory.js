@@ -30,7 +30,7 @@ const Inventory = () => {
     }, [])
 
     const addNewProduct = () => {
-        if(productName.trim() == ""){
+        if(productName.trim() === ""){
             return
         }
 
