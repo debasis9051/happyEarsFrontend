@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
+import axios from "axios";
 import firebaseConfig from '../happy-ears-firebase-config.json'
 import { initializeApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
@@ -15,30 +16,41 @@ export const useFirebase = () => useContext(FirebaseContext)
 export const FirebaseProvider = ({ children }) => {
 
     const [user, setUser] = useState(null)
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
+        setLoading(true)
         onAuthStateChanged(auth, (user) => {
-            console.log(user)
-            
+            // console.log(user)
+
             if (user) {
                 setUser(user)
             }
             else {
                 setUser(null)
             }
+            setLoading(false)
         })
     }, [])
 
     const signInWithGoogleAccountPopup = () => {
         return signInWithPopup(auth, googleProvider)
             .then((result) => {
-                const credential = GoogleAuthProvider.credentialFromResult(result);
-                const token = credential.accessToken;
+                // const credential = GoogleAuthProvider.credentialFromResult(result);
+                // const token = credential.accessToken;
                 const user = result.user;
 
                 setUser(user)
 
-                console.log(credential, token, user)
+                // console.log(user)
+
+                return axios.post("http://localhost:4000/create-user", {user_uid: user.uid, user_name: user.displayName, user_email: user.email, user_photo: user.photoURL }, { headers: { 'Content-Type': 'application/json' } })
+                .then((res) => {
+                    console.log(res.data);
+                })
+                .catch((err) => {
+                    console.log(err)
+                })
             })
             .catch((error) => {
                 const errorCode = error.code;
@@ -58,7 +70,7 @@ export const FirebaseProvider = ({ children }) => {
     }
 
     return (
-        <FirebaseContext.Provider value={{ signInWithGoogleAccountPopup, signOutFromApp, isLoggedIn: user ? true : false }}>
+        <FirebaseContext.Provider value={{ signInWithGoogleAccountPopup, signOutFromApp, currentUserInfo: user, isLoggedIn: user ? true : false, isLoading: loading }}>
             {children}
         </FirebaseContext.Provider>
     )
