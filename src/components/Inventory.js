@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react"
 import { Modal, Button } from "react-bootstrap"
 import Select from "react-select"
 import axios from "axios";
+import Swal from "sweetalert2"
 
 const Inventory = () => {
 
@@ -14,6 +15,7 @@ const Inventory = () => {
     const [selectedProductType, setSelectedProductType] = useState(null)
     const [serialArray, setSerialArray] = useState([])
     const [serialInput, setSerialInput] = useState("")
+    const [isApiLoading, setIsApiLoading] = useState(false)
 
     const dropDownStyle = {
         option: (styles) => {
@@ -29,19 +31,64 @@ const Inventory = () => {
         // setProductList()
     }, [])
 
+    const handleSerialAdd = () => {
+        if (serialInput.trim() === "") {
+            Swal.fire('Oops!', 'Enter a serial first', 'warning');
+            return
+        }
+        if (serialArray.includes(serialInput.trim())) {
+            Swal.fire('Oops!', 'Duplicate serial entered', 'warning');
+            return
+        }
+        setSerialArray([...serialArray, serialInput]);
+        setSerialInput("");
+    }
+
     const addNewProduct = () => {
-        if(productName.trim() === ""){
+        if (productName.trim() === "") {
+            Swal.fire('Oops!!', 'Product Name cannot be empty', 'warning');
+            return
+        }
+        if (manufacturerName.trim() === "") {
+            Swal.fire('Oops!!', 'Manufacturer Name cannot be empty', 'warning');
+            return
+        }
+        if (mrp <= 0) {
+            Swal.fire('Oops!!', 'Product MRP has to be greater than 0', 'warning');
+            return
+        }
+        if (selectedProductType === null) {
+            Swal.fire('Oops!!', 'Choose a Product Type', 'warning');
+            return
+        }
+        if (serialArray.length === 0) {
+            Swal.fire('Oops!!', 'Add atleast 1 Product serial number', 'warning');
             return
         }
 
-        let data = {}
+        let data = {
+            product_name: productName,
+            manufacturer_name: manufacturerName,
+            mrp: mrp,
+            product_type: selectedProductType.value,
+            serial_array: serialArray
+        }
 
+        setIsApiLoading(true)
         axios.post("http://localhost:4000/add-product", data, { headers: { 'Content-Type': 'application/json' } })
             .then((res) => {
-                console.log(res.data);
+                setIsApiLoading(false)
+                handleAddProductModalClose()
+                if (res.data.operation === "success") {
+                    Swal.fire('Success!', res.data.message, 'success');
+                }
+                else {
+                    Swal.fire('Oops!', res.data.message, 'error');
+                }
             })
             .catch((err) => {
                 console.log(err)
+                Swal.fire('Error!!', err.message, 'error');
             })
 
     }
@@ -122,7 +169,7 @@ const Inventory = () => {
                                     <label className="col-form-label my-1" htmlFor="mrp">MRP</label>
                                     <div className="input-group">
                                         <span className="input-group-text">₹</span>
-                                        <input type="number" id="mrp" className="form-control" min="0" value={mrp.toString()} onChange={(e) => { setMrp(e.target.value == "" ? 0 : parseFloat(e.target.value)) }} />
+                                        <input type="number" id="mrp" className="form-control" min="0" value={mrp.toString()} onChange={(e) => { setMrp(e.target.value === "" ? 0 : parseFloat(e.target.value)) }} />
                                     </div>
                                 </div>
                             </div>
@@ -147,21 +194,21 @@ const Inventory = () => {
                                 <input type="text" className="form-control" style={{ flex: "9" }} value={serialInput}
                                     onChange={(e) => { setSerialInput(e.target.value) }}
                                     onKeyUp={(e) => {
-                                        if (e.key == "Enter") {
-                                            setSerialArray([...serialArray, serialInput]); setSerialInput("");
+                                        if (e.key === "Enter") {
+                                            handleSerialAdd()
                                         }
                                     }}
                                     placeholder="Enter a Serial"
                                 />
                             </div>
                             <div className="col-3">
-                                <button className="btn btn-success" onClick={() => { setSerialArray([...serialArray, serialInput]); setSerialInput(""); }}>+ Add</button>
+                                <button className="btn btn-success" onClick={() => { handleSerialAdd() }} >+ Add</button>
                             </div>
                         </div>
 
                         <div className="d-flex flex-wrap">
                             {
-                                serialArray.length == 0 ? <div className="p-2">No serials added</div> :
+                                serialArray.length === 0 ? <div className="p-2">No serials added</div> :
                                     serialArray.map((s, i) => {
                                         return (
                                             <div key={i} className="p-2">
@@ -181,7 +228,7 @@ const Inventory = () => {
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="success" onClick={() => { addNewProduct() }}>Submit</Button>
+                    <Button variant="success" disabled={isApiLoading} onClick={() => { !isApiLoading && addNewProduct() }}> {isApiLoading ? <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> : 'Submit'} </Button>
                     <Button onClick={() => { handleAddProductModalClose() }}>Close</Button>
                 </Modal.Footer>
             </Modal>
