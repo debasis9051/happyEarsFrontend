@@ -116,7 +116,7 @@ const Inventory = () => {
                     </div>
                 </div>
 
-                <table className="table table-hover">
+                <table className="table table-hover rounded">
                     <thead>
                         <tr className="table-dark">
                             <th scope="col">Sl. No.</th>

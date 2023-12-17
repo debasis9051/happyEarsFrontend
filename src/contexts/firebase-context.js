@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import axios from "axios";
-import firebaseConfig from '../happy-ears-firebase-config.json'
+import firebaseConfig from '../happy-ears-firebase-config.js'
 import { initializeApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
 
