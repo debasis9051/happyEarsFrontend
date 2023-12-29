@@ -36,15 +36,15 @@ export const FirebaseProvider = ({ children }) => {
     const signInWithGoogleAccountPopup = () => {
         return signInWithPopup(auth, googleProvider)
             .then((result) => {
-                // const credential = GoogleAuthProvider.credentialFromResult(result);
-                // const token = credential.accessToken;
+                const credential = GoogleAuthProvider.credentialFromResult(result);
+                const token = credential.accessToken;
                 const user = result.user;
 
                 setUser(user)
 
-                // console.log(user)
+                console.log(user, token)
 
-                return axios.post("http://localhost:4000/create-user", {user_uid: user.uid, user_name: user.displayName, user_email: user.email, user_photo: user.photoURL }, { headers: { 'Content-Type': 'application/json' } })
+                return axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/create-user`, {user_uid: user.uid, user_name: user.displayName, user_email: user.email, user_photo: user.photoURL }, { headers: { 'Content-Type': 'application/json' } })
                 .then((res) => {
                     console.log(res.data);
                 })
