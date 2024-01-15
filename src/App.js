@@ -6,6 +6,8 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 import "./bootstrap.css";
 
+import "./App.css";
+
 import { FirebaseProvider } from './contexts/firebase-context';
 
 import Navbar from "./components/Navbar.js"
@@ -20,8 +22,9 @@ function App() {
     return (
         <FirebaseProvider>
             <div className="App">
-                <Navbar/>
                 <BrowserRouter basename="/">
+                    <Navbar/>
+
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/audiometry" element={<Audiometry />} />

@@ -1,5 +1,6 @@
 import React from 'react'
 import { useFirebase } from "../contexts/firebase-context";
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
     const { signInWithGoogleAccountPopup, signOutFromApp, currentUserInfo, isLoggedIn, isLoading } = useFirebase()
@@ -9,7 +10,7 @@ const Navbar = () => {
             <nav className="navbar navbar-expand-lg bg-warning" data-bs-theme="dark">
                 <div className="container-fluid">
                     <div className="navbar-brand">
-                        <img src="/happy_ears_logo.png" alt="company_logo" width="110" />
+                        <Link to="/"><img id='logo' src="/happy_ears_logo.png" alt="company_logo" width="110" /></Link>
                     </div>
                     <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
                         <span className="navbar-toggler-icon"></span>

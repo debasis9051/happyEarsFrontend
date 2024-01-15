@@ -1,0 +1,11 @@
+#logo{
+    transition: all 0.3s;
+}
+#logo:hover{
+    filter: drop-shadow(2px 4px 6px black);
+}
+
+.required::after{
+    content: " *";
+    color:red;
+}

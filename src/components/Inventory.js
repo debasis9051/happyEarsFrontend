@@ -6,28 +6,23 @@ import Swal from "sweetalert2"
 import Dropzone from 'react-dropzone'
 import moment from "moment"
 
-import { getProductList } from "../utils/getApis"
+import { getProductList, getBranchList } from "../utils/getApis"
 
 const Inventory = () => {
 
+    const [branchList, setBranchList] = useState([])
+
     const [productList, setProductList] = useState([])
-    const [currentPage, setCurrentPage] = useState(0)
-    const [searchValue, setSearchValue] = useState(null)
+    const [currentPage, setCurrentPage] = useState(0) 
+    // const [searchValue, setSearchValue] = useState(null)
+    const [branchFilter, setBranchFilter] = useState(null)
 
     const [importProductModalShow, setImportProductModalShow] = useState(false)
     const [startingRow, setStartingRow] = useState(1)
     const [endingRow, setEndingRow] = useState(1)
+    const [selectedBranch, setSelectedBranch] = useState(null)
     const [selectedFile, setSelectedFile] = useState(null)
     const [isImportApiLoading, setIsImportApiLoading] = useState(false)
-
-    // const [addProductModalShow, setAddProductModalShow] = useState(false)
-    // const [productName, setProductName] = useState("")
-    // const [manufacturerName, setManufacturerName] = useState("")
-    // const [mrp, setMrp] = useState(0)
-    // const [selectedProductType, setSelectedProductType] = useState(null)
-    // const [serialArray, setSerialArray] = useState([])
-    // const [serialInput, setSerialInput] = useState("")
-    // const [isApiLoading, setIsApiLoading] = useState(false)
 
     const dropDownStyle = {
         option: (styles) => {
@@ -39,81 +34,21 @@ const Inventory = () => {
     }
 
     useEffect(() => {
-        getProductList(setProductList)
+        getBranchList(setBranchList)
     }, [])
 
-    // const handleSerialAdd = () => {
-    //     if (serialInput.trim() === "") {
-    //         Swal.fire('Oops!', 'Enter a serial first', 'warning');
-    //         return
-    //     }
-    //     if (serialArray.includes(serialInput.trim())) {
-    //         Swal.fire('Oops!', 'Duplicate serial entered', 'warning');
-    //         return
-    //     }
-    //     setSerialArray([...serialArray, serialInput]);
-    //     setSerialInput("");
-    // }
+    useEffect(() => {
+        if (branchList.length > 0) {
+            let b = branchList.find(x => x.branch_invoice_code === "RANI")
+            setBranchFilter({ label: b.branch_name, value: b.id })
+        }
+    }, [branchList])
 
-    // const addNewProduct = () => {
-    //     if (productName.trim() === "") {
-    //         Swal.fire('Oops!!', 'Product Name cannot be empty', 'warning');
-    //         return
-    //     }
-    //     if (manufacturerName.trim() === "") {
-    //         Swal.fire('Oops!!', 'Manufacturer Name cannot be empty', 'warning');
-    //         return
-    //     }
-    //     if (mrp <= 0) {
-    //         Swal.fire('Oops!!', 'Product MRP has to be greater than 0', 'warning');
-    //         return
-    //     }
-    //     if (selectedProductType === null) {
-    //         Swal.fire('Oops!!', 'Choose a Product Type', 'warning');
-    //         return
-    //     }
-    //     if (serialArray.length === 0) {
-    //         Swal.fire('Oops!!', 'Add atleast 1 Product serial number', 'warning');
-    //         return
-    //     }
-
-    //     let data = {
-    //         product_name: productName,
-    //         manufacturer_name: manufacturerName,
-    //         mrp: mrp,
-    //         product_type: selectedProductType.value,
-    //         serial_array: serialArray
-    //     }
-
-    //     setIsApiLoading(true)
-    //     axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/add-product`, data, { headers: { 'Content-Type': 'application/json' } })
-    //         .then((res) => {
-    //             setIsApiLoading(false)
-    //             handleAddProductModalClose()
-    //             if (res.data.operation === "success") {
-    //                 Swal.fire('Success!', res.data.message, 'success');
-    //             }
-    //             else {
-    //                 Swal.fire('Oops!', res.data.message, 'error');
-    //             }
-    //         })
-    //         .catch((err) => {
-    //             console.log(err)
-    //             Swal.fire('Error!!', err.message, 'error');
-    //         })
-
-    // }
-
-    // const handleAddProductModalClose = () => {
-    //     setAddProductModalShow(false)
-
-    //     setProductName("")
-    //     setManufacturerName("")
-    //     setMrp(0)
-    //     setSelectedProductType(null)
-    //     setSerialArray([])
-    //     setSerialInput("")
-    // }
+    useEffect(() => {
+        if (branchFilter !== null) {
+            getProductList(setProductList, false, branchFilter.value)
+        }
+    }, [branchFilter])
 
     const importProducts = () => {
         if (startingRow < 1) {
@@ -124,6 +59,10 @@ const Inventory = () => {
             Swal.fire('Oops!!', 'Ending row cannot be less than Starting row', 'warning');
             return
         }
+        if (selectedBranch === null) {
+            Swal.fire('Oops!!', 'Select a Branch', 'warning');
+            return
+        }
         if (selectedFile === null) {
             Swal.fire('Oops!!', 'Select a File to Import!', 'warning');
             return
@@ -132,14 +71,16 @@ const Inventory = () => {
         let data = new FormData()
         data.append("starting_row", startingRow)
         data.append("ending_row", endingRow)
+        data.append("branch_id", selectedBranch.value)
         data.append("selected_file", selectedFile)
 
-        // setIsImportApiLoading(true)
+        setIsImportApiLoading(true)
         axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/import-products`, data, { headers: { 'Content-Type': 'multipart/form-data' } })
             .then((res) => {
                 setIsImportApiLoading(false)
-                // handleImportProductModalClose()
+                handleImportProductModalClose()
                 if (res.data.operation === "success") {
+                    getProductList(setProductList, false, branchFilter.value)
                     if (res.data.info.length === 0) {
                         Swal.fire('Success!', res.data.message, 'success');
                     }
@@ -163,6 +104,7 @@ const Inventory = () => {
 
         setStartingRow(0)
         setEndingRow(0)
+        setSelectedBranch(null)
         setSelectedFile(null)
     }
 
@@ -176,11 +118,19 @@ const Inventory = () => {
     return (
         <>
             <div>
-                <div className="d-flex justify-content-between align-items-center">
+                <div className="d-flex align-items-center">
                     <span className="fs-5 p-3">Inventory List</span>
-                    <div>
-                        <button className="btn btn-info mx-2" onClick={() => { setImportProductModalShow(true) }}>Import</button>
-                        <button className="btn btn-info mx-2" onClick={() => { console.log("exporting products") }}>Export</button>
+                    <div className=" flex-grow-1 d-flex align-items-center">
+                        <label className="form-label m-1">Branch</label>
+                        <Select
+                            options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
+                            value={branchFilter}
+                            onChange={(val) => { setBranchFilter(val) }}
+                            styles={dropDownStyle}
+                            placeholder="Select a Branch..."
+                        />
+                        <button className="btn btn-info ms-auto me-2" onClick={() => { setImportProductModalShow(true) }}>Import</button>
+                        {/* <button className="btn btn-info mx-2" onClick={() => { console.log("exporting products") }}>Export</button> */}
                         {/* <button className="btn btn-primary mx-2" onClick={() => { setAddProductModalShow(true) }}>+ Add Product</button> */}
                     </div>
                 </div>
@@ -224,7 +174,7 @@ const Inventory = () => {
                         }
                     </tbody>
                     {
-                        productList.length != 0 &&
+                        productList.length !== 0 &&
                         <tfoot>
                             <tr>
                                 <td colSpan={8}>
@@ -267,16 +217,28 @@ const Inventory = () => {
                 <Modal.Body>
                     <div className="container">
                         <div className="row mb-3">
-                            <div className="col-md-6">
+                            <div className="col-md-4">
                                 <div className="form-group">
-                                    <label className="col-form-label my-1" htmlFor="startingRow">Starting Row</label>
+                                    <label className="form-label my-1" htmlFor="startingRow">Starting Row</label>
                                     <input type="number" id="startingRow" className="form-control" value={startingRow.toString()} onChange={(e) => { setStartingRow(e.target.value === "" ? 0 : parseInt(e.target.value)) }} />
                                 </div>
                             </div>
-                            <div className="col-md-6">
+                            <div className="col-md-4">
                                 <div className="form-group">
-                                    <label className="col-form-label my-1" htmlFor="endingRow">Ending Row</label>
+                                    <label className="form-label my-1" htmlFor="endingRow">Ending Row</label>
                                     <input type="number" id="endingRow" className="form-control" value={endingRow.toString()} onChange={(e) => { setEndingRow(e.target.value === "" ? 0 : parseInt(e.target.value)) }} />
+                                </div>
+                            </div>
+                            <div className="col-md-4">
+                                <div className="form-group">
+                                    <label className="form-label my-1">Branch</label>
+                                    <Select
+                                        options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
+                                        value={selectedBranch}
+                                        onChange={(val) => { setSelectedBranch(val) }}
+                                        styles={dropDownStyle}
+                                        placeholder="Select a Branch..."
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -317,97 +279,6 @@ const Inventory = () => {
                     <Button onClick={() => { handleImportProductModalClose() }}>Close</Button>
                 </Modal.Footer>
             </Modal >
-
-            {/* <Modal show={addProductModalShow} onHide={() => { handleAddProductModalClose() }} size="lg" centered >
-                <Modal.Header closeButton>
-                    <Modal.Title>Add Product</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <div className="container">
-                        <div className="row">
-                            <div className="col-md-6">
-                                <div className="form-group">
-                                    <label className="col-form-label my-1" htmlFor="productName">Product Name</label>
-                                    <input type="text" id="productName" className="form-control" value={productName} onChange={(e) => { setProductName(e.target.value) }} />
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div className="form-group">
-                                    <label className="col-form-label my-1" htmlFor="manufacturerName">Manufacturer Name</label>
-                                    <input type="text" id="manufacturerName" className="form-control" value={manufacturerName} onChange={(e) => { setManufacturerName(e.target.value) }} />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="row">
-                            <div className="col-md-6">
-                                <div className="form-group">
-                                    <label className="col-form-label my-1" htmlFor="mrp">MRP</label>
-                                    <div className="input-group">
-                                        <span className="input-group-text">₹</span>
-                                        <input type="number" id="mrp" className="form-control" min="0" value={mrp.toString()} onChange={(e) => { setMrp(e.target.value === "" ? 0 : parseFloat(e.target.value)) }} />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div className="form-group">
-                                    <label className="col-form-label my-1" >Product Type</label>
-                                    <Select
-                                        options={["BTE", "RIC", "ITC", "CIC", "IIC"].map(x => ({ label: x, value: x }))}
-                                        value={selectedProductType}
-                                        onChange={(val) => { setSelectedProductType(val) }}
-                                        styles={dropDownStyle}
-                                        isClearable
-                                        placeholder="Select Product Type"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <label className="col-form-label my-1" >Serials</label>
-                        <div className="row">
-                            <div className="col-9">
-                                <input type="text" className="form-control" style={{ flex: "9" }} value={serialInput}
-                                    onChange={(e) => { setSerialInput(e.target.value) }}
-                                    onKeyUp={(e) => {
-                                        if (e.key === "Enter") {
-                                            handleSerialAdd()
-                                        }
-                                    }}
-                                    placeholder="Enter a Serial"
-                                />
-                            </div>
-                            <div className="col-3">
-                                <button className="btn btn-success" onClick={() => { handleSerialAdd() }} >+ Add</button>
-                            </div>
-                        </div>
-
-                        <div className="d-flex flex-wrap">
-                            {
-                                serialArray.length === 0 ? <div className="p-2">No serials added</div> :
-                                    serialArray.map((s, i) => {
-                                        return (
-                                            <div key={i} className="p-2">
-                                                <button className="btn btn-outline-dark" onClick={() => {
-                                                    let t = [...serialArray]
-                                                    t.splice(i, 1)
-                                                    setSerialArray(t)
-                                                }}>
-                                                    <span className="me-2">{s}</span>
-                                                    <span className="text-danger">✖</span>
-                                                </button>
-                                            </div>
-                                        )
-                                    })
-                            }
-                        </div>
-                    </div>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="success" disabled={isApiLoading} onClick={() => { !isApiLoading && addNewProduct() }}> {isApiLoading ? <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> : 'Submit'} </Button>
-                    <Button onClick={() => { handleAddProductModalClose() }}>Close</Button>
-                </Modal.Footer>
-            </Modal> */}
-
         </>
     )
 }
