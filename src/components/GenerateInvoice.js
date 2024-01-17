@@ -3,9 +3,9 @@ import moment from "moment"
 import Select from "react-select"
 import Swal from "sweetalert2"
 import axios from "axios";
-import { ToWords } from 'to-words';
 
 import { getProductList, getBranchList } from "../utils/getApis"
+import { printInvoice } from "../utils/printInvoice"
 
 const GenerateInvoice = () => {
 
@@ -38,7 +38,7 @@ const GenerateInvoice = () => {
     }
 
     const getInvoiceNumber = (branch_id) => {
-        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-invoice-number`, {branch_id: branch_id}, { headers: { 'Content-Type': 'application/json' } })
+        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-invoice-number`, { branch_id: branch_id }, { headers: { 'Content-Type': 'application/json' } })
             .then((res) => {
                 if (res.data.operation === "success") {
                     setInvoiceNumber(res.data.info)
@@ -124,6 +124,7 @@ const GenerateInvoice = () => {
                 return {
                     product_id: x.product_data.id,
                     product_name: x.product_data.product_name,
+                    manufacturer_name: x.product_data.manufacturer_name,
                     serial_number: x.product_data.serial_number,
                     product_type: x.product_type,
                     product_rate: x.product_rate
@@ -149,123 +150,6 @@ const GenerateInvoice = () => {
                 console.log(err)
                 Swal.fire('Error!!', err.message, 'error');
             })
-    }
-
-    const designParticulars = () => {
-        let f = [[], [], [], [], [], [], []]
-
-        f[0].push(`<br>`)
-        f[1].push(`<span class="fw-bold">Products</span><br>`)
-        f[2].push(`<br>`)
-        f[3].push(`<br>`)
-        f[4].push(`<br>`)
-        f[5].push(`<br>`)
-        f[6].push(`<br>`)
-
-        f = lineItems.reduce((p, o, i) => {
-            let t = p.map(x => { return [...x] })
-            t[0].push(`${i + 1}<br><br>`)
-            t[1].push(`${o.product_data.product_name}<br>S/N:-${o.product_data.serial_number}<br>`)
-            t[2].push(`${o.product_data.manufacturer_name}<br><br>`)
-            t[3].push(`${o.product_type}<br><br>`)
-            t[4].push(`${1}<br><br>`)
-            t[5].push(`${o.product_rate}/-<br><br>`)
-            t[6].push(`${o.product_rate}/-<br><br>`)
-            return t
-        }, f)
-
-        f[0].push(`<br>`)
-        f[1].push(`<br>`)
-        f[2].push(`<br>`)
-        f[3].push(`<br>`)
-        f[4].push(`<br>`)
-        f[5].push(`Discount(${discountPercentage}%)<br>`)
-        f[6].push(`${discountAmount}<br>`)
-
-        if (accessoryItems.find(x => x.accessory !== "")) {
-            f[0].push(`<br>`)
-            f[1].push(`<span class="fw-bold">Accessories</span><br>`)
-            f[2].push(`<br>`)
-            f[3].push(`<br>`)
-            f[4].push(`<br>`)
-            f[5].push(`<br>`)
-            f[6].push(`<br>`)
-
-            f = accessoryItems.reduce((p, o, i) => {
-                let t = p.map(x => { return [...x] })
-                t[0].push(`${i + 1}<br>`)
-                t[1].push(`${o.accessory}<br>`)
-                t[2].push(`<br>`)
-                t[3].push(`<br>`)
-                t[4].push(`${o.quantity}<br>`)
-                t[5].push(`${o.accessory_rate === 0 ? "Free" : o.accessory_rate + "/-"}<br>`)
-                t[6].push(`${(o.quantity * o.accessory_rate) === 0 ? "Free" : (o.quantity * o.accessory_rate) + "/-"}<br>`)
-                return t
-            }, f)
-        }
-
-        f.forEach(x => {
-            x.push(`<br><br><br><br><br><br>`)
-        })
-
-        f[5].push(`Final Amount`)
-
-        return f.map((x, i, a) => {
-            return `<td ${i !== a.length - 1 ? "rowspan='2'" : ""}>${x.join("<br>")}</td>`
-        }).join("")
-    }
-
-    const printInvoice = () => {
-        let toWords = new ToWords()
-        let html = `
-            <div class="container-fluid my-4">
-                <div>
-                    <img src="/happy_ears_invoice_header.jpg" alt="header_image" style="width:100%;" >
-                </div>
-                <div class="mt-5 text-end">Branch:- ${selectedBranch.label}</div>
-                <table class="table table-bordered border-dark">
-                    <tr>
-                        <td colspan="3">Customer Name: ${patientName}</td>
-                        <td colspan="4">Customer Address & Contact No.: <br>${patientAddress}<br>PHONE: ${contactNumber}</td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">Invoice No.: ${invoiceNumber}</td>
-                        <td colspan="1">Date: ${date}</td>
-                        <td colspan="4">Mode / Terms of Payment: <br>${selectedModeOfPayment.value} Payment</td>
-                    </tr>
-                    <tr>
-                        <td colspan="7"></td>
-                    </tr>
-                    <tr>
-                        <td>Sl No.</td>
-                        <td>Particulars</td>
-                        <td>Manufacturer</td>
-                        <td>Type</td>
-                        <td>Quantity</td>
-                        <td>Rate</td>
-                        <td>Amount</td>
-                    </tr>   
-                    <tr>
-                    ${designParticulars()}
-                    </tr>
-                    <tr>
-                        <td>${(lineItems.reduce((p, o) => p + o.product_rate, 0) - discountAmount) + accessoryItems.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)}</td>
-                    </tr>
-                </table>
-                <div class="d-flex justify-content-between">
-                    <div>Amount: ${toWords.convert((lineItems.reduce((p, o) => p + o.product_rate, 0) - discountAmount) + accessoryItems.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)).toUpperCase()} ONLY<br><br>______________________________________________________________</div>
-                    <div>E. & O.E.<br><br>For Happy Ears</div>
-                </div>
-            </div>
-        `
-
-        let nw = window.open()
-        nw.document.head.innerHTML = `
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-        `
-        nw.document.body.innerHTML = html
-        nw.print()
     }
 
     return (
@@ -311,7 +195,7 @@ const GenerateInvoice = () => {
                             <Select
                                 options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
                                 value={selectedBranch}
-                                onChange={(val) => { setSelectedBranch(val); getInvoiceNumber(val.value); getProductList(setProductList, true, val.value) }}
+                                onChange={(val) => { setSelectedBranch(val); getInvoiceNumber(val.value); getProductList(setProductList, true, val.value); setLineItems([{ product: null, product_data: null, product_type: null, product_rate: 0 }]) }}
                                 styles={dropDownStyle}
                                 placeholder="Select a Branch..."
                             />
@@ -571,6 +455,17 @@ const GenerateInvoice = () => {
                     <button className="btn btn-primary my-3 mx-1"
                         onClick={() => {
                             if (verifyInvoice()) {
+                                let t=lineItems.map(x => {
+                                    return {
+                                        product_id: x.product_data.id,
+                                        product_name: x.product_data.product_name,
+                                        manufacturer_name: x.product_data.manufacturer_name,
+                                        serial_number: x.product_data.serial_number,
+                                        product_type: x.product_type,
+                                        product_rate: x.product_rate
+                                    }
+                                })
+
                                 if (!isInvoiceSaved) {
                                     Swal.fire({
                                         title: "This Invoice is not saved yet. Are you sure?",
@@ -578,12 +473,12 @@ const GenerateInvoice = () => {
                                         confirmButtonText: "Print",
                                     }).then((result) => {
                                         if (result.isConfirmed) {
-                                            printInvoice()
+                                            printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, invoiceNumber, date, selectedModeOfPayment.value, discountPercentage, discountAmount, t, accessoryItems)
                                         }
                                     });
                                 }
                                 else {
-                                    printInvoice()
+                                    printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, invoiceNumber, date, selectedModeOfPayment.value, discountPercentage, discountAmount, t, accessoryItems)
                                 }
                             }
                         }}

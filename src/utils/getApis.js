@@ -8,10 +8,10 @@ const getProductList = async (svRef, instockFilter = false, branch_id=null) => {
                 let t = res.data.info
 
                 if (instockFilter) {
-                    t = res.data.info.filter(x => x.instock)
+                    t = t.filter(x => x.instock)
                 }
                 if (branch_id) {
-                    t = res.data.info.filter(x => x.branch_id === branch_id)
+                    t = t.filter(x => x.branch_id === branch_id)
                 }
 
                 svRef(t)
@@ -42,4 +42,26 @@ const getBranchList = async (svRef) => {
         })
 }
 
-export { getProductList, getBranchList }
+const getInvoiceList = async (svRef, branch_id=null) => {
+    axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-invoice-list`, {}, { headers: { 'Content-Type': 'application/json' } })
+        .then((res) => {
+            if (res.data.operation === "success") {
+                let t = res.data.info
+
+                if (branch_id) {
+                    t = t.filter(x => x.branch_id === branch_id)
+                }
+
+                svRef(t)
+            }
+            else {
+                Swal.fire('Oops!', res.data.message, 'error');
+            }
+        })
+        .catch((err) => {
+            console.log(err)
+            Swal.fire('Error!!', err.message, 'error');
+        })
+}
+
+export { getProductList, getBranchList, getInvoiceList }
