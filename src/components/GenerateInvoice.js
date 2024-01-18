@@ -271,7 +271,7 @@ const GenerateInvoice = () => {
                                     </div>
                                     <div className="col-md-4">
                                         <Select
-                                            options={["BTE", "RIC", "ITC", "CIC", "IIC"].map(x => ({ label: x, value: x }))}
+                                            options={["BTE", "BTE-R","RIC", "RIC-R","ITC", "ITC-R","CIC", "IIC"].map(x => ({ label: x, value: x }))}
                                             value={x.product_type == null ? null : { label: x.product_type, value: x.product_type }}
                                             onChange={(val) => {
                                                 let t = lineItems.map(a => { return { ...a } })

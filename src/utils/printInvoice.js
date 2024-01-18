@@ -72,15 +72,16 @@ const printInvoice = (patient_name,patient_address,contact_number,branch_name,in
                 <img src="/happy_ears_invoice_header.jpg" alt="header_image" style="width:85%;" >
             </div> 
             
-            <div class="text-end" style="font-size:13px;"> Rajpur Sonarpur Branch : </div>
-            <div class="text-end" style="font-size:13px;"> MAATARA APARTMENT </div>
-            <div class="text-end" style="font-size:13px;">  
+            <div class="text-end  mx-4 mt-1" style="font-size:12px;"> Rajpur Sonarpur Branch : </div>
+            <div class="text-end mx-4" style="font-size:12px;"> MAATARA APARTMENT </div>
+            <div class="text-end mx-4" style="font-size:12px;">  
             
-            121, Netaji Subhash Chandra Bose Road opp, RAJPUR, PIN-700149 
+            121, N.S.C, Bose Road, RAJPUR, PIN-700149 
 
             </div>
+            <div class="text-end mx-4" style="font-size:12px;"> Contact : 8100998309 / 310 </div>
 
-            <div class="mt-4 text-end">Branch:- ${branch_name}</div>
+            <div class="mt-2 text-end mx-4">Branch:- ${branch_name}</div>
             
             <table class="table table-bordered border-dark" style="font-weight: bold; text-align:center;">
                 <tr>
@@ -113,7 +114,7 @@ const printInvoice = (patient_name,patient_address,contact_number,branch_name,in
             </table>
             <div class="d-flex justify-content-between">
                 <div>Amount: ${toWords.convert((line_items.reduce((p, o) => p + o.product_rate, 0) - discount_amount) + accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)).toUpperCase().replace("HUNDRED", " ")} ONLY<br>________________________________________________________________________</div>
-                <div>E. & O.E.<br>For Happy Ears</div>
+                <div><br><br><br>E. & O.E.<br>For Happy Ears</div>
             </div>
         </div>
     `
