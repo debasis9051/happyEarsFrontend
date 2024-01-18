@@ -219,7 +219,7 @@ const GenerateInvoice = () => {
                         <div className="form-group">
                             <label className="form-label my-1 required">Mode of Payment</label>
                             <Select
-                                options={["Cash", "Cheque", "Online", "Card"].map(x => ({ label: x, value: x }))}
+                                options={["Cash", "Cheque", "Online", "Card","Bajaj Finance"].map(x => ({ label: x, value: x }))}
                                 value={selectedModeOfPayment}
                                 onChange={(val) => { setSelectedModeOfPayment(val) }}
                                 styles={dropDownStyle}
