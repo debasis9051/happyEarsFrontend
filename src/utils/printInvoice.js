@@ -60,7 +60,7 @@ const designParticulars = (discount_percentage,discount_amount,line_items,access
     f[5].push(`Final Amount`)
 
     return f.map((x, i, a) => {
-        return `<td ${i !== a.length - 1 ? "rowspan='2'" : ""}>${x.join("<br>")}</td>`
+        return `<td ${i !== a.length - 1 ? "rowspan='2'" : ""} class="text-nowrap" >${x.join("<br>")}</td>`
     }).join("")
 }
 
@@ -97,8 +97,8 @@ const printInvoice = (patient_name,patient_address,contact_number,branch_name,in
                 </tr>
                 <tr>
                     <td>Sl No.</td>
-                    <td class="text-nowrap">Particulars</td>
-                    <td class="text-nowrap">Manufacturer</td>
+                    <td>Particulars</td>
+                    <td>Manufacturer</td>
                     <td>Type</td>
                     <td>Quantity</td>
                     <td>Rate</td>
