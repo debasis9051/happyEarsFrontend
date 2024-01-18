@@ -4,7 +4,7 @@ const designParticulars = (discount_percentage,discount_amount,line_items,access
     let f = [[], [], [], [], [], [], []]
 
     f[0].push(`<br>`)
-    f[1].push(`<span class="fw-bold">Products</span><br>`)
+    f[1].push(`<span class="fw-bold">Products :-</span><br>`)
     f[2].push(`<br>`)
     f[3].push(`<br>`)
     f[4].push(`<br>`)
@@ -33,7 +33,7 @@ const designParticulars = (discount_percentage,discount_amount,line_items,access
 
     if (accessory_items.find(x => x.accessory !== "")) {
         f[0].push(`<br>`)
-        f[1].push(`<span class="fw-bold">Accessories</span><br>`)
+        f[1].push(`<span class="fw-bold">Accessories :-</span><br>`)
         f[2].push(`<br>`)
         f[3].push(`<br>`)
         f[4].push(`<br>`)
@@ -67,12 +67,22 @@ const designParticulars = (discount_percentage,discount_amount,line_items,access
 const printInvoice = (patient_name,patient_address,contact_number,branch_name,invoice_number,date,mode_of_payment,discount_percentage,discount_amount,line_items,accessory_items) => {
     let toWords = new ToWords()
     let html = `
-        <div class="container-fluid my-4">
+        <div class="container-fluid my-4 fw-bold">
             <div>
-                <img src="/happy_ears_invoice_header.jpg" alt="header_image" style="width:100%;" >
+                <img src="/happy_ears_invoice_header.jpg" alt="header_image" style="width:85%;" >
+            </div> 
+            
+            <div class="text-end" style="font-size:13px;"> Rajpur Sonarpur Branch : </div>
+            <div class="text-end" style="font-size:13px;"> MAATARA APARTMENT </div>
+            <div class="text-end" style="font-size:13px;">  
+            
+            121, Netaji Subhash Chandra Bose Road opp, RAJPUR, PIN-700149 
+
             </div>
+
             <div class="mt-4 text-end">Branch:- ${branch_name}</div>
-            <table class="table table-bordered border-dark">
+            
+            <table class="table table-bordered border-dark" style="font-weight: bold; text-align:center;">
                 <tr>
                     <td colspan="3">Customer Name: ${patient_name}</td>
                     <td colspan="4">Customer Address & Contact No.: <br>${patient_address}<br>PHONE: ${contact_number}</td>
@@ -87,8 +97,8 @@ const printInvoice = (patient_name,patient_address,contact_number,branch_name,in
                 </tr>
                 <tr>
                     <td>Sl No.</td>
-                    <td>Particulars</td>
-                    <td>Manufacturer</td>
+                    <td class="text-nowrap">Particulars</td>
+                    <td class="text-nowrap">Manufacturer</td>
                     <td>Type</td>
                     <td>Quantity</td>
                     <td>Rate</td>
@@ -102,8 +112,8 @@ const printInvoice = (patient_name,patient_address,contact_number,branch_name,in
                 </tr>
             </table>
             <div class="d-flex justify-content-between">
-                <div>Amount: ${toWords.convert((line_items.reduce((p, o) => p + o.product_rate, 0) - discount_amount) + accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)).toUpperCase().replace("HUNDRED", " ")} ONLY<br><br>______________________________________________________________</div>
-                <div>E. & O.E.<br><br>For Happy Ears</div>
+                <div>Amount: ${toWords.convert((line_items.reduce((p, o) => p + o.product_rate, 0) - discount_amount) + accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)).toUpperCase().replace("HUNDRED", " ")} ONLY<br>________________________________________________________________________</div>
+                <div>E. & O.E.<br>For Happy Ears</div>
             </div>
         </div>
     `

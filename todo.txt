@@ -3,7 +3,7 @@ Todo:
 2. inventory list 1 extra import
 2. middleware auth for backend
 3. adding middleware to frontend apis
-4. 
+4. hosting frontend and backend through vercel
 5. 
 6. instant product
 7. product individual edit feature
@@ -35,7 +35,6 @@ database collections:
 5. branches - each document representing one branch with basic information
 5. patients - each document representing one patient with information given in invoice form (TO BE DISCUSSED)
 6. batteries - each document representing a battery product (TO BE DISCUSSED)
-
 
 
 
