@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { Modal, Button } from "react-bootstrap"
+import { Modal, Button, Dropdown } from "react-bootstrap"
 import Select from "react-select"
 import axios from "axios";
 import Swal from "sweetalert2"
@@ -8,21 +8,30 @@ import moment from "moment"
 
 import { getProductList, getBranchList } from "../utils/getApis"
 
+import AuthWrapper from "./AuthWrapper";
+
 const Inventory = () => {
 
     const [branchList, setBranchList] = useState([])
 
     const [productList, setProductList] = useState([])
-    const [currentPage, setCurrentPage] = useState(0) 
-    // const [searchValue, setSearchValue] = useState(null)
+    const [currentPage, setCurrentPage] = useState(0)
+    const [searchBarState, setSearchBarState] = useState(false)
+    const [searchValue, setSearchValue] = useState("")
     const [branchFilter, setBranchFilter] = useState(null)
 
     const [importProductModalShow, setImportProductModalShow] = useState(false)
     const [startingRow, setStartingRow] = useState(1)
     const [endingRow, setEndingRow] = useState(1)
-    const [selectedBranch, setSelectedBranch] = useState(null)
     const [selectedFile, setSelectedFile] = useState(null)
     const [isImportApiLoading, setIsImportApiLoading] = useState(false)
+
+    const [transferProductModalShow, setTransferProductModalShow] = useState(false)
+    const [selectedProductId, setSelectedProductId] = useState(null)
+    const [selectedProductName, setSelectedProductName] = useState(null)
+    const [selectedProductSerialNumber, setSelectedProductSerialNumber] = useState(null)
+    const [selectedTransferToBranch, setSelectedTransferToBranch] = useState(null)
+    const [isTransferApiLoading, setIsTransferApiLoading] = useState(false)
 
     const dropDownStyle = {
         option: (styles) => {
@@ -59,10 +68,6 @@ const Inventory = () => {
             Swal.fire('Oops!!', 'Ending row cannot be less than Starting row', 'warning');
             return
         }
-        if (selectedBranch === null) {
-            Swal.fire('Oops!!', 'Select a Branch', 'warning');
-            return
-        }
         if (selectedFile === null) {
             Swal.fire('Oops!!', 'Select a File to Import!', 'warning');
             return
@@ -71,7 +76,6 @@ const Inventory = () => {
         let data = new FormData()
         data.append("starting_row", startingRow)
         data.append("ending_row", endingRow)
-        data.append("branch_id", selectedBranch.value)
         data.append("selected_file", selectedFile)
 
         setIsImportApiLoading(true)
@@ -102,9 +106,47 @@ const Inventory = () => {
     const handleImportProductModalClose = () => {
         setImportProductModalShow(false)
 
-        setStartingRow(0)
-        setEndingRow(0)
-        setSelectedBranch(null)
+        setStartingRow(1)
+        setEndingRow(1)
+        setSelectedFile(null)
+    }
+
+    const transferProduct = () => {
+        if (setSelectedTransferToBranch == null) {
+            Swal.fire('Oops!!', 'Starting a Branch first', 'warning');
+            return
+        }
+
+        let data = {
+            product_id: selectedProductId,
+            branch_id: selectedTransferToBranch.value
+        }
+
+        setIsTransferApiLoading(true)
+        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/transfer-product`, data, { headers: { 'Content-Type': 'application/json' } })
+            .then((res) => {
+                setIsTransferApiLoading(false)
+                handleTransferProductModalClose()
+                if (res.data.operation === "success") {
+                    getProductList(setProductList, false, branchFilter.value)
+                    Swal.fire('Success!', res.data.message, 'success');
+                }
+                else {
+                    Swal.fire('Oops!', res.data.message, 'error');
+                }
+            })
+            .catch((err) => {
+                console.log(err)
+                Swal.fire('Error!!', err.message, 'error');
+            })
+
+    }
+
+    const handleTransferProductModalClose = () => {
+        setImportProductModalShow(false)
+
+        setStartingRow(1)
+        setEndingRow(1)
         setSelectedFile(null)
     }
 
@@ -119,95 +161,131 @@ const Inventory = () => {
         <>
             <div>
                 <div className="d-flex align-items-center">
-                    <span className="fs-5 p-3">Inventory List</span>
-                    <div className=" flex-grow-1 d-flex align-items-center">
-                        <label className="form-label m-1">Branch</label>
-                        <Select
-                            options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
-                            value={branchFilter}
-                            onChange={(val) => { setBranchFilter(val) }}
-                            styles={dropDownStyle}
-                            placeholder="Select a Branch..."
-                        />
-                        <button className="btn btn-info ms-auto me-2" onClick={() => { setImportProductModalShow(true) }}>Import</button>
-                        {/* <button className="btn btn-info mx-2" onClick={() => { console.log("exporting products") }}>Export</button> */}
-                        {/* <button className="btn btn-primary mx-2" onClick={() => { setAddProductModalShow(true) }}>+ Add Product</button> */}
-                    </div>
+                    <span className="fs-3 px-3 pt-3">Inventory List</span>
                 </div>
 
-                <table className="table table-hover m-auto align-middle" style={{ width: "97%" }}>
-                    <thead>
-                        <tr className="table-dark">
-                            <th scope="col">Sl. No.</th>
-                            <th scope="col">Manufacturer</th>
-                            <th scope="col">Product Name</th>
-                            <th scope="col">Serial Number</th>
-                            <th scope="col">MRP</th>
-                            <th scope="col">In Stock</th>
-                            <th scope="col">Added On</th>
-                            <th scope="col">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            productList.length === 0 ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No products added</td></tr> :
-                                productList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
-                                    return (
-                                        <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>
-                                            <td>{(currentPage * 10) + i + 1}</td>
-                                            <td>{x.manufacturer_name}</td>
-                                            <td>{x.product_name}</td>
-                                            <td>{x.serial_number}</td>
-                                            <td>{x.mrp}</td>
-                                            <td>
-                                                {
-                                                    x.instock ?
-                                                        <svg viewBox="0 0 48 48" width="32px" height="32px"><path fill="#4caf50" d="M44,24c0,11.045-8.955,20-20,20S4,35.045,4,24S12.955,4,24,4S44,12.955,44,24z" /><path fill="#ccff90" d="M34.602,14.602L21,28.199l-5.602-5.598l-2.797,2.797L21,33.801l16.398-16.402L34.602,14.602z" /></svg> :
-                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="32px" height="32px"><path fill="#f44336" d="M44,24c0,11.045-8.955,20-20,20S4,35.045,4,24S12.955,4,24,4S44,12.955,44,24z" /><path fill="#fff" d="M29.656,15.516l2.828,2.828l-14.14,14.14l-2.828-2.828L29.656,15.516z" /><path fill="#fff" d="M32.484,29.656l-2.828,2.828l-14.14-14.14l2.828-2.828L32.484,29.656z" /></svg>
+                <AuthWrapper>
+                    <>
+                        <div className="d-flex align-items-center px-3 py-2">
+                            <label className="form-label m-1 me-3 fs-5">Branch</label>
+                            <Select
+                                options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
+                                value={branchFilter}
+                                onChange={(val) => { setBranchFilter(val); setCurrentPage(0); }}
+                                styles={dropDownStyle}
+                                placeholder="Select a Branch..."
+                            />
+                            <div className="d-flex mx-2">
+                                <button className="btn btn-secondary rounded-pill me-1" onClick={() => { setSearchBarState(!searchBarState); setSearchValue("") }}>
+                                    <svg width="16" height="16" fill="currentColor" className="bi bi-search" viewBox="0 0 16 16">
+                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                                    </svg>
+                                </button>
+                                <input type="text" className="form-control" style={searchBarState ? { transition: "all 1s" } : { transition: "all 1s", width: "0", padding: "0", opacity: "0", visibility: "hidden" }} placeholder="Search..." onChange={(e) => { setSearchValue(e.target.value) }} />
+                            </div>
+
+                            <button className="btn btn-info ms-auto me-2" onClick={() => { setImportProductModalShow(true) }}>Import</button>
+                            <button className="btn btn-info mx-2" onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); console.log("exporting products"); }}>Export</button>
+                        </div>
+
+                        <table className="table table-hover m-auto align-middle" style={{ width: "97%" }}>
+                            <thead>
+                                <tr className="table-dark">
+                                    <th scope="col">Sl. No.</th>
+                                    <th scope="col">Manufacturer</th>
+                                    <th scope="col">Product Name</th>
+                                    <th scope="col">Serial Number</th>
+                                    <th scope="col">MRP</th>
+                                    <th scope="col">In Stock</th>
+                                    <th scope="col">Added On</th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {
+                                    productList.length === 0 ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No products added</td></tr> :
+                                        productList.filter(x => {
+                                            if (searchBarState && searchValue !== "") {
+                                                if (((new RegExp(searchValue, "gi")).test(x.manufacturer_name)) || ((new RegExp(searchValue, "gi")).test(x.product_name)) || ((new RegExp(searchValue, "gi")).test(x.serial_number))) {
+                                                    return true
                                                 }
-                                            </td>
-                                            <td>{moment(x.created_at._seconds * 1000).format("lll")}</td>
-                                            <td><button className="btn btn-primary">test</button></td>
-                                        </tr>
-                                    )
-                                })
-                        }
-                    </tbody>
-                    {
-                        productList.length !== 0 &&
-                        <tfoot>
-                            <tr>
-                                <td colSpan={8}>
-                                    <div className="d-flex justify-content-center">
-                                        <ul className="pagination m-0">
-                                            {
-                                                currentPage + 1 !== 1 &&
-                                                <li className="page-item" onClick={() => { setCurrentPage(currentPage - 1) }}>
-                                                    <div className="page-link" style={{ cursor: "pointer" }} >&laquo;</div>
-                                                </li>
+                                                return false
                                             }
-                                            {
-                                                Array.from({ length: e - s + 1 }, (_, i) => i + s).map((x, i) => {
-                                                    return (
-                                                        <li key={i} className={`page-item ${x - 1 === currentPage ? "active" : ""}`} onClick={() => { setCurrentPage(x - 1) }}>
-                                                            <div className="page-link" style={{ cursor: "pointer" }} >{x}</div>
+                                            else {
+                                                return true
+                                            }
+                                        }).slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
+                                            return (
+                                                <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>
+                                                    <td>{(currentPage * 10) + i + 1}</td>
+                                                    <td>{x.manufacturer_name}</td>
+                                                    <td>{x.product_name}</td>
+                                                    <td>{x.serial_number}</td>
+                                                    <td>{x.mrp}</td>
+                                                    <td>
+                                                        {
+                                                            x.instock ?
+                                                                <svg viewBox="0 0 48 48" width="32px" height="32px"><path fill="#4caf50" d="M44,24c0,11.045-8.955,20-20,20S4,35.045,4,24S12.955,4,24,4S44,12.955,44,24z" /><path fill="#ccff90" d="M34.602,14.602L21,28.199l-5.602-5.598l-2.797,2.797L21,33.801l16.398-16.402L34.602,14.602z" /></svg> :
+                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="32px" height="32px"><path fill="#f44336" d="M44,24c0,11.045-8.955,20-20,20S4,35.045,4,24S12.955,4,24,4S44,12.955,44,24z" /><path fill="#fff" d="M29.656,15.516l2.828,2.828l-14.14,14.14l-2.828-2.828L29.656,15.516z" /><path fill="#fff" d="M32.484,29.656l-2.828,2.828l-14.14-14.14l2.828-2.828L32.484,29.656z" /></svg>
+                                                        }
+                                                    </td>
+                                                    <td>{moment(x.created_at._seconds * 1000).format("lll")}</td>
+                                                    <td>
+                                                        <Dropdown>
+                                                            <Dropdown.Toggle variant="primary">
+                                                                <svg width="16" height="16" fill="currentColor" className="bi bi-list" viewBox="0 0 16 16">
+                                                                    <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+                                                                </svg>
+                                                            </Dropdown.Toggle>
+
+                                                            <Dropdown.Menu>
+                                                                <Dropdown.Item onClick={() => { Swal.fire('Oops!!', 'This feature id not ready yet', 'warning'); }} >Edit </Dropdown.Item>
+                                                                <Dropdown.Item onClick={() => { setTransferProductModalShow(true); setSelectedProductId(x.id); setSelectedProductName(x.product_name); setSelectedProductSerialNumber(x.serial_number); }} >Transfer</Dropdown.Item>
+                                                            </Dropdown.Menu>
+                                                        </Dropdown>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })
+                                }
+                            </tbody>
+                            {
+                                productList.length !== 0 &&
+                                <tfoot>
+                                    <tr>
+                                        <td colSpan={8}>
+                                            <div className="d-flex justify-content-center">
+                                                <ul className="pagination m-0">
+                                                    {
+                                                        currentPage + 1 !== 1 &&
+                                                        <li className="page-item" onClick={() => { setCurrentPage(currentPage - 1) }}>
+                                                            <div className="page-link" style={{ cursor: "pointer" }} >&laquo;</div>
                                                         </li>
-                                                    )
-                                                })
-                                            }
-                                            {
-                                                currentPage + 1 !== tp &&
-                                                <li className="page-item" onClick={() => { setCurrentPage(currentPage + 1) }}>
-                                                    <div className="page-link" style={{ cursor: "pointer" }} >&raquo;</div>
-                                                </li>
-                                            }
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tfoot>
-                    }
-                </table>
+                                                    }
+                                                    {
+                                                        Array.from({ length: e - s + 1 }, (_, i) => i + s).map((x, i) => {
+                                                            return (
+                                                                <li key={i} className={`page-item ${x - 1 === currentPage ? "active" : ""}`} onClick={() => { setCurrentPage(x - 1) }}>
+                                                                    <div className="page-link" style={{ cursor: "pointer" }} >{x}</div>
+                                                                </li>
+                                                            )
+                                                        })
+                                                    }
+                                                    {
+                                                        currentPage + 1 !== tp &&
+                                                        <li className="page-item" onClick={() => { setCurrentPage(currentPage + 1) }}>
+                                                            <div className="page-link" style={{ cursor: "pointer" }} >&raquo;</div>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            }
+                        </table>
+                    </>
+                </AuthWrapper>
             </div>
 
             <Modal show={importProductModalShow} onHide={() => { handleImportProductModalClose() }} size="lg" centered >
@@ -217,28 +295,16 @@ const Inventory = () => {
                 <Modal.Body>
                     <div className="container">
                         <div className="row mb-3">
-                            <div className="col-md-4">
+                            <div className="col-md-6">
                                 <div className="form-group">
                                     <label className="form-label my-1" htmlFor="startingRow">Starting Row</label>
-                                    <input type="number" id="startingRow" className="form-control" value={startingRow.toString()} onChange={(e) => { setStartingRow(e.target.value === "" ? 0 : parseInt(e.target.value)) }} />
+                                    <input type="number" id="startingRow" className="form-control" min={1} value={startingRow.toString()} onChange={(e) => { setStartingRow(e.target.value === "" ? 0 : parseInt(e.target.value)) }} />
                                 </div>
                             </div>
-                            <div className="col-md-4">
+                            <div className="col-md-6">
                                 <div className="form-group">
                                     <label className="form-label my-1" htmlFor="endingRow">Ending Row</label>
-                                    <input type="number" id="endingRow" className="form-control" value={endingRow.toString()} onChange={(e) => { setEndingRow(e.target.value === "" ? 0 : parseInt(e.target.value)) }} />
-                                </div>
-                            </div>
-                            <div className="col-md-4">
-                                <div className="form-group">
-                                    <label className="form-label my-1">Branch</label>
-                                    <Select
-                                        options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
-                                        value={selectedBranch}
-                                        onChange={(val) => { setSelectedBranch(val) }}
-                                        styles={dropDownStyle}
-                                        placeholder="Select a Branch..."
-                                    />
+                                    <input type="number" id="endingRow" className="form-control" min={1} value={endingRow.toString()} onChange={(e) => { setEndingRow(e.target.value === "" ? 0 : parseInt(e.target.value)) }} />
                                 </div>
                             </div>
                         </div>
@@ -277,6 +343,38 @@ const Inventory = () => {
                 <Modal.Footer>
                     <Button variant="success" disabled={isImportApiLoading} onClick={() => { !isImportApiLoading && importProducts() }}> {isImportApiLoading ? <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> : 'Submit'} </Button>
                     <Button onClick={() => { handleImportProductModalClose() }}>Close</Button>
+                </Modal.Footer>
+            </Modal >
+
+            <Modal show={transferProductModalShow} onHide={() => { handleTransferProductModalClose() }} centered >
+                <Modal.Header closeButton>
+                    <Modal.Title>Choose Transfer to Branch</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="container">
+                        <div className="row mb-3">
+                            <div className="col-md-12">
+                                <span>Selected Product: </span>
+                                <span>{selectedProductName} {selectedProductSerialNumber}</span>
+                            </div>
+                            <div className="col-md-6">
+                                <div className="form-group">
+                                    <label className="form-label my-1" >Transfer To Branch</label>
+                                    <Select
+                                        options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
+                                        value={selectedTransferToBranch}
+                                        onChange={(val) => { setSelectedTransferToBranch(val); }}
+                                        styles={dropDownStyle}
+                                        placeholder="Select a Branch..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="success" disabled={isTransferApiLoading} onClick={() => { !isTransferApiLoading && transferProduct() }}> {isImportApiLoading ? <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> : 'Submit'} </Button>
+                    <Button onClick={() => { handleTransferProductModalClose() }}>Close</Button>
                 </Modal.Footer>
             </Modal >
         </>

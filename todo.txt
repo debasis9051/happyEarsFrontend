@@ -1,14 +1,14 @@
 Todo:
 1. 
-2. inventory list 1 extra import
 2. middleware auth for backend
 3. adding middleware to frontend apis
 4. hosting frontend and backend through vercel
 5. 
-6. instant product
-7. product individual edit feature
+6. instant product in generate invoice
+7. product individual edit feature, export feature in inventory
+8. audiometry
 8. user access parts
-9. patient parts
+9. patients
 
 
 HAPPY EARS PROJECT - structure
@@ -17,24 +17,21 @@ Backend using Node.js
 Database using Firebase
 
 frontend routes:
-
 1. navbar including sign in feature
 2. "/" - Homepage with big buttons to redirect to other pages
 3. "/audiometry" - Audiometry chart page(features: chart generation)
-4. "/inventory" - Inventory Management page(features: view all products with stock details, add new products with import and export button, manipulate old products details)
+4. "/inventory" - Inventory Management page(features: view all products, add new products with import and export button, manipulate old products details)
 5. "/generate-invoice" - Invoice generation page with form(features: save and print)
 6. "/sales-report" - List of all invoice records(features: export full table, print per invoice)
 7. "/patients" - List of all the patients (TO BE DISCUSSED)
 
 database collections:
-
 1. users - each document representing all information of one user and access instance
 2. invoices - each document representing one invoice with full information given in form
 3. products - each document representing one serial with all basic product information
 4. product_logs - log against per product containing current user, reason, operation (operation types: import, invoiced, update)
 5. branches - each document representing one branch with basic information
 5. patients - each document representing one patient with information given in invoice form (TO BE DISCUSSED)
-6. batteries - each document representing a battery product (TO BE DISCUSSED)
 
 
 

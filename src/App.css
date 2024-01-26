@@ -1,11 +1,16 @@
-#logo{
+#logo {
     transition: all 0.3s;
 }
-#logo:hover{
+
+#logo:hover {
     filter: drop-shadow(2px 4px 6px black);
 }
 
-.required::after{
+.required::after {
     content: " *";
-    color:red;
+    color: red;
+}
+
+.dropdown-toggle::after {
+    display: none !important;
 }
