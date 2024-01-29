@@ -3,12 +3,13 @@ import Select from "react-select"
 import moment from "moment"
 import Swal from "sweetalert2"
 
+import { useFirebase } from "../contexts/firebase-context";
 import { getInvoiceList, getBranchList } from "../utils/getApis"
 import { printInvoice } from "../utils/printInvoice"
-
 import AuthWrapper from "./AuthWrapper";
 
 const SalesReport = () => {
+    const { currentUserInfo } = useFirebase()
 
     const [branchList, setBranchList] = useState([])
 
@@ -28,8 +29,10 @@ const SalesReport = () => {
     }
 
     useEffect(() => {
-        getBranchList(setBranchList)
-    }, [])
+        if (currentUserInfo !== null) {
+            getBranchList(currentUserInfo, setBranchList)
+        }
+    }, [currentUserInfo])
 
     useEffect(() => {
         if (branchList.length > 0) {
@@ -39,10 +42,10 @@ const SalesReport = () => {
     }, [branchList])
 
     useEffect(() => {
-        if (branchFilter !== null) {
-            getInvoiceList(setInvoiceList, branchFilter.value)
+        if ((branchFilter !== null) && (currentUserInfo !== null)) {
+            getInvoiceList(currentUserInfo, setInvoiceList, branchFilter.value)
         }
-    }, [branchFilter])
+    }, [branchFilter, currentUserInfo])
 
     let tp = Math.ceil(invoiceList.length / 10)
     let c = currentPage + 1
@@ -99,12 +102,12 @@ const SalesReport = () => {
                                     invoiceList.length === 0 ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No invoices added</td></tr> :
                                         invoiceList.filter(x => {
                                             if (searchBarState && searchValue !== "") {
-                                                if(((new RegExp(searchValue,"gi")).test(x.patient_name)) || ((new RegExp(searchValue,"gi")).test(x.contact_number)) || ((new RegExp(searchValue,"gi")).test(x.invoice_number)) || ((new RegExp(searchValue,"gi")).test(x.mode_of_payment))) {
+                                                if (((new RegExp(searchValue, "gi")).test(x.patient_name)) || ((new RegExp(searchValue, "gi")).test(x.contact_number)) || ((new RegExp(searchValue, "gi")).test(x.invoice_number)) || ((new RegExp(searchValue, "gi")).test(x.mode_of_payment))) {
                                                     return true
                                                 }
                                                 return false
                                             }
-                                            else{
+                                            else {
                                                 return true
                                             }
                                         }).slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {

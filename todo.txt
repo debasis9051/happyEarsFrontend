@@ -1,14 +1,11 @@
 Todo:
-1. 
-2. middleware auth for backend
-3. adding middleware to frontend apis
-4. hosting frontend and backend through vercel
-5. 
-6. instant product in generate invoice
-7. product individual edit feature, export feature in inventory
-8. audiometry
-8. user access parts
-9. patients
+1. hosting frontend and backend through vercel
+2. 
+3. instant product in generate invoice
+4. product individual edit feature, export feature in inventory
+5. audiometry
+6. user access parts
+7. patients
 
 
 HAPPY EARS PROJECT - structure

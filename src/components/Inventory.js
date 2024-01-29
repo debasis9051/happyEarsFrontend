@@ -6,11 +6,12 @@ import Swal from "sweetalert2"
 import Dropzone from 'react-dropzone'
 import moment from "moment"
 
+import { useFirebase } from "../contexts/firebase-context";
 import { getProductList, getBranchList } from "../utils/getApis"
-
 import AuthWrapper from "./AuthWrapper";
 
 const Inventory = () => {
+    const { currentUserInfo } = useFirebase()
 
     const [branchList, setBranchList] = useState([])
 
@@ -30,6 +31,7 @@ const Inventory = () => {
     const [selectedProductId, setSelectedProductId] = useState(null)
     const [selectedProductName, setSelectedProductName] = useState(null)
     const [selectedProductSerialNumber, setSelectedProductSerialNumber] = useState(null)
+    const [selectedProductBranch, setSelectedProductBranch] = useState(null)
     const [selectedTransferToBranch, setSelectedTransferToBranch] = useState(null)
     const [isTransferApiLoading, setIsTransferApiLoading] = useState(false)
 
@@ -43,8 +45,10 @@ const Inventory = () => {
     }
 
     useEffect(() => {
-        getBranchList(setBranchList)
-    }, [])
+        if (currentUserInfo !== null) {
+            getBranchList(currentUserInfo, setBranchList)
+        }
+    }, [currentUserInfo])
 
     useEffect(() => {
         if (branchList.length > 0) {
@@ -54,10 +58,10 @@ const Inventory = () => {
     }, [branchList])
 
     useEffect(() => {
-        if (branchFilter !== null) {
-            getProductList(setProductList, false, branchFilter.value)
+        if ((branchFilter !== null) && (currentUserInfo !== null)) {
+            getProductList(currentUserInfo, setProductList, false, branchFilter.value)
         }
-    }, [branchFilter])
+    }, [branchFilter, currentUserInfo])
 
     const importProducts = () => {
         if (startingRow < 1) {
@@ -72,11 +76,17 @@ const Inventory = () => {
             Swal.fire('Oops!!', 'Select a File to Import!', 'warning');
             return
         }
+        if (currentUserInfo === null) {
+            Swal.fire('Oops!!', 'Sign in first to use feature!', 'warning');
+            return
+        }
 
         let data = new FormData()
         data.append("starting_row", startingRow)
         data.append("ending_row", endingRow)
         data.append("selected_file", selectedFile)
+        data.append("current_user_uid", currentUserInfo.uid)
+        data.append("current_user_name", currentUserInfo.displayName)
 
         setIsImportApiLoading(true)
         axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/import-products`, data, { headers: { 'Content-Type': 'multipart/form-data' } })
@@ -84,7 +94,7 @@ const Inventory = () => {
                 setIsImportApiLoading(false)
                 handleImportProductModalClose()
                 if (res.data.operation === "success") {
-                    getProductList(setProductList, false, branchFilter.value)
+                    getProductList(currentUserInfo, setProductList, false, branchFilter.value)
                     if (res.data.info.length === 0) {
                         Swal.fire('Success!', res.data.message, 'success');
                     }
@@ -112,14 +122,12 @@ const Inventory = () => {
     }
 
     const transferProduct = () => {
-        if (setSelectedTransferToBranch == null) {
-            Swal.fire('Oops!!', 'Starting a Branch first', 'warning');
-            return
-        }
 
         let data = {
             product_id: selectedProductId,
-            branch_id: selectedTransferToBranch.value
+            branch_id: selectedTransferToBranch.value,
+            current_user_uid: currentUserInfo.uid,
+            current_user_name: currentUserInfo.displayName
         }
 
         setIsTransferApiLoading(true)
@@ -128,7 +136,7 @@ const Inventory = () => {
                 setIsTransferApiLoading(false)
                 handleTransferProductModalClose()
                 if (res.data.operation === "success") {
-                    getProductList(setProductList, false, branchFilter.value)
+                    getProductList(currentUserInfo, setProductList, false, branchFilter.value)
                     Swal.fire('Success!', res.data.message, 'success');
                 }
                 else {
@@ -143,11 +151,13 @@ const Inventory = () => {
     }
 
     const handleTransferProductModalClose = () => {
-        setImportProductModalShow(false)
+        setTransferProductModalShow(false)
 
-        setStartingRow(1)
-        setEndingRow(1)
-        setSelectedFile(null)
+        setSelectedProductId(null)
+        setSelectedProductName(null)
+        setSelectedProductSerialNumber(null)
+        setSelectedProductBranch(null)
+        setSelectedTransferToBranch(null)
     }
 
     let tp = Math.ceil(productList.length / 10)
@@ -239,8 +249,49 @@ const Inventory = () => {
                                                             </Dropdown.Toggle>
 
                                                             <Dropdown.Menu>
-                                                                <Dropdown.Item onClick={() => { Swal.fire('Oops!!', 'This feature id not ready yet', 'warning'); }} >Edit </Dropdown.Item>
-                                                                <Dropdown.Item onClick={() => { setTransferProductModalShow(true); setSelectedProductId(x.id); setSelectedProductName(x.product_name); setSelectedProductSerialNumber(x.serial_number); }} >Transfer</Dropdown.Item>
+                                                                {
+                                                                    !x.instock ? <Dropdown.Item className="text-secondary" >No Options</Dropdown.Item> :
+                                                                        <>
+                                                                            <Dropdown.Item onClick={() => { Swal.fire('Oops!!', 'This feature id not ready yet', 'warning'); }} >Edit </Dropdown.Item>
+                                                                            <Dropdown.Item onClick={() => { setTransferProductModalShow(true); setSelectedProductId(x.id); setSelectedProductName(x.product_name); setSelectedProductSerialNumber(x.serial_number); setSelectedProductBranch(x.branch_id); }} >Transfer</Dropdown.Item>
+                                                                            <Dropdown.Item
+                                                                                onClick={() => {
+                                                                                    Swal.fire({
+                                                                                        title: "Are you sure? Enter a reason",
+                                                                                        input: "text",
+                                                                                        inputAttributes: { autocapitalize: "off" },
+                                                                                        showCancelButton: true,
+                                                                                        confirmButtonText: "Submit",
+                                                                                        showLoaderOnConfirm: true,
+                                                                                        preConfirm: async (reason) => {
+                                                                                            let data = {
+                                                                                                product_id: x.id,
+                                                                                                reason: reason,
+                                                                                                current_user_uid: currentUserInfo.uid,
+                                                                                                current_user_name: currentUserInfo.displayName
+                                                                                            }
+
+                                                                                            axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/return-product`, data, { headers: { 'Content-Type': 'application/json' } })
+                                                                                                .then((res) => {
+                                                                                                    if (res.data.operation === "success") {
+                                                                                                        getProductList(currentUserInfo, setProductList, false, branchFilter.value)
+                                                                                                        Swal.fire('Success!', res.data.message, 'success');
+                                                                                                    }
+                                                                                                    else {
+                                                                                                        Swal.fire('Oops!', res.data.message, 'error');
+                                                                                                    }
+                                                                                                })
+                                                                                                .catch((err) => {
+                                                                                                    console.log(err)
+                                                                                                    Swal.fire('Error!!', err.message, 'error');
+                                                                                                })
+                                                                                        },
+                                                                                        allowOutsideClick: () => !Swal.isLoading()
+                                                                                    })
+                                                                                }}
+                                                                            >Return Product</Dropdown.Item>
+                                                                        </>
+                                                                }
                                                             </Dropdown.Menu>
                                                         </Dropdown>
                                                     </td>
@@ -353,15 +404,17 @@ const Inventory = () => {
                 <Modal.Body>
                     <div className="container">
                         <div className="row mb-3">
-                            <div className="col-md-12">
-                                <span>Selected Product: </span>
-                                <span>{selectedProductName} {selectedProductSerialNumber}</span>
+                            <div className="col-md-6">
+                                <div className="form-group">
+                                    <label className="form-label my-1">Selected Product: </label>
+                                    <div><span className="fw-bold" style={{ fontSize: "larger" }}>{selectedProductName} {selectedProductSerialNumber}</span></div>
+                                </div>
                             </div>
                             <div className="col-md-6">
                                 <div className="form-group">
                                     <label className="form-label my-1" >Transfer To Branch</label>
                                     <Select
-                                        options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
+                                        options={branchList.filter(x => x.id !== selectedProductBranch).map(x => ({ label: x.branch_name, value: x.id }))}
                                         value={selectedTransferToBranch}
                                         onChange={(val) => { setSelectedTransferToBranch(val); }}
                                         styles={dropDownStyle}

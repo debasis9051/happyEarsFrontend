@@ -4,12 +4,13 @@ import Select from "react-select"
 import Swal from "sweetalert2"
 import axios from "axios";
 
+import { useFirebase } from "../contexts/firebase-context";
 import { getProductList, getBranchList } from "../utils/getApis"
 import { printInvoice } from "../utils/printInvoice"
-
 import AuthWrapper from "./AuthWrapper";
 
 const GenerateInvoice = () => {
+    const { currentUserInfo } = useFirebase()
 
     const [productList, setProductList] = useState([])
     const [branchList, setBranchList] = useState([])
@@ -40,7 +41,7 @@ const GenerateInvoice = () => {
     }
 
     const getInvoiceNumber = (branch_id) => {
-        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-invoice-number`, { branch_id: branch_id }, { headers: { 'Content-Type': 'application/json' } })
+        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-invoice-number`, { branch_id: branch_id, current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
             .then((res) => {
                 if (res.data.operation === "success") {
                     setInvoiceNumber(res.data.info)
@@ -56,8 +57,10 @@ const GenerateInvoice = () => {
     }
 
     useEffect(() => {
-        getBranchList(setBranchList)
-    }, [])
+        if (currentUserInfo !== null) {
+            getBranchList(currentUserInfo, setBranchList)
+        }
+    }, [currentUserInfo])
 
     useEffect(() => {
         setDiscountAmount(lineItems.reduce((p, o) => p + o.product_rate, 0) * discountPercentage / 100)
@@ -87,6 +90,10 @@ const GenerateInvoice = () => {
         if (date === "") {
             Swal.fire('Oops!!', 'Date cannot be empty', 'warning');
             return false
+        }
+        if (currentUserInfo === null) {
+            Swal.fire('Oops!!', 'Sign in first to use feature!', 'warning');
+            return
         }
 
         for (let i = 0; i < lineItems.length; i++) {
@@ -132,7 +139,9 @@ const GenerateInvoice = () => {
                     product_rate: x.product_rate
                 }
             }),
-            accessory_items: accessoryItems
+            accessory_items: accessoryItems,
+            current_user_uid: currentUserInfo.uid,
+            current_user_name: currentUserInfo.displayName
         }
 
         setIsSaveApiLoading(true)
@@ -193,7 +202,7 @@ const GenerateInvoice = () => {
                                     <Select
                                         options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
                                         value={selectedBranch}
-                                        onChange={(val) => { setSelectedBranch(val); getInvoiceNumber(val.value); getProductList(setProductList, true, val.value); setLineItems([{ product: null, product_data: null, product_type: null, product_rate: 0 }]) }}
+                                        onChange={(val) => { setSelectedBranch(val); getInvoiceNumber(val.value); getProductList(currentUserInfo, setProductList, true, val.value); setLineItems([{ product: null, product_data: null, product_type: null, product_rate: 0 }]) }}
                                         styles={dropDownStyle}
                                         placeholder="Select a Branch..."
                                     />

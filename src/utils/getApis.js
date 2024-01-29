@@ -1,8 +1,8 @@
 import axios from "axios";
 import Swal from "sweetalert2"
 
-const getProductList = async (svRef, instockFilter = false, branch_id=null) => {
-    axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-product-list`, {}, { headers: { 'Content-Type': 'application/json' } })
+const getProductList = async (currentUserInfo, svRef, instockFilter = false, branch_id = null) => {
+    axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-product-list`, { current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
         .then((res) => {
             if (res.data.operation === "success") {
                 let t = res.data.info
@@ -26,8 +26,8 @@ const getProductList = async (svRef, instockFilter = false, branch_id=null) => {
         })
 }
 
-const getBranchList = async (svRef) => {
-    axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-branch-list`, {}, { headers: { 'Content-Type': 'application/json' } })
+const getBranchList = async (currentUserInfo, svRef) => {
+    axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-branch-list`, { current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
         .then((res) => {
             if (res.data.operation === "success") {
                 svRef(res.data.info)
@@ -42,8 +42,8 @@ const getBranchList = async (svRef) => {
         })
 }
 
-const getInvoiceList = async (svRef, branch_id=null) => {
-    axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-invoice-list`, {}, { headers: { 'Content-Type': 'application/json' } })
+const getInvoiceList = async (currentUserInfo, svRef, branch_id = null) => {
+    axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-invoice-list`, { current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
         .then((res) => {
             if (res.data.operation === "success") {
                 let t = res.data.info
