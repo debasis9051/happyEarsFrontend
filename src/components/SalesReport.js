@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react"
+import { Modal, Button, Dropdown } from "react-bootstrap"
 import Select from "react-select"
 import moment from "moment"
 import Swal from "sweetalert2"
+import axios from "axios";
 
 import { useFirebase } from "../contexts/firebase-context";
 import { getInvoiceList, getBranchList } from "../utils/getApis"
@@ -18,6 +20,18 @@ const SalesReport = () => {
     const [searchBarState, setSearchBarState] = useState(false)
     const [searchValue, setSearchValue] = useState("")
     const [branchFilter, setBranchFilter] = useState(null)
+
+    const [editInvoiceModalShow, setEditInvoiceModalShow] = useState(false)
+
+    const [invoiceData, setInvoiceData] = useState(null)
+    const [patientName, setPatientName] = useState("")
+    const [patientAddress, setPatientAddress] = useState("")
+    const [contactNumber, setContactNumber] = useState("")
+    const [date, setDate] = useState(moment().format("YYYY-MM-DD"))
+    const [selectedModeOfPayment, setSelectedModeOfPayment] = useState({ label: "Cash", value: "Cash" })
+    const [discountAmount, setDiscountAmount] = useState(0)
+
+    const [isSaveApiLoading, setIsSaveApiLoading] = useState(false)
 
     const dropDownStyle = {
         option: (styles) => {
@@ -53,6 +67,85 @@ const SalesReport = () => {
     s = (s < 1 ? 1 : s)
     let e = (c + 2) + (c - 2 < 1 ? 1 - (c - 2) : 0)
     e = (e > tp ? tp : e)
+
+    const editInvoiceModalInit = (invoice_data) =>{
+        setEditInvoiceModalShow(true)
+
+        setInvoiceData(invoice_data)
+        setPatientName(invoice_data.patient_name)
+        setPatientAddress(invoice_data.patient_address)
+        setContactNumber(invoice_data.contact_number)
+        setDate(moment(invoice_data.date).format("YYYY-MM-DD"))
+        setSelectedModeOfPayment({label: invoice_data.mode_of_payment, value: invoice_data.mode_of_payment})
+        setDiscountAmount(invoice_data.discount_amount)
+    }
+
+    const updateInvoice = () => {
+    
+        if (patientName === "") {
+            Swal.fire('Oops!!', 'Patient name cannot be empty', 'warning');
+            return false
+        }
+        if (patientAddress === "") {
+            Swal.fire('Oops!!', 'Patient address cannot be empty', 'warning');
+            return false
+        }
+        if (contactNumber === "") {
+            Swal.fire('Oops!!', 'Contact Number cannot be empty', 'warning');
+            return false
+        }
+        if (date === "") {
+            Swal.fire('Oops!!', 'Date cannot be empty', 'warning');
+            return false
+        }
+        if (currentUserInfo === null) {
+            Swal.fire('Oops!!', 'Sign in first to use feature!', 'warning');
+            return
+        }
+
+        let data = {
+            patient_name: patientName,
+            patient_address: patientAddress,
+            contact_number: contactNumber,
+            date: date,
+            mode_of_payment: selectedModeOfPayment.value,
+            discount_amount: discountAmount,
+            invoice_id: invoiceData.id,
+            current_user_uid: currentUserInfo.uid,
+            current_user_name: currentUserInfo.displayName
+        }
+
+        setIsSaveApiLoading(true)
+        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/update-invoice`, data, { headers: { 'Content-Type': 'application/json' } })
+            .then((res) => {
+                setIsSaveApiLoading(false)
+
+                if (res.data.operation === "success") {
+                    Swal.fire('Success!', res.data.message, 'success');
+                    handleEditInvoiceModalClose()
+                    getInvoiceList(currentUserInfo, setInvoiceList, branchFilter.value)
+                }
+                else {
+                    Swal.fire('Oops!', res.data.message, 'error');
+                }
+            })
+            .catch((err) => {
+                console.log(err)
+                Swal.fire('Error!!', err.message, 'error');
+            })
+    }
+
+    const handleEditInvoiceModalClose = () => {
+        setEditInvoiceModalShow(false)
+
+        setInvoiceData(null)
+        setPatientName("")
+        setPatientAddress("")
+        setContactNumber("")
+        setDate(moment().format("YYYY-MM-DD"))
+        setSelectedModeOfPayment({ label: "Cash", value: "Cash" })
+        setDiscountAmount(0)
+    }
 
     return (
         <>
@@ -120,7 +213,20 @@ const SalesReport = () => {
                                                     <td>{(x.line_items.reduce((p, o) => p + o.product_rate, 0) - x.discount_amount) + x.accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)}</td>
                                                     <td>{x.mode_of_payment}</td>
                                                     <td>{moment(x.date._seconds * 1000).format("DD-MM-YYYY")}</td>
-                                                    <td><button className="btn btn-primary" onClick={() => { printInvoice(x.patient_name, x.patient_address, x.contact_number, branchList.find(b => b.id === x.branch_id).branch_name, x.invoice_number, moment(x.date._seconds * 1000).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_percentage, x.discount_amount, x.line_items, x.accessory_items) }}>Print</button></td>
+                                                    <td>
+                                                        <Dropdown>
+                                                            <Dropdown.Toggle variant="primary">
+                                                                <svg width="16" height="16" fill="currentColor" className="bi bi-list" viewBox="0 0 16 16">
+                                                                    <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+                                                                </svg>
+                                                            </Dropdown.Toggle>
+
+                                                            <Dropdown.Menu>
+                                                                <Dropdown.Item onClick={() => { editInvoiceModalInit(x) }} >Edit</Dropdown.Item>
+                                                                <Dropdown.Item onClick={() => { printInvoice(x.patient_name, x.patient_address, x.contact_number, branchList.find(b => b.id === x.branch_id).branch_name, x.invoice_number, moment(x.date._seconds * 1000).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items) }} >Print</Dropdown.Item>
+                                                            </Dropdown.Menu>
+                                                        </Dropdown>
+                                                    </td>
                                                 </tr>
                                             )
                                         })
@@ -164,6 +270,83 @@ const SalesReport = () => {
                     </>
                 </AuthWrapper>
             </div>
+
+            <Modal show={editInvoiceModalShow} onHide={() => { handleEditInvoiceModalClose() }} size="lg" centered >
+                <Modal.Header closeButton>
+                    <Modal.Title>Edit Invoice - {invoiceData?.invoice_number}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="container">
+                        <div className="row">
+                            <div className="col-md-6">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required" htmlFor="patientName">Patient Name</label>
+                                    <input type="text" id="patientName" className="form-control" value={patientName} onChange={(e) => { setPatientName(e.target.value) }} />
+                                </div>
+                            </div>
+                            <div className="col-md-6">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required" htmlFor="contactNumber">Contact Number</label>
+                                    <input type="text" id="contactNumber" className="form-control" value={contactNumber} onChange={(e) => { setContactNumber(e.target.value) }} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="row">
+                            <div className="col-md-12">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required" htmlFor="patientAddress">Patient Address</label>
+                                    <textarea id="patientAddress" rows={3} className="form-control" value={patientAddress} onChange={(e) => { setPatientAddress(e.target.value) }} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="row">
+                            <div className="col-md-6">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required" htmlFor="date">Date</label>
+                                    <input type="date" id="date" className="form-control" value={date} onChange={(e) => { setDate(e.target.value) }} />
+                                </div>
+                            </div>
+                            <div className="col-md-6">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required">Mode of Payment</label>
+                                    <Select
+                                        options={["Cash", "Cheque", "Online", "Card", "Bajaj Finance"].map(x => ({ label: x, value: x }))}
+                                        value={selectedModeOfPayment}
+                                        onChange={(val) => { setSelectedModeOfPayment(val) }}
+                                        styles={dropDownStyle}
+                                        placeholder="Select Mode of Payment..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="row">
+                            <div className="col-md-6">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required" htmlFor="discountAmount">Discount on Products</label>
+                                    <input type="number" id="discountAmount" className="form-control" value={discountAmount.toString()} onChange={(e) => { setDiscountAmount(e.target.value===""?0:parseFloat(e.target.value)) }} />
+                                </div>
+                            </div>
+                            {/* <div className="col-md-6">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required">Mode of Payment</label>
+                                    <Select
+                                        options={["Cash", "Cheque", "Online", "Card", "Bajaj Finance"].map(x => ({ label: x, value: x }))}
+                                        value={selectedModeOfPayment}
+                                        onChange={(val) => { setSelectedModeOfPayment(val) }}
+                                        styles={dropDownStyle}
+                                        placeholder="Select Mode of Payment..."
+                                    />
+                                </div>
+                            </div> */}
+                        </div>
+
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="success" disabled={isSaveApiLoading} onClick={() => { !isSaveApiLoading && updateInvoice() }}> {isSaveApiLoading ? <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> : 'Submit'} </Button>
+                    <Button onClick={() => { handleEditInvoiceModalClose() }}>Close</Button>
+                </Modal.Footer>
+            </Modal>
         </>
     )
 }

@@ -395,7 +395,7 @@ const Inventory = () => {
                     <Button variant="success" disabled={isImportApiLoading} onClick={() => { !isImportApiLoading && importProducts() }}> {isImportApiLoading ? <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> : 'Submit'} </Button>
                     <Button onClick={() => { handleImportProductModalClose() }}>Close</Button>
                 </Modal.Footer>
-            </Modal >
+            </Modal>
 
             <Modal show={transferProductModalShow} onHide={() => { handleTransferProductModalClose() }} centered >
                 <Modal.Header closeButton>

@@ -22,7 +22,6 @@ const GenerateInvoice = () => {
     const [invoiceNumber, setInvoiceNumber] = useState("")
     const [date, setDate] = useState(moment().format("YYYY-MM-DD"))
     const [selectedModeOfPayment, setSelectedModeOfPayment] = useState({ label: "Cash", value: "Cash" })
-    const [discountPercentage, setDiscountPercentage] = useState(0)
     const [discountAmount, setDiscountAmount] = useState(0)
 
     const [lineItems, setLineItems] = useState([{ product: null, product_data: null, product_type: null, product_rate: 0 }])
@@ -61,10 +60,6 @@ const GenerateInvoice = () => {
             getBranchList(currentUserInfo, setBranchList)
         }
     }, [currentUserInfo])
-
-    useEffect(() => {
-        setDiscountAmount(lineItems.reduce((p, o) => p + o.product_rate, 0) * discountPercentage / 100)
-    }, [lineItems, discountPercentage])
 
     const verifyInvoice = () => {
         if (patientName === "") {
@@ -127,7 +122,6 @@ const GenerateInvoice = () => {
             invoice_number: invoiceNumber,
             date: date,
             mode_of_payment: selectedModeOfPayment.value,
-            discount_percentage: discountPercentage,
             discount_amount: discountAmount,
             line_items: lineItems.map(x => {
                 return {
@@ -278,7 +272,7 @@ const GenerateInvoice = () => {
                                             </div>
                                             <div className="col-md-4">
                                                 <Select
-                                                    options={["BTE", "BTE-R", "RIC", "RIC-R", "ITC", "ITC-R", "CIC", "IIC"].map(x => ({ label: x, value: x }))}
+                                                    options={["BTE", "BTE-R", "RIC", "RIC-R", "ITC", "ITC-R", "CIC", "IIC", "Charger"].map(x => ({ label: x, value: x }))}
                                                     value={x.product_type == null ? null : { label: x.product_type, value: x.product_type }}
                                                     onChange={(val) => {
                                                         let t = lineItems.map(a => { return { ...a } })
@@ -334,28 +328,14 @@ const GenerateInvoice = () => {
                                 <div className="col-md-6 text-end my-auto">
                                     <span>Discount on Products</span>
                                 </div>
-                                <div className="col-md-2">
-                                    <input type="number" className="form-control" value={discountPercentage.toString()} onChange={(e) => { setDiscountPercentage(e.target.value === "" ? 0 : parseFloat(e.target.value)); }} />
-                                </div>
-                                <div className="col-md-3">
-                                    <input type="number" className="form-control" value={discountAmount.toString()}
-                                        onChange={(e) => {
-                                            if (e.target.value === "") {
-                                                setDiscountPercentage(0)
-                                                setDiscountAmount(0)
-                                            }
-                                            else {
-                                                setDiscountPercentage(parseFloat(e.target.value) * 100 / lineItems.reduce((p, o) => p + o.product_rate, 0));
-                                                setDiscountAmount(parseFloat(e.target.value))
-                                            }
-                                        }}
-                                    />
+                                <div className="col-md-5">
+                                    <input type="number" className="form-control" value={discountAmount.toString()} onChange={(e) => { setDiscountAmount(e.target.value === "" ? 0 : parseFloat(e.target.value)) }} />
                                 </div>
                                 <div className="col-md-1"></div>
                             </div>
 
                             <div className="mt-3">
-                                <label className="form-label my-1">Accessory Items</label>
+                                <label className="form-label my-1">Accessory Items<span className="fw-bold ms-5">**To apply "strips" during print, write "Battery" and no. of strips **</span></label>
                                 <div className="row mb-2" style={{ fontSize: "smaller" }}>
                                     <div className="col-md-4">
                                         <label className="form-label my-1">Accessory</label>
@@ -390,6 +370,7 @@ const GenerateInvoice = () => {
                                                             setAccessoryItems(t)
                                                         }}
                                                     />
+                                                    {x.accessory.trim().toLowerCase() === "battery" && <div style={{fontSize:"smaller", color:"dimgray"}}>strips</div>}
                                                 </div>
                                                 <div className="col-md-3">
                                                     <input type="number" className="form-control" value={x.accessory_rate.toString()}
@@ -480,12 +461,12 @@ const GenerateInvoice = () => {
                                                 confirmButtonText: "Print",
                                             }).then((result) => {
                                                 if (result.isConfirmed) {
-                                                    printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, invoiceNumber, date, selectedModeOfPayment.value, discountPercentage, discountAmount, t, accessoryItems)
+                                                    printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, invoiceNumber, date, selectedModeOfPayment.value, discountAmount, t, accessoryItems)
                                                 }
                                             });
                                         }
                                         else {
-                                            printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, invoiceNumber, date, selectedModeOfPayment.value, discountPercentage, discountAmount, t, accessoryItems)
+                                            printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, invoiceNumber, date, selectedModeOfPayment.value, discountAmount, t, accessoryItems)
                                         }
                                     }
                                 }}

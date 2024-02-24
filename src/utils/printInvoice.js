@@ -1,6 +1,6 @@
 import { ToWords } from 'to-words';
 
-const designParticulars = (discount_percentage,discount_amount,line_items,accessory_items) => {
+const designParticulars = (discount_amount,line_items,accessory_items) => {
     let f = [[], [], [], [], [], [], []]
 
     f[0].push(`<br>`)
@@ -28,7 +28,7 @@ const designParticulars = (discount_percentage,discount_amount,line_items,access
     f[2].push(`<br>`)
     f[3].push(`<br>`)
     f[4].push(`<br>`)
-    f[5].push(`Discount(${discount_percentage}%)<br>`)
+    f[5].push(`Discount (RS.) :-<br>`)
     f[6].push(`${discount_amount}<br>`)
 
     if (accessory_items.find(x => x.accessory !== "")) {
@@ -46,7 +46,7 @@ const designParticulars = (discount_percentage,discount_amount,line_items,access
             t[1].push(`${o.accessory}<br>`)
             t[2].push(`<br>`)
             t[3].push(`<br>`)
-            t[4].push(`${o.quantity}<br>`)
+            t[4].push(`${o.quantity}${o.accessory.trim().toLowerCase() === "battery"?" strips":""}<br>`)
             t[5].push(`${o.accessory_rate === 0 ? "Free" : o.accessory_rate + "/-"}<br>`)
             t[6].push(`${(o.quantity * o.accessory_rate) === 0 ? "Free" : (o.quantity * o.accessory_rate) + "/-"}<br>`)
             return t
@@ -54,17 +54,17 @@ const designParticulars = (discount_percentage,discount_amount,line_items,access
     }
 
     f.forEach(x => {
-        x.push(`<br><br><br><br><br><br>`)
+        x.push(`<br><br><br>`)
     })
 
-    f[5].push(`Final Amount`)
+    f[5].push(`Final Amount : (Rs )`)
 
     return f.map((x, i, a) => {
         return `<td ${i !== a.length - 1 ? "rowspan='2'" : ""} class="text-nowrap" >${x.join("<br>")}</td>`
     }).join("")
 }
 
-const printInvoice = (patient_name,patient_address,contact_number,branch_name,invoice_number,date,mode_of_payment,discount_percentage,discount_amount,line_items,accessory_items) => {
+const printInvoice = (patient_name,patient_address,contact_number,branch_name,invoice_number,date,mode_of_payment,discount_amount,line_items,accessory_items) => {
     let toWords = new ToWords()
     let html = `
         <div class="container-fluid my-4 fw-bold">
@@ -106,15 +106,15 @@ const printInvoice = (patient_name,patient_address,contact_number,branch_name,in
                     <td>Amount</td>
                 </tr>   
                 <tr>
-                ${designParticulars(discount_percentage,discount_amount,line_items,accessory_items)}
+                ${designParticulars(discount_amount,line_items,accessory_items)}
                 </tr>
                 <tr>
                     <td>${(line_items.reduce((p, o) => p + o.product_rate, 0) - discount_amount) + accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)}</td>
                 </tr>
             </table>
             <div class="d-flex justify-content-between">
-                <div>Amount: ${toWords.convert((line_items.reduce((p, o) => p + o.product_rate, 0) - discount_amount) + accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)).toUpperCase().replace("HUNDRED", " ")} ONLY<br>________________________________________________________________________</div>
-                <div><br><br><br>E. & O.E.<br>For Happy Ears</div>
+                <h5 class="text-bold"><ins>Amount: ${toWords.convert((line_items.reduce((p, o) => p + o.product_rate, 0) - discount_amount) + accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)).toUpperCase()} ONLY<br></ins></h5>
+                <div>E. & O.E.<br>For Happy Ears</div>
             </div>
         </div>
     `
