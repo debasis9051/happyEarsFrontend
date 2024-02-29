@@ -30,6 +30,7 @@ const SalesReport = () => {
     const [date, setDate] = useState(moment().format("YYYY-MM-DD"))
     const [selectedModeOfPayment, setSelectedModeOfPayment] = useState({ label: "Cash", value: "Cash" })
     const [discountAmount, setDiscountAmount] = useState(0)
+    const [accessoryItems, setAccessoryItems] = useState([{ accessory: "", quantity: 0, accessory_rate: 0 }])
 
     const [isSaveApiLoading, setIsSaveApiLoading] = useState(false)
 
@@ -68,7 +69,7 @@ const SalesReport = () => {
     let e = (c + 2) + (c - 2 < 1 ? 1 - (c - 2) : 0)
     e = (e > tp ? tp : e)
 
-    const editInvoiceModalInit = (invoice_data) =>{
+    const editInvoiceModalInit = (invoice_data) => {
         setEditInvoiceModalShow(true)
 
         setInvoiceData(invoice_data)
@@ -76,12 +77,13 @@ const SalesReport = () => {
         setPatientAddress(invoice_data.patient_address)
         setContactNumber(invoice_data.contact_number)
         setDate(moment(invoice_data.date).format("YYYY-MM-DD"))
-        setSelectedModeOfPayment({label: invoice_data.mode_of_payment, value: invoice_data.mode_of_payment})
+        setSelectedModeOfPayment({ label: invoice_data.mode_of_payment, value: invoice_data.mode_of_payment })
         setDiscountAmount(invoice_data.discount_amount)
+        setAccessoryItems(invoice_data.accessory_items)
     }
 
     const updateInvoice = () => {
-    
+
         if (patientName === "") {
             Swal.fire('Oops!!', 'Patient name cannot be empty', 'warning');
             return false
@@ -103,6 +105,13 @@ const SalesReport = () => {
             return
         }
 
+        for (let i = 0; i < accessoryItems.length; i++) {
+            if ((accessoryItems[i].accessory !== "") && (accessoryItems[i].quantity <= 0)) {
+                Swal.fire('Oops!!', 'Accessory item quantity cannot be empty', 'warning');
+                return false
+            }
+        }
+
         let data = {
             patient_name: patientName,
             patient_address: patientAddress,
@@ -110,6 +119,7 @@ const SalesReport = () => {
             date: date,
             mode_of_payment: selectedModeOfPayment.value,
             discount_amount: discountAmount,
+            accessory_items: accessoryItems,
             invoice_id: invoiceData.id,
             current_user_uid: currentUserInfo.uid,
             current_user_name: currentUserInfo.displayName
@@ -145,6 +155,7 @@ const SalesReport = () => {
         setDate(moment().format("YYYY-MM-DD"))
         setSelectedModeOfPayment({ label: "Cash", value: "Cash" })
         setDiscountAmount(0)
+        setAccessoryItems([{ accessory: "", quantity: 0, accessory_rate: 0 }])
     }
 
     return (
@@ -323,23 +334,108 @@ const SalesReport = () => {
                             <div className="col-md-6">
                                 <div className="form-group">
                                     <label className="form-label my-1 required" htmlFor="discountAmount">Discount on Products</label>
-                                    <input type="number" id="discountAmount" className="form-control" value={discountAmount.toString()} onChange={(e) => { setDiscountAmount(e.target.value===""?0:parseFloat(e.target.value)) }} />
+                                    <input type="number" id="discountAmount" className="form-control" value={discountAmount.toString()} onChange={(e) => { setDiscountAmount(e.target.value === "" ? 0 : parseFloat(e.target.value)) }} />
                                 </div>
                             </div>
-                            {/* <div className="col-md-6">
-                                <div className="form-group">
-                                    <label className="form-label my-1 required">Mode of Payment</label>
-                                    <Select
-                                        options={["Cash", "Cheque", "Online", "Card", "Bajaj Finance"].map(x => ({ label: x, value: x }))}
-                                        value={selectedModeOfPayment}
-                                        onChange={(val) => { setSelectedModeOfPayment(val) }}
-                                        styles={dropDownStyle}
-                                        placeholder="Select Mode of Payment..."
-                                    />
-                                </div>
-                            </div> */}
                         </div>
 
+                        <div className="mt-3">
+                            <label className="form-label my-1">Accessory Items<span className="fw-bold ms-5">**To apply "strips" during print, write "Battery" and no. of strips **</span></label>
+                            <div className="row mb-2" style={{ fontSize: "smaller" }}>
+                                <div className="col-md-4">
+                                    <label className="form-label my-1">Accessory</label>
+                                </div>
+                                <div className="col-md-4">
+                                    <label className="form-label my-1">Quantity</label>
+                                </div>
+                                <div className="col-md-3">
+                                    <label className="form-label my-1">Rate</label>
+                                </div>
+                                <div className="col-md-1"></div>
+                            </div>
+                            {
+                                accessoryItems.map((x, i) => {
+                                    return (
+                                        <div key={i} className="row my-2">
+                                            <div className="col-md-4">
+                                                <input type="text" className="form-control" value={x.accessory} placeholder="Enter an Accessory..."
+                                                    onChange={(e) => {
+                                                        let t = accessoryItems.map(a => { return { ...a } })
+                                                        t[i].accessory = e.target.value
+                                                        setAccessoryItems(t)
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="col-md-4">
+                                                <input type="number" className="form-control" value={x.quantity.toString()}
+                                                    onChange={(e) => {
+                                                        let t = accessoryItems.map(a => { return { ...a } })
+                                                        t[i].quantity = e.target.value === "" ? 0 : parseFloat(e.target.value)
+                                                        setAccessoryItems(t)
+                                                    }}
+                                                />
+                                                {x.accessory.trim().toLowerCase() === "battery" && <div style={{ fontSize: "smaller", color: "dimgray" }}>strips</div>}
+                                            </div>
+                                            <div className="col-md-3">
+                                                <input type="number" className="form-control" value={x.accessory_rate.toString()}
+                                                    onChange={(e) => {
+                                                        let t = accessoryItems.map(a => { return { ...a } })
+                                                        t[i].accessory_rate = e.target.value === "" ? 0 : parseFloat(e.target.value)
+                                                        setAccessoryItems(t)
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="col-md-1">
+                                                {
+                                                    accessoryItems.length > 1 &&
+                                                    <button className="btn btn-outline-danger rounded-pill" onClick={() => {
+                                                        let t = accessoryItems.map(a => { return { ...a } })
+                                                        t.splice(i, 1)
+                                                        setAccessoryItems(t)
+                                                    }}>
+                                                        <span className="text-danger">✖</span>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    )
+                                })
+                            }
+                            <div className="row my-2">
+                                <div className="col-md-2">
+                                    <button className="btn btn-primary" onClick={() => {
+                                        let t = accessoryItems.map(a => { return { ...a } })
+                                        t.push({ accessory: "", quantity: 0, accessory_rate: 0 })
+                                        setAccessoryItems(t)
+                                    }}>+ Add</button>
+                                </div>
+                                <div className="col-md-6 text-end my-auto">
+                                    <span>Accessory Total</span>
+                                </div>
+                                <div className="col-md-3 my-auto">
+                                    <span>{accessoryItems.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)}</span>
+                                </div>
+                                <div className="col-md-1"></div>
+                            </div>
+                        </div>
+                        <div className="row my-2">
+                            <div className="col-md-8 text-end my-auto">
+                                <span>Products Total</span>
+                            </div>
+                            <div className="col-md-3 my-auto">
+                                <span>{invoiceData !== null && invoiceData.line_items.reduce((p, o) => p + o.product_rate, 0)}</span>
+                            </div>
+                            <div className="col-md-1"></div>
+                        </div>
+                        <div className="row my-2" style={{ fontSize: "larger" }}>
+                            <div className="col-md-8 text-end my-auto">
+                                <span>Grand Total</span>
+                            </div>
+                            <div className="col-md-3 my-auto">
+                                <span>{(invoiceData !== null && invoiceData.line_items.reduce((p, o) => p + o.product_rate, 0) - discountAmount) + accessoryItems.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)}</span>
+                            </div>
+                            <div className="col-md-1"></div>
+                        </div>
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
