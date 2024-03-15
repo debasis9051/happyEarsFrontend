@@ -6,7 +6,7 @@ import Swal from "sweetalert2"
 import axios from "axios";
 
 import { useFirebase } from "../contexts/firebase-context";
-import { getInvoiceList, getBranchList } from "../utils/getApis"
+import { getInvoiceList, getBranchList, getSalespersonList } from "../utils/getApis"
 import { printInvoice } from "../utils/printInvoice"
 import AuthWrapper from "./AuthWrapper";
 
@@ -14,12 +14,14 @@ const SalesReport = () => {
     const { currentUserInfo } = useFirebase()
 
     const [branchList, setBranchList] = useState([])
-
+    const [salespersonList, setSalespersonList] = useState([])
     const [invoiceList, setInvoiceList] = useState([])
+
     const [currentPage, setCurrentPage] = useState(0)
     const [searchBarState, setSearchBarState] = useState(false)
     const [searchValue, setSearchValue] = useState("")
     const [branchFilter, setBranchFilter] = useState(null)
+    const [salespersonFilter, setSalespersonFilter] = useState({ label: "All", value: "All" })
 
     const [editInvoiceModalShow, setEditInvoiceModalShow] = useState(false)
 
@@ -29,10 +31,24 @@ const SalesReport = () => {
     const [contactNumber, setContactNumber] = useState("")
     const [date, setDate] = useState(moment().format("YYYY-MM-DD"))
     const [selectedModeOfPayment, setSelectedModeOfPayment] = useState({ label: "Cash", value: "Cash" })
+    const [selectedSalesperson, setSelectedSalesperson] = useState(null)
     const [discountAmount, setDiscountAmount] = useState(0)
     const [accessoryItems, setAccessoryItems] = useState([{ accessory: "", quantity: 0, accessory_rate: 0 }])
 
     const [isSaveApiLoading, setIsSaveApiLoading] = useState(false)
+
+
+    const filteredInvoiceList = branchFilter ? invoiceList.filter(x => x.branch_id === branchFilter.value).filter(x => salespersonFilter.value === "All" ? true : x.salesperson_id === salespersonFilter.value).filter(x => {
+        if (searchBarState && searchValue !== "") {
+            if (((new RegExp(searchValue, "gi")).test(x.patient_name)) || ((new RegExp(searchValue, "gi")).test(x.contact_number)) || ((new RegExp(searchValue, "gi")).test(x.invoice_number)) || ((new RegExp(searchValue, "gi")).test(x.mode_of_payment))) {
+                return true
+            }
+            return false
+        }
+        else {
+            return true
+        }
+    }) : []
 
     const dropDownStyle = {
         option: (styles) => {
@@ -40,12 +56,20 @@ const SalesReport = () => {
                 ...styles,
                 color: 'black'
             };
+        },
+        menu: (styles) => {
+            return {
+                ...styles,
+                minWidth: "max-content"
+            };
         }
     }
 
     useEffect(() => {
         if (currentUserInfo !== null) {
             getBranchList(currentUserInfo, setBranchList)
+            getSalespersonList(currentUserInfo, setSalespersonList)
+            getInvoiceList(currentUserInfo, setInvoiceList)
         }
     }, [currentUserInfo])
 
@@ -56,13 +80,7 @@ const SalesReport = () => {
         }
     }, [branchList])
 
-    useEffect(() => {
-        if ((branchFilter !== null) && (currentUserInfo !== null)) {
-            getInvoiceList(currentUserInfo, setInvoiceList, branchFilter.value)
-        }
-    }, [branchFilter, currentUserInfo])
-
-    let tp = Math.ceil(invoiceList.length / 10)
+    let tp = Math.ceil(filteredInvoiceList.length / 10)
     let c = currentPage + 1
     let s = (c - 2) - (c + 2 > tp ? (c + 2) - tp : 0)
     s = (s < 1 ? 1 : s)
@@ -78,6 +96,10 @@ const SalesReport = () => {
         setContactNumber(invoice_data.contact_number)
         setDate(moment(invoice_data.date).format("YYYY-MM-DD"))
         setSelectedModeOfPayment({ label: invoice_data.mode_of_payment, value: invoice_data.mode_of_payment })
+        if(invoice_data.salesperson_id){
+            let t = salespersonList.find(x=>x.id === invoice_data.salesperson_id)
+            setSelectedSalesperson({ label: t.salesperson_name, value: t.id })
+        }
         setDiscountAmount(invoice_data.discount_amount)
         setAccessoryItems(invoice_data.accessory_items)
     }
@@ -100,6 +122,10 @@ const SalesReport = () => {
             Swal.fire('Oops!!', 'Date cannot be empty', 'warning');
             return false
         }
+        if (selectedSalesperson === null) {
+            Swal.fire('Oops!!', 'Select a Salesperson', 'warning');
+            return false
+        }
         if (currentUserInfo === null) {
             Swal.fire('Oops!!', 'Sign in first to use feature!', 'warning');
             return
@@ -118,6 +144,7 @@ const SalesReport = () => {
             contact_number: contactNumber,
             date: date,
             mode_of_payment: selectedModeOfPayment.value,
+            salesperson_id: selectedSalesperson.value,
             discount_amount: discountAmount,
             accessory_items: accessoryItems,
             invoice_id: invoiceData.id,
@@ -133,7 +160,7 @@ const SalesReport = () => {
                 if (res.data.operation === "success") {
                     Swal.fire('Success!', res.data.message, 'success');
                     handleEditInvoiceModalClose()
-                    getInvoiceList(currentUserInfo, setInvoiceList, branchFilter.value)
+                    getInvoiceList(currentUserInfo, setInvoiceList)
                 }
                 else {
                     Swal.fire('Oops!', res.data.message, 'error');
@@ -154,6 +181,7 @@ const SalesReport = () => {
         setContactNumber("")
         setDate(moment().format("YYYY-MM-DD"))
         setSelectedModeOfPayment({ label: "Cash", value: "Cash" })
+        setSelectedSalesperson(null)
         setDiscountAmount(0)
         setAccessoryItems([{ accessory: "", quantity: 0, accessory_rate: 0 }])
     }
@@ -167,22 +195,35 @@ const SalesReport = () => {
 
                 <AuthWrapper>
                     <>
-                        <div className="d-flex align-items-center px-3 py-2">
-                            <label className="form-label m-1 me-3 fs-5">Branch</label>
-                            <Select
-                                options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
-                                value={branchFilter}
-                                onChange={(val) => { setBranchFilter(val); setCurrentPage(0); }}
-                                styles={dropDownStyle}
-                                placeholder="Select a Branch..."
-                            />
+                        <div className="d-flex align-items-end px-3 py-2">
+                            <label className="form-label m-0 me-2 fs-5">Filters: </label>
+                            <div className="form-group mx-1">
+                                <label className="form-label m-0">Branch</label>
+                                <Select
+                                    options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
+                                    value={branchFilter}
+                                    onChange={(val) => { setBranchFilter(val); setCurrentPage(0); }}
+                                    styles={dropDownStyle}
+                                    placeholder="Select a Branch..."
+                                />
+                            </div>
+                            <div className="form-group mx-1">
+                                <label className="form-label m-0">Salesperson</label>
+                                <Select
+                                    options={[{ label: "All", value: "All" }, ...salespersonList.map(x => ({ label: x.salesperson_name, value: x.id }))]}
+                                    value={salespersonFilter}
+                                    onChange={(val) => { setSalespersonFilter(val) }}
+                                    styles={dropDownStyle}
+                                    placeholder="Select Salesperson..."
+                                />
+                            </div>
                             <div className="d-flex mx-2">
                                 <button className="btn btn-secondary rounded-pill me-1" onClick={() => { setSearchBarState(!searchBarState); setSearchValue("") }}>
                                     <svg width="16" height="16" fill="currentColor" className="bi bi-search" viewBox="0 0 16 16">
                                         <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
                                     </svg>
                                 </button>
-                                <input type="text" className="form-control" style={searchBarState ? { transition: "all 1s" } : { transition: "all 1s", width: "0", padding: "0", opacity: "0", visibility: "hidden" }} placeholder="Search..." onChange={(e) => { setSearchValue(e.target.value) }} />
+                                <input type="text" className="form-control" style={searchBarState ? { transition: "all 1s" } : { transition: "all 1s", width: "0", padding: "0", opacity: "0", visibility: "hidden" }} placeholder="Search..." onChange={(e) => { setSearchValue(e.target.value); setCurrentPage(0); }} />
                             </div>
 
                             <button className="btn btn-info ms-auto me-2" onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); console.log("exporting products"); }}>Export</button>
@@ -203,18 +244,8 @@ const SalesReport = () => {
                             </thead>
                             <tbody>
                                 {
-                                    invoiceList.length === 0 ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No invoices added</td></tr> :
-                                        invoiceList.filter(x => {
-                                            if (searchBarState && searchValue !== "") {
-                                                if (((new RegExp(searchValue, "gi")).test(x.patient_name)) || ((new RegExp(searchValue, "gi")).test(x.contact_number)) || ((new RegExp(searchValue, "gi")).test(x.invoice_number)) || ((new RegExp(searchValue, "gi")).test(x.mode_of_payment))) {
-                                                    return true
-                                                }
-                                                return false
-                                            }
-                                            else {
-                                                return true
-                                            }
-                                        }).slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
+                                    filteredInvoiceList.length === 0 ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No invoices added</td></tr> :
+                                        filteredInvoiceList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
                                             return (
                                                 <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>
                                                     <td>{(currentPage * 10) + i + 1}</td>
@@ -244,7 +275,7 @@ const SalesReport = () => {
                                 }
                             </tbody>
                             {
-                                invoiceList.length !== 0 &&
+                                filteredInvoiceList.length !== 0 &&
                                 <tfoot>
                                     <tr>
                                         <td colSpan={8}>
@@ -278,6 +309,10 @@ const SalesReport = () => {
                                 </tfoot>
                             }
                         </table>
+
+                        {/* <div className="container bg-warning-subtle my-5 rounded text-black">
+                            hello world
+                        </div> */}
                     </>
                 </AuthWrapper>
             </div>
@@ -331,6 +366,18 @@ const SalesReport = () => {
                             </div>
                         </div>
                         <div className="row">
+                            <div className="col-md-6">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required">Salesperson</label>
+                                    <Select
+                                        options={salespersonList.map(x => ({ label: x.salesperson_name, value: x.id }))}
+                                        value={selectedSalesperson}
+                                        onChange={(val) => { setSelectedSalesperson(val) }}
+                                        styles={dropDownStyle}
+                                        placeholder="Select Salesperson..."
+                                    />
+                                </div>
+                            </div>
                             <div className="col-md-6">
                                 <div className="form-group">
                                     <label className="form-label my-1 required" htmlFor="discountAmount">Discount on Products</label>

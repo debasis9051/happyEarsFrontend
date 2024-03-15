@@ -14,12 +14,20 @@ const Inventory = () => {
     const { currentUserInfo } = useFirebase()
 
     const [branchList, setBranchList] = useState([])
-
     const [productList, setProductList] = useState([])
+
     const [currentPage, setCurrentPage] = useState(0)
     const [searchBarState, setSearchBarState] = useState(false)
     const [searchValue, setSearchValue] = useState("")
     const [branchFilter, setBranchFilter] = useState(null)
+
+    const [addProductModalShow, setAddProductModalShow] = useState(false)
+    const [productName, setProductName] = useState("")
+    const [serialNumber, setSerialNumber] = useState("")
+    const [manufacturer, setManufacturer] = useState("")
+    const [mrp, setMrp] = useState(0)
+    const [selectedBranch, setSelectedBranch] = useState(null)
+    const [isAddProductApiLoading, setIsAddProductApiLoading] = useState(false)
 
     const [importProductModalShow, setImportProductModalShow] = useState(false)
     const [startingRow, setStartingRow] = useState(1)
@@ -31,9 +39,22 @@ const Inventory = () => {
     const [selectedProductId, setSelectedProductId] = useState(null)
     const [selectedProductName, setSelectedProductName] = useState(null)
     const [selectedProductSerialNumber, setSelectedProductSerialNumber] = useState(null)
-    const [selectedProductBranch, setSelectedProductBranch] = useState(null)
+    const [selectedProductCurrentBranch, setSelectedProductCurrentBranch] = useState(null)
     const [selectedTransferToBranch, setSelectedTransferToBranch] = useState(null)
     const [isTransferApiLoading, setIsTransferApiLoading] = useState(false)
+
+
+    const filteredProductList = branchFilter ? productList.filter(x => x.branch_id === branchFilter.value).filter(x => {
+        if (searchBarState && searchValue !== "") {
+            if (((new RegExp(searchValue, "gi")).test(x.manufacturer_name)) || ((new RegExp(searchValue, "gi")).test(x.product_name)) || ((new RegExp(searchValue, "gi")).test(x.serial_number))) {
+                return true
+            }
+            return false
+        }
+        else {
+            return true
+        }
+    }) : []
 
     const dropDownStyle = {
         option: (styles) => {
@@ -41,12 +62,20 @@ const Inventory = () => {
                 ...styles,
                 color: 'black'
             };
+        },
+        menu: (styles) => {
+            return {
+                ...styles,
+                minWidth: "max-content"
+            };
         }
     }
+
 
     useEffect(() => {
         if (currentUserInfo !== null) {
             getBranchList(currentUserInfo, setBranchList)
+            getProductList(currentUserInfo, setProductList)
         }
     }, [currentUserInfo])
 
@@ -57,11 +86,68 @@ const Inventory = () => {
         }
     }, [branchList])
 
-    useEffect(() => {
-        if ((branchFilter !== null) && (currentUserInfo !== null)) {
-            getProductList(currentUserInfo, setProductList, false, branchFilter.value)
+
+    const addProduct = () => {
+        if (productName === "") {
+            Swal.fire('Oops!!', 'Enter a valid Product Name', 'warning');
+            return
         }
-    }, [branchFilter, currentUserInfo])
+        if (serialNumber.trim() === "") {
+            Swal.fire('Oops!!', 'Enter a valid Serial Number', 'warning');
+            return
+        }
+        if (manufacturer === "") {
+            Swal.fire('Oops!!', 'Enter a valid Manufacturer', 'warning');
+            return
+        }
+        if (mrp <= 0) {
+            Swal.fire('Oops!!', 'MRP has to be a positive number', 'warning');
+            return
+        }
+        if (selectedBranch === null) {
+            Swal.fire('Oops!!', 'Select a Branch for the product', 'warning');
+            return
+        }
+
+        let data = {
+            product_name: productName,
+            serial_number: serialNumber,
+            manufacturer: manufacturer,
+            mrp: mrp,
+            branch_id: selectedBranch.value,
+
+            current_user_uid: currentUserInfo.uid,
+            current_user_name: currentUserInfo.displayName
+        }
+
+        setIsAddProductApiLoading(true)
+        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/add-product`, data, { headers: { 'Content-Type': 'application/json' } })
+            .then((res) => {
+                setIsAddProductApiLoading(false)
+                if (res.data.operation === "success") {
+                    getProductList(currentUserInfo, setProductList)
+                    handleAddProductModalClose()
+                    Swal.fire('Success!', res.data.message, 'success');
+                }
+                else {
+                    Swal.fire('Oops!', res.data.message, 'error');
+                }
+            })
+            .catch((err) => {
+                console.log(err)
+                Swal.fire('Error!!', err.message, 'error');
+            })
+    }
+
+    const handleAddProductModalClose = () => {
+        setAddProductModalShow(false)
+
+        setProductName("")
+        setSerialNumber("")
+        setManufacturer("")
+        setMrp(0)
+        setSelectedBranch(null)
+    }
 
     const importProducts = () => {
         if (startingRow < 1) {
@@ -92,9 +178,9 @@ const Inventory = () => {
         axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/import-products`, data, { headers: { 'Content-Type': 'multipart/form-data' } })
             .then((res) => {
                 setIsImportApiLoading(false)
-                handleImportProductModalClose()
                 if (res.data.operation === "success") {
-                    getProductList(currentUserInfo, setProductList, false, branchFilter.value)
+                    getProductList(currentUserInfo, setProductList)
+                    handleImportProductModalClose()
                     if (res.data.info.length === 0) {
                         Swal.fire('Success!', res.data.message, 'success');
                     }
@@ -110,7 +196,6 @@ const Inventory = () => {
                 console.log(err)
                 Swal.fire('Error!!', err.message, 'error');
             })
-
     }
 
     const handleImportProductModalClose = () => {
@@ -134,9 +219,9 @@ const Inventory = () => {
         axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/transfer-product`, data, { headers: { 'Content-Type': 'application/json' } })
             .then((res) => {
                 setIsTransferApiLoading(false)
-                handleTransferProductModalClose()
                 if (res.data.operation === "success") {
-                    getProductList(currentUserInfo, setProductList, false, branchFilter.value)
+                    getProductList(currentUserInfo, setProductList)
+                    handleTransferProductModalClose()
                     Swal.fire('Success!', res.data.message, 'success');
                 }
                 else {
@@ -147,7 +232,6 @@ const Inventory = () => {
                 console.log(err)
                 Swal.fire('Error!!', err.message, 'error');
             })
-
     }
 
     const handleTransferProductModalClose = () => {
@@ -156,11 +240,11 @@ const Inventory = () => {
         setSelectedProductId(null)
         setSelectedProductName(null)
         setSelectedProductSerialNumber(null)
-        setSelectedProductBranch(null)
+        setSelectedProductCurrentBranch(null)
         setSelectedTransferToBranch(null)
     }
 
-    let tp = Math.ceil(productList.length / 10)
+    let tp = Math.ceil(filteredProductList.length / 10)
     let c = currentPage + 1
     let s = (c - 2) - (c + 2 > tp ? (c + 2) - tp : 0)
     s = (s < 1 ? 1 : s)
@@ -176,25 +260,29 @@ const Inventory = () => {
 
                 <AuthWrapper>
                     <>
-                        <div className="d-flex align-items-center px-3 py-2">
-                            <label className="form-label m-1 me-3 fs-5">Branch</label>
-                            <Select
-                                options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
-                                value={branchFilter}
-                                onChange={(val) => { setBranchFilter(val); setCurrentPage(0); }}
-                                styles={dropDownStyle}
-                                placeholder="Select a Branch..."
-                            />
+                        <div className="d-flex align-items-end px-3 py-2">
+                            <label className="form-label m-0 me-2 fs-5">Filters: </label>
+                            <div className="form-group">
+                                <label className="form-label m-0">Branch</label>
+                                <Select
+                                    options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
+                                    value={branchFilter}
+                                    onChange={(val) => { setBranchFilter(val); setCurrentPage(0); }}
+                                    styles={dropDownStyle}
+                                    placeholder="Select a Branch..."
+                                />
+                            </div>
                             <div className="d-flex mx-2">
                                 <button className="btn btn-secondary rounded-pill me-1" onClick={() => { setSearchBarState(!searchBarState); setSearchValue("") }}>
                                     <svg width="16" height="16" fill="currentColor" className="bi bi-search" viewBox="0 0 16 16">
                                         <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
                                     </svg>
                                 </button>
-                                <input type="text" className="form-control" style={searchBarState ? { transition: "all 1s" } : { transition: "all 1s", width: "0", padding: "0", opacity: "0", visibility: "hidden" }} placeholder="Search..." onChange={(e) => { setSearchValue(e.target.value) }} />
+                                <input type="text" className="form-control" style={searchBarState ? { transition: "all 1s" } : { transition: "all 1s", width: "0", padding: "0", opacity: "0", visibility: "hidden" }} placeholder="Search..." onChange={(e) => { setSearchValue(e.target.value); setCurrentPage(0); }} />
                             </div>
 
-                            <button className="btn btn-info ms-auto me-2" onClick={() => { setImportProductModalShow(true) }}>Import</button>
+                            <button className="btn btn-success ms-auto me-2" onClick={() => { setAddProductModalShow(true) }}>+ Add</button>
+                            <button className="btn btn-info mx-2" onClick={() => { setImportProductModalShow(true) }}>Import</button>
                             <button className="btn btn-info mx-2" onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); console.log("exporting products"); }}>Export</button>
                         </div>
 
@@ -213,18 +301,8 @@ const Inventory = () => {
                             </thead>
                             <tbody>
                                 {
-                                    productList.length === 0 ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No products added</td></tr> :
-                                        productList.filter(x => {
-                                            if (searchBarState && searchValue !== "") {
-                                                if (((new RegExp(searchValue, "gi")).test(x.manufacturer_name)) || ((new RegExp(searchValue, "gi")).test(x.product_name)) || ((new RegExp(searchValue, "gi")).test(x.serial_number))) {
-                                                    return true
-                                                }
-                                                return false
-                                            }
-                                            else {
-                                                return true
-                                            }
-                                        }).slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
+                                    filteredProductList.length === 0 ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No products added</td></tr> :
+                                        filteredProductList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
                                             return (
                                                 <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>
                                                     <td>{(currentPage * 10) + i + 1}</td>
@@ -253,7 +331,7 @@ const Inventory = () => {
                                                                     !x.instock ? <Dropdown.Item className="text-secondary" >No Options</Dropdown.Item> :
                                                                         <>
                                                                             <Dropdown.Item onClick={() => { Swal.fire('Oops!!', 'This feature id not ready yet', 'warning'); }} >Edit </Dropdown.Item>
-                                                                            <Dropdown.Item onClick={() => { setTransferProductModalShow(true); setSelectedProductId(x.id); setSelectedProductName(x.product_name); setSelectedProductSerialNumber(x.serial_number); setSelectedProductBranch(x.branch_id); }} >Transfer</Dropdown.Item>
+                                                                            <Dropdown.Item onClick={() => { setTransferProductModalShow(true); setSelectedProductId(x.id); setSelectedProductName(x.product_name); setSelectedProductSerialNumber(x.serial_number); setSelectedProductCurrentBranch(x.branch_id); }} >Transfer</Dropdown.Item>
                                                                             <Dropdown.Item
                                                                                 onClick={() => {
                                                                                     Swal.fire({
@@ -274,7 +352,7 @@ const Inventory = () => {
                                                                                             axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/return-product`, data, { headers: { 'Content-Type': 'application/json' } })
                                                                                                 .then((res) => {
                                                                                                     if (res.data.operation === "success") {
-                                                                                                        getProductList(currentUserInfo, setProductList, false, branchFilter.value)
+                                                                                                        getProductList(currentUserInfo, setProductList)
                                                                                                         Swal.fire('Success!', res.data.message, 'success');
                                                                                                     }
                                                                                                     else {
@@ -301,7 +379,7 @@ const Inventory = () => {
                                 }
                             </tbody>
                             {
-                                productList.length !== 0 &&
+                                filteredProductList.length !== 0 &&
                                 <tfoot>
                                     <tr>
                                         <td colSpan={8}>
@@ -339,6 +417,64 @@ const Inventory = () => {
                 </AuthWrapper>
             </div>
 
+            <Modal show={addProductModalShow} onHide={() => { handleAddProductModalClose() }} size="lg" centered >
+                <Modal.Header closeButton>
+                    <Modal.Title>Add a Product</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="container">
+                        <div className="row mb-1">
+                            <div className="col-md-6">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required" htmlFor="productName">Product Name</label>
+                                    <input type="text" id="productName" className="form-control" value={productName} onChange={(e) => { setProductName(e.target.value) }} placeholder="Enter Product Name" />
+                                </div>
+                            </div>
+                            <div className="col-md-6">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required" htmlFor="serialNumber">Serial Number</label>
+                                    <input type="text" id="serialNumber" className="form-control" value={serialNumber} onChange={(e) => { setSerialNumber(e.target.value) }} placeholder="Enter Serial Number" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="row mb-1">
+                            <div className="col-md-6">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required" htmlFor="manufacturer">Manufacturer</label>
+                                    <input type="text" id="manufacturer" className="form-control" value={manufacturer} onChange={(e) => { setManufacturer(e.target.value) }} placeholder="Enter Manufacturer" />
+                                </div>
+                            </div>
+                            <div className="col-md-6">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required" htmlFor="mrp">MRP</label>
+                                    <input type="number" id="mrp" className="form-control" min={0} value={mrp.toString()} onChange={(e) => { setMrp(e.target.value === "" ? 0 : parseFloat(e.target.value)) }} />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="row mb-1">
+                            <div className="col-md-6">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required">Branch</label>
+                                    <Select
+                                        options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
+                                        value={selectedBranch}
+                                        onChange={(val) => { setSelectedBranch(val); }}
+                                        styles={dropDownStyle}
+                                        placeholder="Select a Branch..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="success" disabled={isAddProductApiLoading} onClick={() => { !isAddProductApiLoading && addProduct() }}> {isAddProductApiLoading ? <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> : 'Submit'} </Button>
+                    <Button onClick={() => { handleAddProductModalClose() }}>Close</Button>
+                </Modal.Footer>
+            </Modal>
+
             <Modal show={importProductModalShow} onHide={() => { handleImportProductModalClose() }} size="lg" centered >
                 <Modal.Header closeButton>
                     <Modal.Title>Import Products</Modal.Title>
@@ -348,13 +484,13 @@ const Inventory = () => {
                         <div className="row mb-3">
                             <div className="col-md-6">
                                 <div className="form-group">
-                                    <label className="form-label my-1" htmlFor="startingRow">Starting Row</label>
+                                    <label className="form-label my-1 required" htmlFor="startingRow">Starting Row</label>
                                     <input type="number" id="startingRow" className="form-control" min={1} value={startingRow.toString()} onChange={(e) => { setStartingRow(e.target.value === "" ? 0 : parseInt(e.target.value)) }} />
                                 </div>
                             </div>
                             <div className="col-md-6">
                                 <div className="form-group">
-                                    <label className="form-label my-1" htmlFor="endingRow">Ending Row</label>
+                                    <label className="form-label my-1 required" htmlFor="endingRow">Ending Row</label>
                                     <input type="number" id="endingRow" className="form-control" min={1} value={endingRow.toString()} onChange={(e) => { setEndingRow(e.target.value === "" ? 0 : parseInt(e.target.value)) }} />
                                 </div>
                             </div>
@@ -412,9 +548,9 @@ const Inventory = () => {
                             </div>
                             <div className="col-md-6">
                                 <div className="form-group">
-                                    <label className="form-label my-1" >Transfer To Branch</label>
+                                    <label className="form-label my-1 required" >Transfer To Branch</label>
                                     <Select
-                                        options={branchList.filter(x => x.id !== selectedProductBranch).map(x => ({ label: x.branch_name, value: x.id }))}
+                                        options={branchList.filter(x => x.id !== selectedProductCurrentBranch).map(x => ({ label: x.branch_name, value: x.id }))}
                                         value={selectedTransferToBranch}
                                         onChange={(val) => { setSelectedTransferToBranch(val); }}
                                         styles={dropDownStyle}

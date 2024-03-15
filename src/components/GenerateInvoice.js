@@ -5,15 +5,16 @@ import Swal from "sweetalert2"
 import axios from "axios";
 
 import { useFirebase } from "../contexts/firebase-context";
-import { getProductList, getBranchList } from "../utils/getApis"
+import { getProductList, getBranchList, getSalespersonList } from "../utils/getApis"
 import { printInvoice } from "../utils/printInvoice"
 import AuthWrapper from "./AuthWrapper";
 
 const GenerateInvoice = () => {
     const { currentUserInfo } = useFirebase()
 
-    const [productList, setProductList] = useState([])
     const [branchList, setBranchList] = useState([])
+    const [salespersonList, setSalespersonList] = useState([])
+    const [productList, setProductList] = useState([])
 
     const [patientName, setPatientName] = useState("")
     const [patientAddress, setPatientAddress] = useState("")
@@ -22,6 +23,7 @@ const GenerateInvoice = () => {
     const [invoiceNumber, setInvoiceNumber] = useState("")
     const [date, setDate] = useState(moment().format("YYYY-MM-DD"))
     const [selectedModeOfPayment, setSelectedModeOfPayment] = useState({ label: "Cash", value: "Cash" })
+    const [selectedSalesperson, setSelectedSalesperson] = useState(null)
     const [discountAmount, setDiscountAmount] = useState(0)
 
     const [lineItems, setLineItems] = useState([{ product: null, product_data: null, product_type: null, product_rate: 0 }])
@@ -30,11 +32,20 @@ const GenerateInvoice = () => {
     const [isSaveApiLoading, setIsSaveApiLoading] = useState(false)
     const [isInvoiceSaved, setIsInvoiceSaved] = useState(false)
 
+
+    const filteredProductList = selectedBranch?productList.filter(x => x.instock).filter(x => x.branch_id === selectedBranch.value):[]
+
     const dropDownStyle = {
         option: (styles) => {
             return {
                 ...styles,
                 color: 'black'
+            };
+        },
+        menu: (styles) => {
+            return {
+                ...styles,
+                minWidth: "max-content"
             };
         }
     }
@@ -58,6 +69,8 @@ const GenerateInvoice = () => {
     useEffect(() => {
         if (currentUserInfo !== null) {
             getBranchList(currentUserInfo, setBranchList)
+            getSalespersonList(currentUserInfo, setSalespersonList)
+            getProductList(currentUserInfo, setProductList)
         }
     }, [currentUserInfo])
 
@@ -84,6 +97,10 @@ const GenerateInvoice = () => {
         }
         if (date === "") {
             Swal.fire('Oops!!', 'Date cannot be empty', 'warning');
+            return false
+        }
+        if (selectedSalesperson === null) {
+            Swal.fire('Oops!!', 'Select a Salesperson', 'warning');
             return false
         }
         if (currentUserInfo === null) {
@@ -122,6 +139,7 @@ const GenerateInvoice = () => {
             invoice_number: invoiceNumber,
             date: date,
             mode_of_payment: selectedModeOfPayment.value,
+            salesperson_id: selectedSalesperson.value,
             discount_amount: discountAmount,
             line_items: lineItems.map(x => {
                 return {
@@ -196,7 +214,7 @@ const GenerateInvoice = () => {
                                     <Select
                                         options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
                                         value={selectedBranch}
-                                        onChange={(val) => { setSelectedBranch(val); getInvoiceNumber(val.value); getProductList(currentUserInfo, setProductList, true, val.value); setLineItems([{ product: null, product_data: null, product_type: null, product_rate: 0 }]) }}
+                                        onChange={(val) => { setSelectedBranch(val); getInvoiceNumber(val.value); setLineItems([{ product: null, product_data: null, product_type: null, product_rate: 0 }]) }}
                                         styles={dropDownStyle}
                                         placeholder="Select a Branch..."
                                     />
@@ -210,13 +228,13 @@ const GenerateInvoice = () => {
                             </div>
                         </div>
                         <div className="row">
-                            <div className="col-md-6">
+                            <div className="col-md-4">
                                 <div className="form-group">
                                     <label className="form-label my-1 required" htmlFor="date">Date</label>
                                     <input type="date" id="date" className="form-control" value={date} onChange={(e) => { setDate(e.target.value) }} />
                                 </div>
                             </div>
-                            <div className="col-md-6">
+                            <div className="col-md-4">
                                 <div className="form-group">
                                     <label className="form-label my-1 required">Mode of Payment</label>
                                     <Select
@@ -225,6 +243,18 @@ const GenerateInvoice = () => {
                                         onChange={(val) => { setSelectedModeOfPayment(val) }}
                                         styles={dropDownStyle}
                                         placeholder="Select Mode of Payment..."
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-4">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required">Salesperson</label>
+                                    <Select
+                                        options={salespersonList.map(x => ({ label: x.salesperson_name, value: x.id }))}
+                                        value={selectedSalesperson}
+                                        onChange={(val) => { setSelectedSalesperson(val) }}
+                                        styles={dropDownStyle}
+                                        placeholder="Select Salesperson..."
                                     />
                                 </div>
                             </div>
@@ -251,7 +281,7 @@ const GenerateInvoice = () => {
                                         <div key={i} className="row my-2">
                                             <div className="col-md-4">
                                                 <Select
-                                                    options={productList.map(x => ({ label: x.product_name + " - " + x.serial_number, value: x.id }))}
+                                                    options={filteredProductList.map(x => ({ label: x.product_name + " - " + x.serial_number, value: x.id }))}
                                                     value={x.product}
                                                     onChange={(val) => {
                                                         if (lineItems.find(a => a.product?.value === val?.value)) {
@@ -259,7 +289,7 @@ const GenerateInvoice = () => {
                                                             return
                                                         }
 
-                                                        let pd = productList.find(a => a.id === val.value)
+                                                        let pd = filteredProductList.find(a => a.id === val.value)
                                                         let t = lineItems.map(a => { return { ...a } })
                                                         t[i].product = val
                                                         t[i].product_data = pd
@@ -461,12 +491,12 @@ const GenerateInvoice = () => {
                                                 confirmButtonText: "Print",
                                             }).then((result) => {
                                                 if (result.isConfirmed) {
-                                                    printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, invoiceNumber, date, selectedModeOfPayment.value, discountAmount, t, accessoryItems)
+                                                    printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems)
                                                 }
                                             });
                                         }
                                         else {
-                                            printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, invoiceNumber, date, selectedModeOfPayment.value, discountAmount, t, accessoryItems)
+                                            printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems)
                                         }
                                     }
                                 }}
