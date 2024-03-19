@@ -4,6 +4,7 @@ import Select from "react-select"
 import moment from "moment"
 import Swal from "sweetalert2"
 import axios from "axios";
+import { ResponsivePie } from '@nivo/pie'
 
 import { useFirebase } from "../contexts/firebase-context";
 import { getInvoiceList, getBranchList, getSalespersonList } from "../utils/getApis"
@@ -23,8 +24,10 @@ const SalesReport = () => {
     const [branchFilter, setBranchFilter] = useState(null)
     const [salespersonFilter, setSalespersonFilter] = useState({ label: "All", value: "All" })
 
-    const [editInvoiceModalShow, setEditInvoiceModalShow] = useState(false)
+    const [reportMonthYear, setReportMonthYear] = useState("")
 
+
+    const [editInvoiceModalShow, setEditInvoiceModalShow] = useState(false)
     const [invoiceData, setInvoiceData] = useState(null)
     const [patientName, setPatientName] = useState("")
     const [patientAddress, setPatientAddress] = useState("")
@@ -34,7 +37,6 @@ const SalesReport = () => {
     const [selectedSalesperson, setSelectedSalesperson] = useState(null)
     const [discountAmount, setDiscountAmount] = useState(0)
     const [accessoryItems, setAccessoryItems] = useState([{ accessory: "", quantity: 0, accessory_rate: 0 }])
-
     const [isSaveApiLoading, setIsSaveApiLoading] = useState(false)
 
 
@@ -94,10 +96,10 @@ const SalesReport = () => {
         setPatientName(invoice_data.patient_name)
         setPatientAddress(invoice_data.patient_address)
         setContactNumber(invoice_data.contact_number)
-        setDate(moment(invoice_data.date).format("YYYY-MM-DD"))
+        setDate(moment(invoice_data.date._seconds * 1000).format("YYYY-MM-DD"))
         setSelectedModeOfPayment({ label: invoice_data.mode_of_payment, value: invoice_data.mode_of_payment })
-        if(invoice_data.salesperson_id){
-            let t = salespersonList.find(x=>x.id === invoice_data.salesperson_id)
+        if (invoice_data.salesperson_id) {
+            let t = salespersonList.find(x => x.id === invoice_data.salesperson_id)
             setSelectedSalesperson({ label: t.salesperson_name, value: t.id })
         }
         setDiscountAmount(invoice_data.discount_amount)
@@ -310,8 +312,204 @@ const SalesReport = () => {
                             }
                         </table>
 
-                        {/* <div className="container bg-warning-subtle my-5 rounded text-black">
-                            hello world
+                        {/* <div className="container my-5 p-3 rounded text-white" style={{ background: "linear-gradient(90deg, #4b6cb7 0%, #182848 100%)" }}>
+                            <div className="row g-0">
+                                <div className="col-md-2 mx-2 text-end">
+                                    <label className="form-label my-1 text-white" style={{ fontSize: "larger" }} htmlFor="reportMonthYear">Select Month</label>
+                                </div>
+                                <div className="col-md-4 mx-2">
+                                    <input type="month" id="reportMonthYear" className="form-control" value={reportMonthYear} onChange={(e) => { setReportMonthYear(e.target.value) }} />
+                                </div>
+                            </div>
+
+                            <div style={reportMonthYear? {transition: "all 1s ease-in-out", overflow: "hidden" }: { transition: "all 1s ease-in-out", overflow: "hidden", height: "0px", visibility: "hidden" }}>
+                                <hr />
+                                <div className="row">
+                                    <div className="col-md-6">
+                                        testing
+                                        <button className="btn btn-danger " onClick={()=>{
+                                            let data = {
+                                                salesperson_name: "Chandana Ganguly",
+                                                
+                                                current_user_uid: currentUserInfo.uid,
+                                                current_user_name: currentUserInfo.displayName
+                                            }
+                                    
+                                            axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/save-salesperson`, data, { headers: { 'Content-Type': 'application/json' } })
+                                                .then((res) => {
+                                                    console.log(res.data)
+                                                })
+                                                .catch((err) => {
+                                                    console.log(err)
+                                                })
+                                        }}>+ Add Salesperson
+                                        </button> 
+                                    </div>
+                                    <div className="col-md-6">
+                                        <div style={{ height: "350px" }}>
+                                            <ResponsivePie
+                                                data={[
+                                                    {
+                                                        "id": "stylus",
+                                                        "label": "stylus",
+                                                        "value": 0,
+                                                        "color": "hsl(183, 70%, 50%)"
+                                                    },
+                                                    {
+                                                        "id": "erlang",
+                                                        "label": "erlang",
+                                                        "value": 143,
+                                                        "color": "hsl(341, 70%, 50%)"
+                                                    },
+                                                    {
+                                                        "id": "elixir",
+                                                        "label": "elixir",
+                                                        "value": 288,
+                                                        "color": "hsl(43, 70%, 50%)"
+                                                    },
+                                                    {
+                                                        "id": "lisp",
+                                                        "label": "lisp",
+                                                        "value": 92,
+                                                        "color": "hsl(56, 70%, 50%)"
+                                                    },
+                                                    {
+                                                        "id": "css",
+                                                        "label": "css",
+                                                        "value": 560,
+                                                        "color": "hsl(318, 70%, 50%)"
+                                                    }
+                                                ]}
+                                                margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
+                                                innerRadius={0.5}
+                                                padAngle={0.7}
+                                                cornerRadius={3}
+                                                activeOuterRadiusOffset={8}
+                                                borderWidth={1}
+                                                borderColor={{
+                                                    from: 'color',
+                                                    modifiers: [
+                                                        [
+                                                            'darker',
+                                                            0.2
+                                                        ]
+                                                    ]
+                                                }}
+                                                arcLinkLabelsSkipAngle={10}
+                                                arcLinkLabelsTextColor="#333333"
+                                                arcLinkLabelsThickness={2}
+                                                arcLinkLabelsColor={{ from: 'color' }}
+                                                arcLabelsSkipAngle={10}
+                                                arcLabelsTextColor={{
+                                                    from: 'color',
+                                                    modifiers: [
+                                                        [
+                                                            'darker',
+                                                            2
+                                                        ]
+                                                    ]
+                                                }}
+                                                defs={[
+                                                    {
+                                                        id: 'dots',
+                                                        type: 'patternDots',
+                                                        background: 'inherit',
+                                                        color: 'rgba(255, 255, 255, 0.3)',
+                                                        size: 4,
+                                                        padding: 1,
+                                                        stagger: true
+                                                    },
+                                                    {
+                                                        id: 'lines',
+                                                        type: 'patternLines',
+                                                        background: 'inherit',
+                                                        color: 'rgba(255, 255, 255, 0.3)',
+                                                        rotation: -45,
+                                                        lineWidth: 6,
+                                                        spacing: 10
+                                                    }
+                                                ]}
+                                                fill={[
+                                                    {
+                                                        match: {
+                                                            id: 'ruby'
+                                                        },
+                                                        id: 'dots'
+                                                    },
+                                                    {
+                                                        match: {
+                                                            id: 'c'
+                                                        },
+                                                        id: 'dots'
+                                                    },
+                                                    {
+                                                        match: {
+                                                            id: 'go'
+                                                        },
+                                                        id: 'dots'
+                                                    },
+                                                    {
+                                                        match: {
+                                                            id: 'python'
+                                                        },
+                                                        id: 'dots'
+                                                    },
+                                                    {
+                                                        match: {
+                                                            id: 'scala'
+                                                        },
+                                                        id: 'lines'
+                                                    },
+                                                    {
+                                                        match: {
+                                                            id: 'lisp'
+                                                        },
+                                                        id: 'lines'
+                                                    },
+                                                    {
+                                                        match: {
+                                                            id: 'elixir'
+                                                        },
+                                                        id: 'lines'
+                                                    },
+                                                    {
+                                                        match: {
+                                                            id: 'javascript'
+                                                        },
+                                                        id: 'lines'
+                                                    }
+                                                ]}
+                                                legends={[
+                                                    {
+                                                        anchor: 'bottom',
+                                                        direction: 'row',
+                                                        justify: false,
+                                                        translateX: 0,
+                                                        translateY: 56,
+                                                        itemsSpacing: 0,
+                                                        itemWidth: 100,
+                                                        itemHeight: 18,
+                                                        itemTextColor: '#999',
+                                                        itemDirection: 'left-to-right',
+                                                        itemOpacity: 1,
+                                                        symbolSize: 18,
+                                                        symbolShape: 'circle',
+                                                        effects: [
+                                                            {
+                                                                on: 'hover',
+                                                                style: {
+                                                                    itemTextColor: '#000'
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                ]}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div> */}
                     </>
                 </AuthWrapper>
