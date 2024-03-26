@@ -1,5 +1,5 @@
 Todo:
-1. invoice product validation
+1. 
 2. 
 3. frontend and backend deployment fixes and cleanup - adding multiple domains for cors and google oauth
 4. product individual edit feature, export feature in inventory
