@@ -14,3 +14,14 @@
 .dropdown-toggle::after {
     display: none !important;
 }
+
+.reportPanelWrapper{
+    overflow: hidden;
+}
+.reportPanel{
+    transition: all 1s ease-in-out;
+    margin-top: -100%;
+}
+.reportPanel.panelActive{
+    margin-top: 0;
+}

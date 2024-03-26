@@ -12,7 +12,9 @@ import { FirebaseProvider } from './contexts/firebase-context';
 
 import Navbar from "./components/Navbar.js"
 
+import NotFound from "./components/NotFound.js"
 import Home from "./components/Home.js"
+import AdminPanel from "./components/AdminPanel.js"
 import Audiometry from "./components/Audiometry.js"
 import Inventory from "./components/Inventory.js"
 import GenerateInvoice from "./components/GenerateInvoice.js"
@@ -26,7 +28,9 @@ function App() {
                     <Navbar/>
 
                     <Routes>
+                        <Route path="*" element={<NotFound />} />
                         <Route path="/" element={<Home />} />
+                        <Route path="/admin-panel" element={<AdminPanel />} />
                         <Route path="/audiometry" element={<Audiometry />} />
                         <Route path="/inventory" element={<Inventory />} />
                         <Route path="/generate-invoice" element={<GenerateInvoice />} />

@@ -52,6 +52,40 @@ const SalesReport = () => {
         }
     }) : []
 
+
+    const reportData = []
+    if (reportMonthYear) {
+        let sd = moment(reportMonthYear)
+        let ed = moment(reportMonthYear).add(1, "month")
+
+        for (let i = 0; i < invoiceList.length; i++) {
+            let invData = invoiceList[i]
+            let d = moment.unix(invData.date._seconds)
+
+            let gt = (invData.line_items.reduce((p, o) => p + o.product_rate, 0) - invData.discount_amount) + invData.accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)
+
+            if (d.isBetween(sd, ed)) {
+
+                let t = reportData.find(x => x.salesperson_id === invData?.salesperson_id)
+
+                if (t) {
+                    t.no_of_invoices += 1
+                    t.no_of_products_sold += invData.line_items.length
+                    t.net_total += gt
+                }
+                else {
+                    reportData.push({
+                        salesperson_id: invData?.salesperson_id,
+                        salesperson_name: invData?.salesperson_id && salespersonList.find(x => x.id === invData.salesperson_id).salesperson_name,
+                        no_of_invoices: 1,
+                        no_of_products_sold: invData.line_items.length,
+                        net_total: gt,
+                    })
+                }
+            }
+        }
+    }
+
     const dropDownStyle = {
         option: (styles) => {
             return {
@@ -96,7 +130,7 @@ const SalesReport = () => {
         setPatientName(invoice_data.patient_name)
         setPatientAddress(invoice_data.patient_address)
         setContactNumber(invoice_data.contact_number)
-        setDate(moment(invoice_data.date._seconds * 1000).format("YYYY-MM-DD"))
+        setDate(moment.unix(invoice_data.date._seconds).format("YYYY-MM-DD"))
         setSelectedModeOfPayment({ label: invoice_data.mode_of_payment, value: invoice_data.mode_of_payment })
         if (invoice_data.salesperson_id) {
             let t = salespersonList.find(x => x.id === invoice_data.salesperson_id)
@@ -214,7 +248,7 @@ const SalesReport = () => {
                                 <Select
                                     options={[{ label: "All", value: "All" }, ...salespersonList.map(x => ({ label: x.salesperson_name, value: x.id }))]}
                                     value={salespersonFilter}
-                                    onChange={(val) => { setSalespersonFilter(val) }}
+                                    onChange={(val) => { setSalespersonFilter(val); setCurrentPage(0); }}
                                     styles={dropDownStyle}
                                     placeholder="Select Salesperson..."
                                 />
@@ -240,6 +274,7 @@ const SalesReport = () => {
                                     <th scope="col">Invoice Number</th>
                                     <th scope="col">Invoice Amount</th>
                                     <th scope="col">Mode of Payment</th>
+                                    <th scope="col">Salesperson</th>
                                     <th scope="col">Invoice Date</th>
                                     <th scope="col">Actions</th>
                                 </tr>
@@ -256,7 +291,8 @@ const SalesReport = () => {
                                                     <td>{x.invoice_number}</td>
                                                     <td>{(x.line_items.reduce((p, o) => p + o.product_rate, 0) - x.discount_amount) + x.accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)}</td>
                                                     <td>{x.mode_of_payment}</td>
-                                                    <td>{moment(x.date._seconds * 1000).format("DD-MM-YYYY")}</td>
+                                                    <td>{x?.salesperson_id ? salespersonList.find(y => y.id === x.salesperson_id).salesperson_name : "N/A"}</td>
+                                                    <td>{moment.unix(x.date._seconds).format("DD-MM-YYYY")}</td>
                                                     <td>
                                                         <Dropdown>
                                                             <Dropdown.Toggle variant="primary">
@@ -267,7 +303,7 @@ const SalesReport = () => {
 
                                                             <Dropdown.Menu>
                                                                 <Dropdown.Item onClick={() => { editInvoiceModalInit(x) }} >Edit</Dropdown.Item>
-                                                                <Dropdown.Item onClick={() => { printInvoice(x.patient_name, x.patient_address, x.contact_number, branchList.find(b => b.id === x.branch_id).branch_name, x.invoice_number, moment(x.date._seconds * 1000).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items) }} >Print</Dropdown.Item>
+                                                                <Dropdown.Item onClick={() => { printInvoice(x.patient_name, x.patient_address, x.contact_number, branchList.find(b => b.id === x.branch_id).branch_name, x.invoice_number, moment.unix(x.date._seconds).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items) }} >Print</Dropdown.Item>
                                                             </Dropdown.Menu>
                                                         </Dropdown>
                                                     </td>
@@ -312,205 +348,159 @@ const SalesReport = () => {
                             }
                         </table>
 
-                        {/* <div className="container my-5 p-3 rounded text-white" style={{ background: "linear-gradient(90deg, #4b6cb7 0%, #182848 100%)" }}>
+                        <div className="container my-5 p-3 rounded text-white" style={{ background: "linear-gradient(90deg, #4b6cb7 0%, #182848 100%)" }}>
                             <div className="row g-0">
                                 <div className="col-md-2 mx-2 text-end">
                                     <label className="form-label my-1 text-white" style={{ fontSize: "larger" }} htmlFor="reportMonthYear">Select Month</label>
                                 </div>
                                 <div className="col-md-4 mx-2">
-                                    <input type="month" id="reportMonthYear" className="form-control" value={reportMonthYear} onChange={(e) => { setReportMonthYear(e.target.value) }} />
+                                    <input type="month" id="reportMonthYear" className="form-control" value={reportMonthYear} onChange={(e) => { setReportMonthYear(e.target.value); setTimeout(() => { window.scrollBy({ top: window.innerHeight, left: 0, behavior: "smooth" }) }, 1500) }} />
+                                </div>
+                                <div className="col-md-4 mx-2">
+                                    <button className="btn btn-danger rounded" onClick={() => { setReportMonthYear("") }}>&#x2716;</button>
                                 </div>
                             </div>
 
-                            <div style={reportMonthYear? {transition: "all 1s ease-in-out", overflow: "hidden" }: { transition: "all 1s ease-in-out", overflow: "hidden", height: "0px", visibility: "hidden" }}>
-                                <hr />
-                                <div className="row">
-                                    <div className="col-md-6">
-                                        testing
-                                        <button className="btn btn-danger " onClick={()=>{
-                                            let data = {
-                                                salesperson_name: "Chandana Ganguly",
-                                                
-                                                current_user_uid: currentUserInfo.uid,
-                                                current_user_name: currentUserInfo.displayName
+                            <div className="reportPanelWrapper">
+                                <div className={`reportPanel ${reportMonthYear && "panelActive"}`}>
+                                    <hr />
+                                    <div className="row">
+                                        <div className="col-md-6">
+                                            <div className="row mb-4 text-dark">
+                                                <div className="col-md-4">Salesperson</div>
+                                                <div className="col-md-3 text-end">No. of Invoices</div>
+                                                <div className="col-md-3 text-end">No. of Products</div>
+                                                <div className="col-md-2 text-end">Net Total</div>
+                                            </div>
+                                            {
+                                                reportMonthYear && salespersonList.map((s, i) => {
+                                                    let d = reportData.find(x => x.salesperson_id === s.id)
+
+                                                    return (
+                                                        <div key={i} className="row my-2 fs-5">
+                                                            <div className="col-md-5">{s.salesperson_name}</div>
+                                                            <div className="col-md-2 text-end">{d?.no_of_invoices || 0}</div>
+                                                            <div className="col-md-2 text-end">{d?.no_of_products_sold || 0}</div>
+                                                            <div className="col-md-3 text-end">{d?.net_total || 0}</div>
+                                                        </div>
+                                                    )
+                                                })
                                             }
-                                    
-                                            axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/save-salesperson`, data, { headers: { 'Content-Type': 'application/json' } })
-                                                .then((res) => {
-                                                    console.log(res.data)
-                                                })
-                                                .catch((err) => {
-                                                    console.log(err)
-                                                })
-                                        }}>+ Add Salesperson
-                                        </button> 
-                                    </div>
-                                    <div className="col-md-6">
-                                        <div style={{ height: "350px" }}>
-                                            <ResponsivePie
-                                                data={[
-                                                    {
-                                                        "id": "stylus",
-                                                        "label": "stylus",
-                                                        "value": 0,
-                                                        "color": "hsl(183, 70%, 50%)"
-                                                    },
-                                                    {
-                                                        "id": "erlang",
-                                                        "label": "erlang",
-                                                        "value": 143,
-                                                        "color": "hsl(341, 70%, 50%)"
-                                                    },
-                                                    {
-                                                        "id": "elixir",
-                                                        "label": "elixir",
-                                                        "value": 288,
-                                                        "color": "hsl(43, 70%, 50%)"
-                                                    },
-                                                    {
-                                                        "id": "lisp",
-                                                        "label": "lisp",
-                                                        "value": 92,
-                                                        "color": "hsl(56, 70%, 50%)"
-                                                    },
-                                                    {
-                                                        "id": "css",
-                                                        "label": "css",
-                                                        "value": 560,
-                                                        "color": "hsl(318, 70%, 50%)"
-                                                    }
-                                                ]}
-                                                margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
-                                                innerRadius={0.5}
-                                                padAngle={0.7}
-                                                cornerRadius={3}
-                                                activeOuterRadiusOffset={8}
-                                                borderWidth={1}
-                                                borderColor={{
-                                                    from: 'color',
-                                                    modifiers: [
-                                                        [
-                                                            'darker',
-                                                            0.2
+                                            <div className="row my-2 fs-5">
+                                                <div className="col-md-5">N/A</div>
+                                                <div className="col-md-2 text-end">{reportData.find(x => x.salesperson_id === undefined)?.no_of_invoices || 0}</div>
+                                                <div className="col-md-2 text-end">{reportData.find(x => x.salesperson_id === undefined)?.no_of_products_sold || 0}</div>
+                                                <div className="col-md-3 text-end">{reportData.find(x => x.salesperson_id === undefined)?.net_total || 0}</div>
+                                            </div>
+                                        </div>
+                                        <div className="col-md-6">
+                                            <div style={{ width: "500px", height: "330px" }}>
+                                                <ResponsivePie
+                                                    data={[
+                                                        ...salespersonList.map(x => ({ id: x.salesperson_name, label: x.salesperson_name, value: reportData.find(y => y.salesperson_id === x.id)?.no_of_invoices || 0 })),
+                                                        { id: "N/A", label: "N/A", value: reportData.find(y => y.salesperson_id === undefined)?.no_of_invoices || 0 }
+                                                    ]}
+                                                    colors={{ scheme: "category10" }}
+                                                    margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
+                                                    innerRadius={0.5}
+                                                    padAngle={0.7}
+                                                    cornerRadius={3}
+                                                    activeOuterRadiusOffset={8}
+                                                    borderWidth={1}
+                                                    borderColor={{
+                                                        from: 'color',
+                                                        modifiers: [
+                                                            [
+                                                                'darker',
+                                                                0.2
+                                                            ]
                                                         ]
-                                                    ]
-                                                }}
-                                                arcLinkLabelsSkipAngle={10}
-                                                arcLinkLabelsTextColor="#333333"
-                                                arcLinkLabelsThickness={2}
-                                                arcLinkLabelsColor={{ from: 'color' }}
-                                                arcLabelsSkipAngle={10}
-                                                arcLabelsTextColor={{
-                                                    from: 'color',
-                                                    modifiers: [
-                                                        [
-                                                            'darker',
-                                                            2
+                                                    }}
+                                                    arcLinkLabelsSkipAngle={10}
+                                                    arcLinkLabelsTextColor="#999999"
+                                                    arcLinkLabelsThickness={2}
+                                                    arcLinkLabelsColor={{ from: 'color' }}
+                                                    arcLabelsSkipAngle={10}
+                                                    arcLabelsTextColor={{
+                                                        from: 'color',
+                                                        modifiers: [
+                                                            [
+                                                                'darker',
+                                                                2
+                                                            ]
                                                         ]
-                                                    ]
-                                                }}
-                                                defs={[
-                                                    {
-                                                        id: 'dots',
-                                                        type: 'patternDots',
-                                                        background: 'inherit',
-                                                        color: 'rgba(255, 255, 255, 0.3)',
-                                                        size: 4,
-                                                        padding: 1,
-                                                        stagger: true
-                                                    },
-                                                    {
-                                                        id: 'lines',
-                                                        type: 'patternLines',
-                                                        background: 'inherit',
-                                                        color: 'rgba(255, 255, 255, 0.3)',
-                                                        rotation: -45,
-                                                        lineWidth: 6,
-                                                        spacing: 10
-                                                    }
-                                                ]}
-                                                fill={[
-                                                    {
-                                                        match: {
-                                                            id: 'ruby'
+                                                    }}
+                                                    tooltip={e => {
+                                                        let { datum: t } = e;
+                                                        return <div className="container bg-secondary rounded">{t.label}: {t.value}</div>
+                                                    }}
+                                                    defs={[
+                                                        {
+                                                            id: 'dots',
+                                                            type: 'patternDots',
+                                                            background: 'inherit',
+                                                            color: 'rgba(0, 0, 255, 0.3)',
+                                                            size: 4,
+                                                            padding: 1,
+                                                            stagger: true
                                                         },
-                                                        id: 'dots'
-                                                    },
-                                                    {
-                                                        match: {
-                                                            id: 'c'
+                                                        {
+                                                            id: 'lines',
+                                                            type: 'patternLines',
+                                                            background: 'inherit',
+                                                            color: 'rgba(255, 255, 255, 0.3)',
+                                                            rotation: -45,
+                                                            lineWidth: 6,
+                                                            spacing: 10
+                                                        }
+                                                    ]}
+                                                    fill={[
+                                                        {
+                                                            match: {
+                                                                id: 'css'
+                                                            },
+                                                            id: 'dots'
                                                         },
-                                                        id: 'dots'
-                                                    },
-                                                    {
-                                                        match: {
-                                                            id: 'go'
-                                                        },
-                                                        id: 'dots'
-                                                    },
-                                                    {
-                                                        match: {
-                                                            id: 'python'
-                                                        },
-                                                        id: 'dots'
-                                                    },
-                                                    {
-                                                        match: {
-                                                            id: 'scala'
-                                                        },
-                                                        id: 'lines'
-                                                    },
-                                                    {
-                                                        match: {
-                                                            id: 'lisp'
-                                                        },
-                                                        id: 'lines'
-                                                    },
-                                                    {
-                                                        match: {
-                                                            id: 'elixir'
-                                                        },
-                                                        id: 'lines'
-                                                    },
-                                                    {
-                                                        match: {
-                                                            id: 'javascript'
-                                                        },
-                                                        id: 'lines'
-                                                    }
-                                                ]}
-                                                legends={[
-                                                    {
-                                                        anchor: 'bottom',
-                                                        direction: 'row',
-                                                        justify: false,
-                                                        translateX: 0,
-                                                        translateY: 56,
-                                                        itemsSpacing: 0,
-                                                        itemWidth: 100,
-                                                        itemHeight: 18,
-                                                        itemTextColor: '#999',
-                                                        itemDirection: 'left-to-right',
-                                                        itemOpacity: 1,
-                                                        symbolSize: 18,
-                                                        symbolShape: 'circle',
-                                                        effects: [
-                                                            {
-                                                                on: 'hover',
-                                                                style: {
-                                                                    itemTextColor: '#000'
+                                                        {
+                                                            match: {
+                                                                id: 'lisp'
+                                                            },
+                                                            id: 'lines'
+                                                        }
+                                                    ]}
+                                                    legends={[
+                                                        {
+                                                            anchor: 'bottom',
+                                                            direction: 'row',
+                                                            justify: false,
+                                                            translateX: 0,
+                                                            translateY: 50,
+                                                            itemsSpacing: 0,
+                                                            itemWidth: 125,
+                                                            itemHeight: 20,
+                                                            itemTextColor: '#fff',
+                                                            itemDirection: 'left-to-right',
+                                                            itemOpacity: 1,
+                                                            symbolSize: 18,
+                                                            symbolShape: 'circle',
+                                                            effects: [
+                                                                {
+                                                                    on: 'hover',
+                                                                    style: {
+                                                                        itemTextColor: '#999'
+                                                                    }
                                                                 }
-                                                            }
-                                                        ]
-                                                    }
-                                                ]}
-                                            />
+                                                            ]
+                                                        }
+                                                    ]}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                        </div> */}
+                        </div>
                     </>
                 </AuthWrapper>
             </div>

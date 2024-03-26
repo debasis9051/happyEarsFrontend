@@ -19,7 +19,6 @@ export const FirebaseProvider = ({ children }) => {
     const [user, setUser] = useState(null)
     const [authUserList, setAuthUserList] = useState([])
     const [loading, setLoading] = useState(false)
-    // const [authenticated, setAuthenticated] = useState(false)
 
     const getAuthenticatedUserList = async () => {
         axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-authenticated-user-list`, {}, { headers: { 'Content-Type': 'application/json' } })
@@ -62,7 +61,7 @@ export const FirebaseProvider = ({ children }) => {
 
                 return axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/create-user`, { user_uid: user.uid, user_name: user.displayName, user_email: user.email, user_photo: user.photoURL }, { headers: { 'Content-Type': 'application/json' } })
                     .then((res) => {
-                        console.log(res.data);
+                        // console.log(res.data);
                     })
                     .catch((err) => {
                         console.log(err)
