@@ -65,4 +65,20 @@ const getInvoiceList = async (currentUserInfo, svRef) => {
         })
 }
 
-export { getProductList, getBranchList, getSalespersonList, getInvoiceList }
+const getAudiometryList = async (currentUserInfo, svRef) => {
+    axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-audiometry-list`, { current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
+        .then((res) => {
+            if (res.data.operation === "success") {
+                svRef(res.data.info)
+            }
+            else {
+                Swal.fire('Oops!', res.data.message, 'error');
+            }
+        })
+        .catch((err) => {
+            console.log(err)
+            Swal.fire('Error!!', err.message, 'error');
+        })
+}
+
+export { getProductList, getBranchList, getSalespersonList, getInvoiceList, getAudiometryList }
