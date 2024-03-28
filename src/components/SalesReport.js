@@ -316,7 +316,7 @@ const SalesReport = () => {
                                 filteredInvoiceList.length !== 0 &&
                                 <tfoot>
                                     <tr>
-                                        <td colSpan={8}>
+                                        <td colSpan={9}>
                                             <div className="d-flex justify-content-center">
                                                 <ul className="pagination m-0">
                                                     {
