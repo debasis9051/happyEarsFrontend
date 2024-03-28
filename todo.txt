@@ -1,7 +1,8 @@
 Todo:
 1. audiometry
-2. frontend and backend deployment fixes and cleanup
-3. product individual edit feature, export feature in inventory
+2. generate invoice against audiometry report
+3. frontend and backend deployment fixes and cleanup
+4. product individual edit feature, export feature in inventory
 
 
 HAPPY EARS PROJECT - structure
