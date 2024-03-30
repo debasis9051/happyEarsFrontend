@@ -1,5 +1,7 @@
 Todo:
 1. audiometry
+2. duplicate serials check
+2. battery keyword in generate invoice
 2. generate invoice against audiometry report
 3. frontend and backend deployment fixes and cleanup
 4. product individual edit feature, export feature in inventory

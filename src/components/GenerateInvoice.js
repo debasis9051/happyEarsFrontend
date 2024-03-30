@@ -50,8 +50,8 @@ const GenerateInvoice = () => {
         }
     }
 
-    const getInvoiceNumber = (branch_id) => {
-        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-invoice-number`, { branch_id: branch_id, current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
+    const getInvoiceNumber = (branch_id, date) => {
+        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-invoice-number`, { branch_id: branch_id, date: date, current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
             .then((res) => {
                 if (res.data.operation === "success") {
                     setInvoiceNumber(res.data.info)
@@ -214,7 +214,7 @@ const GenerateInvoice = () => {
                                     <Select
                                         options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
                                         value={selectedBranch}
-                                        onChange={(val) => { setSelectedBranch(val); getInvoiceNumber(val.value); setLineItems([{ product: null, product_data: null, product_type: null, product_rate: 0 }]) }}
+                                        onChange={(val) => { setSelectedBranch(val); getInvoiceNumber(val.value, date); setLineItems([{ product: null, product_data: null, product_type: null, product_rate: 0 }]) }}
                                         styles={dropDownStyle}
                                         placeholder="Select a Branch..."
                                     />
@@ -231,7 +231,7 @@ const GenerateInvoice = () => {
                             <div className="col-md-4">
                                 <div className="form-group">
                                     <label className="form-label my-1 required" htmlFor="date">Date</label>
-                                    <input type="date" id="date" className="form-control" value={date} onChange={(e) => { setDate(e.target.value) }} />
+                                    <input type="date" id="date" className="form-control" value={date} onChange={(e) => { setDate(e.target.value); getInvoiceNumber(selectedBranch.value, e.target.value); }} />
                                 </div>
                             </div>
                             <div className="col-md-4">
