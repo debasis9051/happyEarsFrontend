@@ -2,7 +2,7 @@ Todo:
 1. audiometry
 2. duplicate serials filter in import - remove duplicates from database 
 2. fix invoice number in database for all invoices
-2. import products response success and failure product count
+2. import products response success and failure product count, mrp blank remove
 2. battery keyword in generate invoice
 2. generate invoice against audiometry report
 3. frontend and backend deployment fixes and cleanup

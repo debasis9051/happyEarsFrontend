@@ -46,7 +46,7 @@ const designParticulars = (discount_amount,line_items,accessory_items) => {
             t[1].push(`${o.accessory}<br>`)
             t[2].push(`<br>`)
             t[3].push(`<br>`)
-            t[4].push(`${o.quantity}${o.accessory.trim().toLowerCase() === "battery"?" Strips":""}<br>`)
+            t[4].push(`${o.quantity}${(o.accessory.trim().toLowerCase().includes("battery") || o.accessory.trim().toLowerCase().includes("batteries"))?" Strips":""}<br>`)
             t[5].push(`${o.accessory_rate === 0 ? "Free" : o.accessory_rate + "/-"}<br>`)
             t[6].push(`${(o.quantity * o.accessory_rate) === 0 ? "Free" : (o.quantity * o.accessory_rate) + "/-"}<br>`)
             return t

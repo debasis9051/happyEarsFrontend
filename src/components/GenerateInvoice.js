@@ -412,7 +412,7 @@ const GenerateInvoice = () => {
                                                             setAccessoryItems(t)
                                                         }}
                                                     />
-                                                    {x.accessory.trim().toLowerCase() === "battery" && <div style={{ fontSize: "smaller", color: "dimgray" }}>strips</div>}
+                                                    {(x.accessory.trim().toLowerCase().includes("battery") || x.accessory.trim().toLowerCase().includes("batteries")) && <div style={{ fontSize: "smaller", color: "dimgray" }}>strips</div>}
                                                 </div>
                                                 <div className="col-md-3">
                                                     <input type="number" className="form-control" value={x.accessory_rate.toString()}

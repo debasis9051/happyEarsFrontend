@@ -70,7 +70,7 @@ const SalesReport = () => {
 
                 if (t) {
                     t.no_of_invoices += 1
-                    t.no_of_products_sold += invData.line_items.length
+                    t.no_of_products_sold += invData.line_items.filter(x=>!x.product_name.toLowerCase().includes("charger")).length
                     t.net_total += gt
                 }
                 else {
@@ -348,7 +348,7 @@ const SalesReport = () => {
                             }
                         </table>
 
-                        <div className="container my-5 p-3 rounded text-white" style={{ background: "linear-gradient(90deg, #4b6cb7 0%, #182848 100%)" }}>
+                        <div className="container my-5 p-3 rounded text-white" >
                             <div className="row g-0">
                                 <div className="col-md-2 mx-2 text-end">
                                     <label className="form-label my-1 text-white" style={{ fontSize: "larger" }} htmlFor="reportMonthYear">Select Month</label>
@@ -400,7 +400,7 @@ const SalesReport = () => {
                                                         ...salespersonList.map(x => ({ id: x.salesperson_name, label: x.salesperson_name, value: reportData.find(y => y.salesperson_id === x.id)?.no_of_invoices || 0 })),
                                                         { id: "N/A", label: "N/A", value: reportData.find(y => y.salesperson_id === undefined)?.no_of_invoices || 0 }
                                                     ]}
-                                                    colors={{ scheme: "category10" }}
+                                                    colors={{ scheme: "set1" }}
                                                     margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
                                                     innerRadius={0.5}
                                                     padAngle={0.7}
@@ -434,40 +434,6 @@ const SalesReport = () => {
                                                         let { datum: t } = e;
                                                         return <div className="container bg-secondary rounded">{t.label}: {t.value}</div>
                                                     }}
-                                                    defs={[
-                                                        {
-                                                            id: 'dots',
-                                                            type: 'patternDots',
-                                                            background: 'inherit',
-                                                            color: 'rgba(0, 0, 255, 0.3)',
-                                                            size: 4,
-                                                            padding: 1,
-                                                            stagger: true
-                                                        },
-                                                        {
-                                                            id: 'lines',
-                                                            type: 'patternLines',
-                                                            background: 'inherit',
-                                                            color: 'rgba(255, 255, 255, 0.3)',
-                                                            rotation: -45,
-                                                            lineWidth: 6,
-                                                            spacing: 10
-                                                        }
-                                                    ]}
-                                                    fill={[
-                                                        {
-                                                            match: {
-                                                                id: 'css'
-                                                            },
-                                                            id: 'dots'
-                                                        },
-                                                        {
-                                                            match: {
-                                                                id: 'lisp'
-                                                            },
-                                                            id: 'lines'
-                                                        }
-                                                    ]}
                                                     legends={[
                                                         {
                                                             anchor: 'bottom',

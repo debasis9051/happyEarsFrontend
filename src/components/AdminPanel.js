@@ -18,6 +18,8 @@ const AdminPanel = () => {
     const [branchInvoiceCode, setBranchInvoiceCode] = useState("")
     const [branchApiState, setBranchApiState] = useState(false)
 
+    const [scriptApiState, setScriptApiState] = useState(false)
+
     useEffect(() => {
         if (currentUserInfo) {
             if (!(process.env.REACT_APP_ADMIN_UID_LIST.split(",").includes(currentUserInfo.uid))) {
@@ -130,6 +132,45 @@ const AdminPanel = () => {
                                         }
                                     </button>
                                 </div>
+                            </div>
+                            <div className="row align-items-center mb-3 p-2 rounded" style={{ backgroundColor: "pink" }}>
+                                <div className="col-md-2 p-1 text-end">
+                                    <label className="form-label my-1 text-black">Custom Script</label>
+                                </div>
+                                <div className="col-md-3 p-1">
+                                    <button className="btn mx-2 text-white" style={{ backgroundColor: "darkmagenta" }} onClick={() => {
+                        
+                                        let data = {
+                                            current_user_uid: currentUserInfo.uid,
+                                            current_user_name: currentUserInfo.displayName
+                                        }
+
+                                        setScriptApiState(true)
+                                        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/custom-script`, data, { headers: { 'Content-Type': 'application/json' } })
+                                            .then((res) => {
+                                                setScriptApiState(false)
+                                                console.log(res.data)
+
+                                                if (res.data.operation === "success") {
+                                                    Swal.fire('Success!', res.data.message, 'success');
+                                                }
+                                                else {
+                                                    Swal.fire('Oops!', res.data.message, 'error');
+                                                }
+                                            })
+                                            .catch((err) => {
+                                                console.log(err)
+                                                Swal.fire('Error!!', err.message, 'error');
+                                            })
+                                    }}>        
+                                        {
+                                            scriptApiState ?
+                                                <span>Please Wait <span className="spinner-border spinner-border-sm"></span></span> :
+                                                <span>Start Execution</span>
+                                        }
+                                    </button>
+                                </div>
+                                
                             </div>
                         </div>
 
