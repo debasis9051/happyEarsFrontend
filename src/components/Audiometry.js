@@ -336,7 +336,7 @@ const Audiometry = () => {
                                                             }}
                                                         ></div>
                                                         <div className="">{x.decibal === null ? "N/A" : x.decibal}</div>
-                                                        <input type="range" className="hslider" min="0" max="120" step="5" style={{ writingMode: "tb", height: "300px", transform: "rotate(180deg)" }}
+                                                        <input type="range" className="hslider" min="0" max="120" step="5"
                                                             value={x.decibal === null ? 0 : x.decibal}
                                                             onChange={(e) => {
                                                                 let t = leftEarPta.map(x => ({ ...x }))
@@ -389,7 +389,7 @@ const Audiometry = () => {
                                                             }}
                                                         ></div>
                                                         <div className="">{x.decibal === null ? "N/A" : x.decibal}</div>
-                                                        <input type="range" className="hslider" min="0" max="120" step="5" style={{ writingMode: "tb", height: "300px", transform: "rotate(180deg)" }}
+                                                        <input type="range" className="hslider" min="0" max="120" step="5"
                                                             value={x.decibal === null ? 0 : x.decibal}
                                                             onChange={(e) => {
                                                                 let t = rightEarPta.map(x => ({ ...x }))

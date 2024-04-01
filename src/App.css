@@ -31,6 +31,10 @@
 
 
 .hslider {
+    writing-mode: tb;
+    height: 300px;
+    transform: rotate(180deg);
+
     -webkit-appearance: none;
     appearance: none;
     width: 20px;
