@@ -26,6 +26,7 @@ const Audiometry = () => {
     const [patientName, setPatientName] = useState("")
     const [patientAddress, setPatientAddress] = useState("")
     const [contactNumber, setContactNumber] = useState("")
+    const [testMachine, setTestMachine] = useState("")
     const [remarks, setRemarks] = useState("")
     const [leftEarPta, setLeftEarPta] = useState(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
     const [rightEarPta, setRightEarPta] = useState(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
@@ -65,16 +66,18 @@ const Audiometry = () => {
         }
     }, [currentUserInfo])
 
-    const updateAudiometryReportInit = (audiometry_report_data) => { console.log("here")
+    const updateAudiometryReportInit = (audiometry_report_data) => {
+        console.log("here")
         setAudiometryReportModalMode("update");
         setAudiometryReportId(audiometry_report_data.id)
         setPatientName(audiometry_report_data.patient_name)
         setPatientAddress(audiometry_report_data.patient_address)
         setContactNumber(audiometry_report_data.contact_number)
+        setTestMachine(audiometry_report_data.test_machine)
         setRemarks(audiometry_report_data.remarks)
         setLeftEarPta(audiometry_report_data.left_ear_pta)
         setRightEarPta(audiometry_report_data.right_ear_pta)
-        
+
         setAudiometryReportModalShow(true);
     }
 
@@ -91,14 +94,18 @@ const Audiometry = () => {
             Swal.fire('Oops!!', 'Contact Number cannot be empty', 'warning');
             return false
         }
+        if (testMachine === "") {
+            Swal.fire('Oops!!', 'Test Machine cannot be empty', 'warning');
+            return false
+        }
 
-        for(let i=0;i<leftEarPta.length;i++){
+        for (let i = 0; i < leftEarPta.length; i++) {
             if (leftEarPta[i].decibal === 0) {
                 Swal.fire('Oops!!', 'Decibal measurement cannot be 0', 'warning');
                 return false
             }
         }
-        for(let i=0;i<rightEarPta.length;i++){
+        for (let i = 0; i < rightEarPta.length; i++) {
             if (rightEarPta[i].decibal === 0) {
                 Swal.fire('Oops!!', 'Decibal measurement cannot be 0', 'warning');
                 return false
@@ -109,6 +116,7 @@ const Audiometry = () => {
             patient_name: patientName,
             patient_address: patientAddress,
             contact_number: contactNumber,
+            test_machine: testMachine,
             remarks: remarks,
             left_ear_pta: leftEarPta,
             right_ear_pta: rightEarPta,
@@ -117,10 +125,10 @@ const Audiometry = () => {
             current_user_name: currentUserInfo.displayName
         }
 
-        if(audiometryReportModalMode !== "add") data["audiometry_report_id"] = audiometryReportId
+        if (audiometryReportModalMode !== "add") data["audiometry_report_id"] = audiometryReportId
 
         setIsAudiometryReportApiLoading(true)
-        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/${audiometryReportModalMode === "add"?"save-audiometry-report":"update-audiometry-report"}`, data, { headers: { 'Content-Type': 'application/json' } })
+        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/${audiometryReportModalMode === "add" ? "save-audiometry-report" : "update-audiometry-report"}`, data, { headers: { 'Content-Type': 'application/json' } })
             .then((res) => {
                 setIsAudiometryReportApiLoading(false)
                 if (res.data.operation === "success") {
@@ -146,9 +154,14 @@ const Audiometry = () => {
         setPatientName("")
         setPatientAddress("")
         setContactNumber("")
+        setTestMachine("")
         setRemarks("")
         setLeftEarPta(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
         setRightEarPta(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
+    }
+
+    const calculateHearingLoss = (frequencyData) => {
+        return frequencyData.reduce((p, o) => { return [500, 1000, 2000].includes(o.frequency) ? p + o.decibal : p }, 0) / 3
     }
 
     let tp = Math.ceil(filteredAudiometryList.length / 10)
@@ -201,8 +214,8 @@ const Audiometry = () => {
                                                     <td>{(currentPage * 10) + i + 1}</td>
                                                     <td>{x.patient_name}</td>
                                                     <td>{x.contact_number}</td>
-                                                    <td>{100}</td>
-                                                    <td>{100}</td>
+                                                    <td>{Math.round(calculateHearingLoss(x.left_ear_pta) * 1000) / 1000}</td>
+                                                    <td>{Math.round(calculateHearingLoss(x.right_ear_pta) * 1000) / 1000}</td>
                                                     <td>{moment.unix(x.created_at._seconds).format("lll")}</td>
                                                     <td>
                                                         <Dropdown>
@@ -265,21 +278,27 @@ const Audiometry = () => {
 
             <Modal show={audiometryReportModalShow} onHide={() => { handleAudiometryReportModalClose() }} size="xl" centered >
                 <Modal.Header closeButton>
-                    <Modal.Title>{audiometryReportModalMode==="add"?"Add":"Update"} Audiometry Report</Modal.Title>
+                    <Modal.Title>{audiometryReportModalMode === "add" ? "Add" : "Update"} Audiometry Report</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <div className="container">
                         <div className="row">
-                            <div className="col-md-6">
+                            <div className="col-md-4">
                                 <div className="form-group">
                                     <label className="form-label my-1 required" htmlFor="patientName">Patient Name</label>
                                     <input type="text" id="patientName" className="form-control" value={patientName} onChange={(e) => { setPatientName(e.target.value) }} />
                                 </div>
                             </div>
-                            <div className="col-md-6">
+                            <div className="col-md-4">
                                 <div className="form-group">
                                     <label className="form-label my-1 required" htmlFor="contactNumber">Contact Number</label>
                                     <input type="text" id="contactNumber" className="form-control" value={contactNumber} onChange={(e) => { setContactNumber(e.target.value) }} />
+                                </div>
+                            </div>
+                            <div className="col-md-4">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required" htmlFor="testMachine">Test Machine</label>
+                                    <input type="text" id="testMachine" className="form-control" value={testMachine} onChange={(e) => { setTestMachine(e.target.value) }} />
                                 </div>
                             </div>
                         </div>
@@ -309,22 +328,22 @@ const Audiometry = () => {
                                             leftEarPta.map((x, i) => {
                                                 return (
                                                     <div key={i} className="text-center" style={{ marginTop: "20px", width: "min-content" }}>
-                                                        <div className={`rounded-pill d-inline-block ${x.decibal===null?"bg-danger":"bg-success"}`} style={{ width: "20px", height: "20px", cursor:"pointer" }} 
-                                                            onClick={()=>{
+                                                        <div className={`rounded-pill d-inline-block ${x.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "20px", height: "20px", cursor: "pointer" }}
+                                                            onClick={() => {
                                                                 let t = leftEarPta.map(x => ({ ...x }))
-                                                                t[i].decibal = t[i].decibal!==null?null:0
+                                                                t[i].decibal = t[i].decibal !== null ? null : 0
                                                                 setLeftEarPta(t)
                                                             }}
                                                         ></div>
-                                                        <div className="">{x.decibal===null?"N/A":x.decibal}</div>
-                                                        <input type="range" className="" min="0" max="120" step="5" style={{ writingMode: "tb", height: "300px" }}
-                                                            value={x.decibal===null?0:x.decibal}
+                                                        <div className="">{x.decibal === null ? "N/A" : x.decibal}</div>
+                                                        <input type="range" className="hslider" min="0" max="120" step="5" style={{ writingMode: "tb", height: "300px", transform: "rotate(180deg)" }}
+                                                            value={x.decibal === null ? 0 : x.decibal}
                                                             onChange={(e) => {
                                                                 let t = leftEarPta.map(x => ({ ...x }))
                                                                 t[i].decibal = parseInt(e.target.value)
                                                                 setLeftEarPta(t)
                                                             }}
-                                                            disabled={x.decibal===null}
+                                                            disabled={x.decibal === null}
                                                         />
                                                         <div className="">{x.frequency}</div>
                                                     </div>
@@ -332,7 +351,25 @@ const Audiometry = () => {
                                             })
                                         }
                                     </div>
-                                    <div className="my-2">frequency (Hz)</div>
+                                    <div className="mb-3" style={{ fontSize: "smaller" }}>frequency (Hz)</div>
+                                    <div className="my-2">{(() => {
+                                        let hl = calculateHearingLoss(leftEarPta)
+                                        let c = "#000000"
+                                        let t = ""
+
+                                        if (hl <= 20) { c = "#129dd4"; t = "Normal Hearing"; }
+                                        else if (hl <= 40) { c = "#68c8ee"; t = "Mild Hearing loss"; }
+                                        else if (hl <= 70) { c = "#fab330"; t = "Moderate Hearing loss"; }
+                                        else if (hl <= 90) { c = "#fc8e29"; t = "Severe Hearing loss"; }
+                                        else { c = "#ff4255"; t = "Profound Hearing loss"; }
+
+                                        return (
+                                            <>
+                                                <span className="mx-3 fw-bold">LHL - {Math.round(hl * 1000) / 1000}</span>
+                                                <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: c }}>{t}</span>
+                                            </>
+                                        )
+                                    })()}</div>
                                 </div>
                             </div>
 
@@ -344,22 +381,22 @@ const Audiometry = () => {
                                             rightEarPta.map((x, i) => {
                                                 return (
                                                     <div key={i} className="text-center" style={{ marginTop: "20px", width: "min-content" }}>
-                                                        <div className={`rounded-pill d-inline-block ${x.decibal===null?"bg-danger":"bg-success"}`} style={{ width: "20px", height: "20px", cursor:"pointer" }} 
-                                                            onClick={()=>{
+                                                        <div className={`rounded-pill d-inline-block ${x.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "20px", height: "20px", cursor: "pointer" }}
+                                                            onClick={() => {
                                                                 let t = rightEarPta.map(x => ({ ...x }))
-                                                                t[i].decibal = t[i].decibal!==null?null:0
+                                                                t[i].decibal = t[i].decibal !== null ? null : 0
                                                                 setRightEarPta(t)
                                                             }}
                                                         ></div>
-                                                        <div className="">{x.decibal===null?"N/A":x.decibal}</div>
-                                                        <input type="range" className="" min="0" max="120" step="5" style={{ writingMode: "tb", height: "300px" }}
-                                                            value={x.decibal===null?0:x.decibal}
+                                                        <div className="">{x.decibal === null ? "N/A" : x.decibal}</div>
+                                                        <input type="range" className="hslider" min="0" max="120" step="5" style={{ writingMode: "tb", height: "300px", transform: "rotate(180deg)" }}
+                                                            value={x.decibal === null ? 0 : x.decibal}
                                                             onChange={(e) => {
                                                                 let t = rightEarPta.map(x => ({ ...x }))
                                                                 t[i].decibal = parseInt(e.target.value)
                                                                 setRightEarPta(t)
                                                             }}
-                                                            disabled={x.decibal===null}
+                                                            disabled={x.decibal === null}
                                                         />
                                                         <div className="">{x.frequency}</div>
                                                     </div>
@@ -367,14 +404,32 @@ const Audiometry = () => {
                                             })
                                         }
                                     </div>
-                                    <div className="my-2">frequency (Hz)</div>
+                                    <div className="mb-3" style={{ fontSize: "smaller" }}>frequency (Hz)</div>
+                                    <div className="my-2">{(() => {
+                                        let hl = calculateHearingLoss(rightEarPta)
+                                        let c = "#000000"
+                                        let t = ""
+
+                                        if (hl <= 20) { c = "#129dd4"; t = "Normal Hearing"; }
+                                        else if (hl <= 40) { c = "#68c8ee"; t = "Mild Hearing loss"; }
+                                        else if (hl <= 70) { c = "#fab330"; t = "Moderate Hearing loss"; }
+                                        else if (hl <= 90) { c = "#fc8e29"; t = "Severe Hearing loss"; }
+                                        else { c = "#ff4255"; t = "Profound Hearing loss"; }
+
+                                        return (
+                                            <>
+                                                <span className="mx-3 fw-bold">RHL - {Math.round(hl * 1000) / 1000}</span>
+                                                <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: c }}>{t}</span>
+                                            </>
+                                        )
+                                    })()}</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </Modal.Body >
                 <Modal.Footer>
-                    <Button variant="success" disabled={isAudiometryReportApiLoading} onClick={() => { !isAudiometryReportApiLoading && processAudiometryReport() }}> {isAudiometryReportApiLoading ? <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> : (audiometryReportModalMode==="add"?"Submit":"Update")} </Button>
+                    <Button variant="success" disabled={isAudiometryReportApiLoading} onClick={() => { !isAudiometryReportApiLoading && processAudiometryReport() }}> {isAudiometryReportApiLoading ? <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> : (audiometryReportModalMode === "add" ? "Submit" : "Update")} </Button>
                     <Button onClick={() => { handleAudiometryReportModalClose() }}>Close</Button>
                 </Modal.Footer>
             </Modal >

@@ -139,7 +139,6 @@ const AdminPanel = () => {
                                 </div>
                                 <div className="col-md-3 p-1">
                                     <button className="btn mx-2 text-white" style={{ backgroundColor: "darkmagenta" }} onClick={() => {
-                        
                                         let data = {
                                             current_user_uid: currentUserInfo.uid,
                                             current_user_name: currentUserInfo.displayName
@@ -170,7 +169,6 @@ const AdminPanel = () => {
                                         }
                                     </button>
                                 </div>
-                                
                             </div>
                         </div>
 
