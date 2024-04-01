@@ -37,7 +37,7 @@
 
     -webkit-appearance: none;
     appearance: none;
-    width: 20px;
+    width: 40px;
     cursor: pointer;
     outline: none;
     overflow: hidden;
@@ -46,13 +46,13 @@
 
 
 .hslider::-webkit-slider-runnable-track {
-    height: 20px;
+    height: 40px;
     border-radius: 10px;
     background-color: #e5e5e5;
 }
 
 .hslider::-moz-range-track {
-    height: 20px;
+    height: 40px;
     border-radius: 10px;
     background-color: #e5e5e5;
 }
@@ -70,18 +70,18 @@
     -webkit-appearance: none;
     appearance: none;
     height: 20px;
-    width: 20px;
+    width: 40px;
     background-color: #fff;
-    border-radius: 50%;
+    border-radius: 50px;
     border: 3px solid rgb(61, 85, 244);
     box-shadow: 0 -408px 0 400px rgb(61, 85, 244);
 }
 
 .hslider::-moz-range-thumb {
     height: 20px;
-    width: 20px;
+    width: 40px;
     background-color: #fff;
-    border-radius: 50%;
+    border-radius: 50px;
     border: 3px solid rgb(61, 85, 244);
     box-shadow: 0 -408px 400px 0 rgb(61, 85, 244);
 }

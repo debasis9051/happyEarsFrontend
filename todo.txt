@@ -1,5 +1,5 @@
 Todo:
-1. audiometry styling for phone mode, 
+1. audiometry styling for phone mode
 2.
 2. fix invoice number in database for all invoices
 2. import products - response success and failure product count with proper message, duplicate serials filter, mrp blank remove
