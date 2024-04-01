@@ -1,12 +1,12 @@
 Todo:
-1. audiometry styling for phone mode
-2.
+1. 
+2. fix empty mrp products
 2. fix invoice number in database for all invoices
-2. import products - response success and failure product count with proper message, duplicate serials filter, mrp blank remove
+2. import products - response success and failure product count with proper message
 3.
 2. audiometry - view, print, generate invoice against audiometry report
 3.
-3. frontend and backend deployment fixes and cleanup
+3. frontend and backend deployments cleanup
 4. product individual edit feature, export feature in inventory
 
 

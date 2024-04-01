@@ -185,7 +185,21 @@ const Inventory = () => {
                         Swal.fire('Success!', res.data.message, 'success');
                     }
                     else {
-                        Swal.fire('Success!', `These serials were not added to database: ${res.data.info.join(", ")}`, 'success');
+                        let c = `<div>
+                            These serials were not added to database:
+                            ${
+                                res.data.info.map((x,i)=>{
+                                    return (
+                                        `<div >
+                                            <div>Cause: <span class="fw-bold">${x.cause}</span></div>
+                                            <div>Serials:<br> ${x.serials.join(", ")}</div>
+                                        </div>`
+                                    )
+                                }).join("<br>")
+                            }
+                        </div>`
+
+                        Swal.fire('Success!', c, 'success');
                     }
                 }
                 else {
