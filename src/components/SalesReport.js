@@ -70,7 +70,7 @@ const SalesReport = () => {
 
                 if (t) {
                     t.no_of_invoices += 1
-                    t.no_of_products_sold += invData.line_items.filter(x=>!x.product_name.toLowerCase().includes("charger")).length
+                    t.no_of_products_sold += invData.line_items.filter(x=>!(x.product_name.toLowerCase().includes("charger") || x.product_name.toLowerCase().includes("chgr"))).length
                     t.net_total += gt
                 }
                 else {
