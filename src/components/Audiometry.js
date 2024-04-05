@@ -21,6 +21,7 @@ const Audiometry = () => {
     const [searchValue, setSearchValue] = useState("")
 
     const [audiometryReportModalShow, setAudiometryReportModalShow] = useState(false)
+
     const [audiometryReportModalMode, setAudiometryReportModalMode] = useState(null)
     const [audiometryReportId, setAudiometryReportId] = useState(null)
     const [patientName, setPatientName] = useState("")
@@ -30,6 +31,7 @@ const Audiometry = () => {
     const [remarks, setRemarks] = useState("")
     const [leftEarPta, setLeftEarPta] = useState(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
     const [rightEarPta, setRightEarPta] = useState(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
+
     const [isAudiometryReportApiLoading, setIsAudiometryReportApiLoading] = useState(false)
 
     const filteredAudiometryList = audiometryList.filter(x => {
@@ -272,11 +274,201 @@ const Audiometry = () => {
                                 </tfoot>
                             }
                         </table>
+
+                        {
+                            audiometryReportModalShow &&
+                            <div className="container card container my-5 p-3">
+                                <div className="card-header rounded">
+                                    <h4 className="m-0">{audiometryReportModalMode === "add" ? "Add" : "Update"} Audiometry Report</h4>
+                                </div>
+                                <div className="card-body">
+                                    <div className="row">
+                                        <div className="col-md-4">
+                                            <div className="form-group">
+                                                <label className="form-label my-1 required" htmlFor="patientName">Patient Name</label>
+                                                <input type="text" id="patientName" className="form-control" value={patientName} onChange={(e) => { setPatientName(e.target.value) }} />
+                                            </div>
+                                        </div>
+                                        <div className="col-md-4">
+                                            <div className="form-group">
+                                                <label className="form-label my-1 required" htmlFor="contactNumber">Contact Number</label>
+                                                <input type="text" id="contactNumber" className="form-control" value={contactNumber} onChange={(e) => { setContactNumber(e.target.value) }} />
+                                            </div>
+                                        </div>
+                                        <div className="col-md-4">
+                                            <div className="form-group">
+                                                <label className="form-label my-1 required" htmlFor="testMachine">Test Machine</label>
+                                                <input type="text" id="testMachine" className="form-control" value={testMachine} onChange={(e) => { setTestMachine(e.target.value) }} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="row">
+                                        <div className="col-md-6">
+                                            <div className="form-group">
+                                                <label className="form-label my-1 required" htmlFor="patientAddress">Patient Address</label>
+                                                <textarea id="patientAddress" rows={3} className="form-control" value={patientAddress} onChange={(e) => { setPatientAddress(e.target.value) }} />
+                                            </div>
+                                        </div>
+                                        <div className="col-md-6">
+                                            <div className="form-group">
+                                                <label className="form-label my-1" htmlFor="remarks">Remarks</label>
+                                                <textarea id="remarks" rows={3} className="form-control" value={remarks} onChange={(e) => { setRemarks(e.target.value) }} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="row">
+                                        <div className="col-12 text-center">
+                                            <h5 className="mt-3">Left Ear PTA</h5>
+
+                                            <div className="overflow-auto">
+                                                <div className="border border-5 border-primary m-3 px-5 rounded-5 w-min-content d-inline-block">
+                                                    {/* <div className="d-flex gap-5 justify-content-center">
+                                                        {
+                                                            leftEarPta.map((x, i) => {
+                                                                return (
+                                                                    <div key={i} className="text-center" style={{ marginTop: "20px", width: "min-content" }}>
+                                                                        <div className={`rounded-pill d-inline-block ${x.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "20px", height: "20px", cursor: "pointer" }}
+                                                                            onClick={() => {
+                                                                                let t = leftEarPta.map(x => ({ ...x }))
+                                                                                t[i].decibal = t[i].decibal !== null ? null : 0
+                                                                                setLeftEarPta(t)
+                                                                            }}
+                                                                        ></div>
+                                                                        <div className="">{x.decibal === null ? "N/A" : x.decibal}</div>
+                                                                        <input type="range" className="hslider" min="0" max="120" step="5"
+                                                                            value={x.decibal === null ? 0 : x.decibal}
+                                                                            onChange={(e) => {
+                                                                                let t = leftEarPta.map(x => ({ ...x }))
+                                                                                t[i].decibal = parseInt(e.target.value)
+                                                                                setLeftEarPta(t)
+                                                                            }}
+                                                                            disabled={x.decibal === null}
+                                                                        />
+                                                                        <div className="">{x.frequency}</div>
+                                                                    </div>
+                                                                )
+                                                            })
+                                                        }
+                                                    </div> */}
+                                                    <div className="">
+                                                        {
+                                                            leftEarPta.map((x, i) => {
+                                                                return (
+                                                                    <div key={i} className="" >
+                                                                        <div className={`rounded-pill d-inline-block ${x.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "20px", height: "20px", cursor: "pointer" }}
+                                                                            onClick={() => {
+                                                                                let t = leftEarPta.map(x => ({ ...x }))
+                                                                                t[i].decibal = t[i].decibal !== null ? null : 0
+                                                                                setLeftEarPta(t)
+                                                                            }}
+                                                                        ></div>
+                                                                        <div className="">{x.decibal === null ? "N/A" : x.decibal}</div>
+                                                                        <input type="range" className="hslider" min="0" max="120" step="5"
+                                                                            value={x.decibal === null ? 0 : x.decibal}
+                                                                            onChange={(e) => {
+                                                                                let t = leftEarPta.map(x => ({ ...x }))
+                                                                                t[i].decibal = parseInt(e.target.value)
+                                                                                setLeftEarPta(t)
+                                                                            }}
+                                                                            disabled={x.decibal === null}
+                                                                        />
+                                                                        <div className="">{x.frequency}</div>
+                                                                    </div>
+                                                                )
+                                                            })
+                                                        }
+                                                    </div>
+                                                    <div className="mb-3" style={{ fontSize: "smaller" }}>frequency (Hz)</div>
+                                                    <div className="my-2">{(() => {
+                                                        let hl = calculateHearingLoss(leftEarPta)
+                                                        let c = "#000000"
+                                                        let t = ""
+
+                                                        if (hl <= 20) { c = "#129dd4"; t = "Normal Hearing"; }
+                                                        else if (hl <= 40) { c = "#68c8ee"; t = "Mild Hearing loss"; }
+                                                        else if (hl <= 70) { c = "#fab330"; t = "Moderate Hearing loss"; }
+                                                        else if (hl <= 90) { c = "#fc8e29"; t = "Severe Hearing loss"; }
+                                                        else { c = "#ff4255"; t = "Profound Hearing loss"; }
+
+                                                        return (
+                                                            <>
+                                                                <span className="mx-3 fw-bold">LHL - {Math.round(hl * 1000) / 1000}</span>
+                                                                <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: c }}>{t}</span>
+                                                            </>
+                                                        )
+                                                    })()}</div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <div className="row">
+                                        <div className="col-12 text-center">
+                                            <h5 className="mt-3">Right Ear PTA</h5>
+                                            <div className="overflow-auto">
+                                                <div className="border border-5 border-primary m-3 px-5 rounded-5 w-min-content d-inline-block">
+                                                    <div className="d-flex gap-5 justify-content-center">
+                                                        {
+                                                            rightEarPta.map((x, i) => {
+                                                                return (
+                                                                    <div key={i} className="text-center" style={{ marginTop: "20px", width: "min-content" }}>
+                                                                        <div className={`rounded-pill d-inline-block ${x.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "20px", height: "20px", cursor: "pointer" }}
+                                                                            onClick={() => {
+                                                                                let t = rightEarPta.map(x => ({ ...x }))
+                                                                                t[i].decibal = t[i].decibal !== null ? null : 0
+                                                                                setRightEarPta(t)
+                                                                            }}
+                                                                        ></div>
+                                                                        <div className="">{x.decibal === null ? "N/A" : x.decibal}</div>
+                                                                        <input type="range" className="hslider" min="0" max="120" step="5"
+                                                                            value={x.decibal === null ? 0 : x.decibal}
+                                                                            onChange={(e) => {
+                                                                                let t = rightEarPta.map(x => ({ ...x }))
+                                                                                t[i].decibal = parseInt(e.target.value)
+                                                                                setRightEarPta(t)
+                                                                            }}
+                                                                            disabled={x.decibal === null}
+                                                                        />
+                                                                        <div className="">{x.frequency}</div>
+                                                                    </div>
+                                                                )
+                                                            })
+                                                        }
+                                                    </div>
+                                                    <div className="mb-3" style={{ fontSize: "smaller" }}>frequency (Hz)</div>
+                                                    <div className="my-2">{(() => {
+                                                        let hl = calculateHearingLoss(rightEarPta)
+                                                        let c = "#000000"
+                                                        let t = ""
+
+                                                        if (hl <= 20) { c = "#129dd4"; t = "Normal Hearing"; }
+                                                        else if (hl <= 40) { c = "#68c8ee"; t = "Mild Hearing loss"; }
+                                                        else if (hl <= 70) { c = "#fab330"; t = "Moderate Hearing loss"; }
+                                                        else if (hl <= 90) { c = "#fc8e29"; t = "Severe Hearing loss"; }
+                                                        else { c = "#ff4255"; t = "Profound Hearing loss"; }
+
+                                                        return (
+                                                            <>
+                                                                <span className="mx-3 fw-bold">RHL - {Math.round(hl * 1000) / 1000}</span>
+                                                                <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: c }}>{t}</span>
+                                                            </>
+                                                        )
+                                                    })()}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="card-footer rounded">test</div>
+                            </div>
+                        }
                     </>
                 </AuthWrapper>
             </div>
 
-            <Modal show={audiometryReportModalShow} onHide={() => { handleAudiometryReportModalClose() }} size="lg" centered >
+            {/* <Modal show={audiometryReportModalShow} onHide={() => { handleAudiometryReportModalClose() }} size="lg" centered >
                 <Modal.Header closeButton>
                     <Modal.Title>{audiometryReportModalMode === "add" ? "Add" : "Update"} Audiometry Report</Modal.Title>
                 </Modal.Header>
@@ -438,7 +630,7 @@ const Audiometry = () => {
                     <Button variant="success" disabled={isAudiometryReportApiLoading} onClick={() => { !isAudiometryReportApiLoading && processAudiometryReport() }}> {isAudiometryReportApiLoading ? <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> : (audiometryReportModalMode === "add" ? "Submit" : "Update")} </Button>
                     <Button onClick={() => { handleAudiometryReportModalClose() }}>Close</Button>
                 </Modal.Footer>
-            </Modal >
+            </Modal > */}
         </>
     )
 }
