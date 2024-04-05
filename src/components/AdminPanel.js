@@ -93,7 +93,7 @@ const AdminPanel = () => {
                                     <input type="text" id="branchInvoiceCode" className="form-control" value={branchInvoiceCode} onChange={(e) => { setBranchInvoiceCode(e.target.value.trim()) }} />
                                 </div>
                                 <div className="col-md-2 p-1">
-                                    <button className="btn mx-2 text-white" style={{ backgroundColor: "darkmagenta" }} onClick={() => {
+                                    <button className="btn mx-2 text-white" style={{ backgroundColor: "darkmagenta" }} disabled={branchApiState} onClick={() => {
                                         if (!branchName || !branchInvoiceCode) {
                                             Swal.fire("Oops", "Enter all Branch details", "warning")
                                             return
@@ -138,7 +138,7 @@ const AdminPanel = () => {
                                     <label className="form-label my-1 text-black">Custom Script</label>
                                 </div>
                                 <div className="col-md-3 p-1">
-                                    <button className="btn mx-2 text-white" style={{ backgroundColor: "darkmagenta" }} onClick={() => {
+                                    <button className="btn mx-2 text-white" style={{ backgroundColor: "darkmagenta" }} disabled={scriptApiState} onClick={() => {
                                         let data = {
                                             current_user_uid: currentUserInfo.uid,
                                             current_user_name: currentUserInfo.displayName

@@ -1,8 +1,6 @@
 Todo:
 1. 
-2. fix empty mrp products
-2. fix invoice number in database for all invoices
-2. import products - response success and failure product count with proper message
+2. invoice number date edit - invoice number fix 0 prefix for some invoices
 3.
 2. audiometry - view, print, generate invoice against audiometry report
 3.

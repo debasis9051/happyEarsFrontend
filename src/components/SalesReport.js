@@ -70,7 +70,7 @@ const SalesReport = () => {
 
                 if (t) {
                     t.no_of_invoices += 1
-                    t.no_of_products_sold += invData.line_items.filter(x=>!(x.product_name.toLowerCase().includes("charger") || x.product_name.toLowerCase().includes("chgr"))).length
+                    t.no_of_products_sold += invData.line_items.filter(x => !(x.product_name.toLowerCase().includes("charger") || x.product_name.toLowerCase().includes("chgr"))).length
                     t.net_total += gt
                 }
                 else {
@@ -503,7 +503,19 @@ const SalesReport = () => {
                             <div className="col-md-6">
                                 <div className="form-group">
                                     <label className="form-label my-1 required" htmlFor="date">Date</label>
-                                    <input type="date" id="date" className="form-control" value={date} onChange={(e) => { setDate(e.target.value) }} />
+                                    <input type="date" id="date" className="form-control" value={date}
+                                        onChange={(e) => {
+                                            if (!moment(e.target.value).isValid()) {
+                                                Swal.fire('Oops!', "Enter a valid date", 'warning');
+                                                return
+                                            }
+                                            // if (!moment(e.target.value).isValid()) {
+                                            //     Swal.fire('Oops!', "Enter a valid date", 'warning');
+                                            //     return
+                                            // }
+
+                                            setDate(e.target.value);
+                                        }} />
                                 </div>
                             </div>
                             <div className="col-md-6">
@@ -575,7 +587,7 @@ const SalesReport = () => {
                                                         setAccessoryItems(t)
                                                     }}
                                                 />
-                                                {x.accessory.trim().toLowerCase() === "battery" && <div style={{ fontSize: "smaller", color: "dimgray" }}>strips</div>}
+                                                {(x.accessory.trim().toLowerCase().includes("battery") || x.accessory.trim().toLowerCase().includes("batteries")) && <div style={{ fontSize: "smaller", color: "dimgray" }}>strips</div>}
                                             </div>
                                             <div className="col-md-3">
                                                 <input type="number" className="form-control" value={x.accessory_rate.toString()}
