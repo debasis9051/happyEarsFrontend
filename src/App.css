@@ -29,8 +29,8 @@
 }
 
 
-
-.hslider {
+/* ----------------vertical range slider css---------------------- */
+/* .hslider {
     writing-mode: tb;
     height: 300px;
     transform: rotate(180deg);
@@ -44,27 +44,22 @@
     border-radius: 10px;
 }
 
-
 .hslider::-webkit-slider-runnable-track {
     height: 40px;
     border-radius: 10px;
     background-color: #e5e5e5;
 }
-
 .hslider::-moz-range-track {
     height: 40px;
     border-radius: 10px;
     background-color: #e5e5e5;
 }
-
 .hslider:disabled::-webkit-slider-runnable-track {
     background-color: #606060;
 }
-
 .hslider:disabled::-moz-range-track {
     background-color: #606060;
 }
-
 
 .hslider::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -76,7 +71,6 @@
     border: 3px solid rgb(61, 85, 244);
     box-shadow: 0 -408px 0 400px rgb(61, 85, 244);
 }
-
 .hslider::-moz-range-thumb {
     height: 20px;
     width: 40px;
@@ -85,15 +79,14 @@
     border: 3px solid rgb(61, 85, 244);
     box-shadow: 0 -408px 400px 0 rgb(61, 85, 244);
 }
-
 .hslider:disabled::-webkit-slider-thumb {
     background-color: #606060;
     border: 3px solid #fff;
     box-shadow: 0 -408px 0 400px #606060;
 }
-
 .hslider:disabled::-moz-range-thumb {
     background-color: #606060;
     border: 3px solid #fff;
     box-shadow: 0 -408px 400px 0 #606060;
-}
+} */
+/* ----------------vertical range slider css end---------------------- */
