@@ -407,7 +407,7 @@ const Audiometry = () => {
                                                                                 setRightEarPta(t)
                                                                             }}>&ndash;</button>
                                                                             <input type="text" className="form-control rounded-0"
-                                                                                value={(x.decibal === null ? "N/A" : x.decibal).toString()}
+                                                                                value={(x.decibal === null ? "NR" : x.decibal).toString()}
                                                                                 onChange={(e) => {
                                                                                     let t = rightEarPta.map(x => ({ ...x }))
                                                                                     t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > 120 ? 120 : parseInt(e.target.value)
