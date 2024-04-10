@@ -1,9 +1,8 @@
 Todo:
 1.  
-2. 
-3. import backend logic and frontend swal update
-4. import major update - frontend get excel template
-5. audiometry major update - frontend design update
+2. import backend logic and frontend swal update
+3. audiometry major update - frontend design update
+4. all tables major update - implement pagination logic
 
 1.
 2. invoice number date edit - invoice number fix 0 prefix for some invoices
@@ -11,7 +10,7 @@ Todo:
 2. audiometry - view, print, generate invoice against audiometry report
 3.
 3. frontend and backend deployments cleanup
-4. product individual edit feature, export feature in inventory
+4. product individual edit feature and export feature in inventory
 
 
 HAPPY EARS PROJECT - structure
