@@ -404,33 +404,33 @@ const Audiometry = () => {
                                                                             <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= 0} onClick={() => {
                                                                                 let t = rightEarPta.map(x => ({ ...x }))
                                                                                 t[i].decibal = t[i].decibal <= 0 ? 0 : t[i].decibal - 5
-                                                                                setLeftEarPta(t)
+                                                                                setRightEarPta(t)
                                                                             }}>&ndash;</button>
                                                                             <input type="text" className="form-control rounded-0"
                                                                                 value={(x.decibal === null ? "N/A" : x.decibal).toString()}
                                                                                 onChange={(e) => {
                                                                                     let t = rightEarPta.map(x => ({ ...x }))
                                                                                     t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > 120 ? 120 : parseInt(e.target.value)
-                                                                                    setLeftEarPta(t)
+                                                                                    setRightEarPta(t)
                                                                                 }}
                                                                                 onBlur={(e) => {
                                                                                     let t = rightEarPta.map(x => ({ ...x }))
                                                                                     t[i].decibal = Math.round(t[i].decibal / 5) * 5
-                                                                                    setLeftEarPta(t)
+                                                                                    setRightEarPta(t)
                                                                                 }}
                                                                                 disabled={x.decibal === null}
                                                                             />
                                                                             <button className="btn btn-primary rounded-0 rounded-end fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal >= 120} onClick={() => {
                                                                                 let t = rightEarPta.map(x => ({ ...x }))
                                                                                 t[i].decibal = t[i].decibal >= 120 ? 120 : t[i].decibal + 5
-                                                                                setLeftEarPta(t)
+                                                                                setRightEarPta(t)
                                                                             }}>&#43;</button>
-                                                                        </div>
+                                                                        </div> 
                                                                         <div className={`col-1 px-2 rounded-circle ${x.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "30px", height: "30px", cursor: "pointer" }}
                                                                             onClick={() => {
                                                                                 let t = rightEarPta.map(x => ({ ...x }))
                                                                                 t[i].decibal = t[i].decibal !== null ? null : 0
-                                                                                setLeftEarPta(t)
+                                                                                setRightEarPta(t)
                                                                             }}
                                                                         ></div>
                                                                     </div>
