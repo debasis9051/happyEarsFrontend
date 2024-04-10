@@ -329,14 +329,14 @@ const Audiometry = () => {
                                                                 return (
                                                                     <div key={i} className="row gx-0 align-items-center my-2">
                                                                         <div className="col-2 px-2">{x.frequency}</div>
-                                                                        <div class="col-9 px-2 d-flex">
+                                                                        <div className="col-9 px-2 d-flex">
                                                                             <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= 0} onClick={() => {
                                                                                 let t = leftEarPta.map(x => ({ ...x }))
                                                                                 t[i].decibal = t[i].decibal <= 0 ? 0 : t[i].decibal - 5
                                                                                 setLeftEarPta(t)
                                                                             }}>&ndash;</button>
                                                                             <input type="text" className="form-control rounded-0"
-                                                                                value={(x.decibal === null ? "N/A" : x.decibal).toString()}
+                                                                                value={(x.decibal === null ? "NR" : x.decibal).toString()}
                                                                                 onChange={(e) => {
                                                                                     let t = leftEarPta.map(x => ({ ...x }))
                                                                                     t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > 120 ? 120 : parseInt(e.target.value)
@@ -400,7 +400,7 @@ const Audiometry = () => {
                                                                 return (
                                                                     <div key={i} className="row gx-0 align-items-center my-2">
                                                                         <div className="col-2 px-2">{x.frequency}</div>
-                                                                        <div class="col-9 px-2 d-flex">
+                                                                        <div className="col-9 px-2 d-flex">
                                                                             <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= 0} onClick={() => {
                                                                                 let t = rightEarPta.map(x => ({ ...x }))
                                                                                 t[i].decibal = t[i].decibal <= 0 ? 0 : t[i].decibal - 5
