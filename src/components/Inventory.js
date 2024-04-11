@@ -184,26 +184,41 @@ const Inventory = () => {
                 if (res.data.operation === "success") {
                     getProductList(currentUserInfo, setProductList)
                     handleImportProductModalClose()
-                    if (res.data.info.length === 0) {
-                        Swal.fire('Success!', res.data.message, 'success');
-                    }
-                    else {
-                        let c = `<div>
-                            These serials were not added to database:
-                            ${
-                                res.data.info.map((x, i) => {
-                                    return (
-                                        `<div >
-                                            <div>Cause: <span class="fw-bold">${x.cause}</span></div>
-                                            <div>Serials:<br> ${x.serials.join(", ")}</div>
-                                        </div>`
-                                    )
-                                }).join("<br>")
-                            }
-                        </div>`
-
-                        Swal.fire('Success!', c, 'success');
-                    }
+                
+                    let c = `<div>
+                        <span class="fw-bold">Added Serials:</span><br>
+                        <div class="row gx-0">
+                        ${
+                            res.data.info.added_serials.length === 0 ?"<span>No product added</span>":
+                            res.data.info.added_serials.map((x) => {
+                                return (
+                                    `<span class="col-4 p-1">${x}</span>`
+                                )
+                            }).join("")
+                        }
+                        </div>
+                    </div>
+                    <br>
+                    <div>
+                        <span class="fw-bold">Rejected Serials:</span><br>
+                        <div class="row gx-0">
+                        ${
+                            res.data.info.rejected_serials.length === 0 ?"<span>No product rejected</span>":
+                            res.data.info.rejected_serials.map((x) => {
+                                return (
+                                    `<span class="col-4 p-1">${x}</span>`
+                                )
+                            }).join("")
+                        }
+                        </div>
+                    </div>
+                    `
+                    Swal.fire({
+                        title:'Success!',
+                        icon: "success",
+                        width: "40rem",
+                        html: c
+                    });
                 }
                 else {
                     Swal.fire('Oops!', res.data.message, 'error');
