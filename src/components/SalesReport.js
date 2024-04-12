@@ -503,16 +503,12 @@ const SalesReport = () => {
                             <div className="col-md-6">
                                 <div className="form-group">
                                     <label className="form-label my-1 required" htmlFor="date">Date</label>
-                                    <input type="date" id="date" className="form-control" value={date}
+                                    <input type="date" id="date" className="form-control" min={moment(date).startOf("month").format("YYYY-MM-DD")} max={moment(date).endOf("month").format("YYYY-MM-DD")} value={date}
                                         onChange={(e) => {
                                             if (!moment(e.target.value).isValid()) {
                                                 Swal.fire('Oops!', "Enter a valid date", 'warning');
                                                 return
                                             }
-                                            // if (!moment(e.target.value).isValid()) {
-                                            //     Swal.fire('Oops!', "Enter a valid date", 'warning');
-                                            //     return
-                                            // }
 
                                             setDate(e.target.value);
                                         }} />

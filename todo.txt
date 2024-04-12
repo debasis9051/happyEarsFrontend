@@ -11,8 +11,7 @@ field: trial machine value
 audiometry - print report, generate invoice against audiometry report
 
 
-invoice - date limitation to month
-invoice number date edit - invoice number fix 0 prefix for some invoices
+
 
 
 1. all tables major update - implement pagination logic 
