@@ -304,13 +304,13 @@ const Audiometry = () => {
                                         </div>
                                         <div className="card-body">
                                             <div className="row">
-                                                <div className="col-md-6">
+                                                <div className="col-xl-6">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required" htmlFor="patientName">Patient Name</label>
                                                         <input type="text" id="patientName" className="form-control" value={patientName} onChange={(e) => { setPatientName(e.target.value) }} />
                                                     </div>
                                                 </div>
-                                                <div className="col-md-6">
+                                                <div className="col-xl-6">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required" htmlFor="contactNumber">Contact Number</label>
                                                         <input type="text" id="contactNumber" className="form-control" value={contactNumber} onChange={(e) => { setContactNumber(e.target.value) }} />
@@ -318,13 +318,13 @@ const Audiometry = () => {
                                                 </div>
                                             </div>
                                             <div className="row">
-                                                <div className="col-md-3">
+                                                <div className="col-xl-2">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required" htmlFor="age">Age</label>
                                                         <input type="text" id="age" className="form-control" value={age} onChange={(e) => { setAge(e.target.value) }} />
                                                     </div>
                                                 </div>
-                                                <div className="col-md-3">
+                                                <div className="col-xl-3">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required" htmlFor="testMachine">Sex</label>
                                                         <div className="d-flex gap-1 text-white">
@@ -334,7 +334,7 @@ const Audiometry = () => {
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="col-md-6">
+                                                <div className="col-xl-7">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required" htmlFor="testMachine">Test Machine</label>
                                                         <input type="text" id="testMachine" className="form-control" value={testMachine} onChange={(e) => { setTestMachine(e.target.value) }} />
@@ -342,13 +342,13 @@ const Audiometry = () => {
                                                 </div>
                                             </div>
                                             <div className="row">
-                                                <div className="col-md-6">
+                                                <div className="col-xl-6">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required" htmlFor="patientAddress">Patient Address</label>
                                                         <textarea id="patientAddress" rows={3} className="form-control" value={patientAddress} onChange={(e) => { setPatientAddress(e.target.value) }} />
                                                     </div>
                                                 </div>
-                                                <div className="col-md-6">
+                                                <div className="col-xl-6">
                                                     <div className="form-group">
                                                         <label className="form-label my-1" htmlFor="remarks">Remarks</label>
                                                         <textarea id="remarks" rows={3} className="form-control" value={remarks} onChange={(e) => { setRemarks(e.target.value) }} />

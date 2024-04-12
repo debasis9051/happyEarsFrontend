@@ -1,16 +1,15 @@
 Todo:
 
-
-
+print audiometry report design:-
 
 title: audiogram hearing aid trial
-
 fields: patient name, age/sex, date
-
+chart: both ear
 field: degree of hearing loss - with colourful text
 field: trial machine value
 
 audiometry - print report, generate invoice against audiometry report
+
 
 invoice - date limitation to month
 invoice number date edit - invoice number fix 0 prefix for some invoices
