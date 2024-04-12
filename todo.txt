@@ -1,14 +1,24 @@
 Todo:
-1. 
-2. all tables major update - implement pagination logic
 
-1.
-2. invoice number date edit - invoice number fix 0 prefix for some invoices
-3.
-2. audiometry - view, print, generate invoice against audiometry report
-3.
-3. frontend and backend deployments cleanup
-4. product individual edit feature and export feature in inventory
+
+
+
+title: audiogram hearing aid trial
+
+fields: patient name, age/sex, date
+
+field: degree of hearing loss - with colourful text
+field: trial machine value
+
+audiometry - print report, generate invoice against audiometry report
+
+invoice - date limitation to month
+invoice number date edit - invoice number fix 0 prefix for some invoices
+
+
+1. all tables major update - implement pagination logic 
+2. frontend and backend deployments cleanup
+3. product individual edit feature and export feature in inventory
 
 
 HAPPY EARS PROJECT - structure

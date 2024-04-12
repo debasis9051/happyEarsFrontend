@@ -8,6 +8,7 @@ import moment from "moment"
 import { useFirebase } from "../contexts/firebase-context";
 import { getAudiometryList } from "../utils/getApis"
 import AuthWrapper from "./AuthWrapper";
+import { printAudiometryReport } from "../utils/printAudiometryReport"
 
 const frequencyList = [250, 500, 1000, 2000, 4000, 6000, 8000]
 
@@ -27,6 +28,8 @@ const Audiometry = () => {
     const [patientName, setPatientName] = useState("")
     const [patientAddress, setPatientAddress] = useState("")
     const [contactNumber, setContactNumber] = useState("")
+    const [age, setAge] = useState("")
+    const [sex, setSex] = useState("male")
     const [testMachine, setTestMachine] = useState("")
     const [remarks, setRemarks] = useState("")
     const [leftEarPta, setLeftEarPta] = useState(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
@@ -74,6 +77,8 @@ const Audiometry = () => {
         setPatientName(audiometry_report_data.patient_name)
         setPatientAddress(audiometry_report_data.patient_address)
         setContactNumber(audiometry_report_data.contact_number)
+        setAge(audiometry_report_data.age)
+        setSex(audiometry_report_data.sex)
         setTestMachine(audiometry_report_data.test_machine)
         setRemarks(audiometry_report_data.remarks)
         setLeftEarPta(audiometry_report_data.left_ear_pta)
@@ -93,6 +98,10 @@ const Audiometry = () => {
         }
         if (contactNumber === "") {
             Swal.fire('Oops!!', 'Contact Number cannot be empty', 'warning');
+            return false
+        }
+        if (age === "") {
+            Swal.fire('Oops!!', 'Age cannot be empty', 'warning');
             return false
         }
         if (testMachine === "") {
@@ -117,6 +126,8 @@ const Audiometry = () => {
             patient_name: patientName,
             patient_address: patientAddress,
             contact_number: contactNumber,
+            age: age,
+            sex: sex,
             test_machine: testMachine,
             remarks: remarks,
             left_ear_pta: leftEarPta,
@@ -153,6 +164,8 @@ const Audiometry = () => {
         setPatientName("")
         setPatientAddress("")
         setContactNumber("")
+        setAge("")
+        setSex("male")
         setTestMachine("")
         setRemarks("")
         setLeftEarPta(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
@@ -236,9 +249,8 @@ const Audiometry = () => {
                                                                         </Dropdown.Toggle>
 
                                                                         <Dropdown.Menu>
-                                                                            <Dropdown.Item onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); }} >View Report </Dropdown.Item>
                                                                             <Dropdown.Item onClick={() => { updateAudiometryReportInit(x) }} >Edit Report </Dropdown.Item>
-                                                                            <Dropdown.Item onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); }} >Print Report</Dropdown.Item>
+                                                                            <Dropdown.Item onClick={() => { printAudiometryReport(x.patient_name, x.patientAddress, x.contactNumber, x.test_machine, x.left_ear_pta, x.right_ear_pta) }} >Print Report</Dropdown.Item>
                                                                         </Dropdown.Menu>
                                                                     </Dropdown>
                                                                 </td>
@@ -292,19 +304,37 @@ const Audiometry = () => {
                                         </div>
                                         <div className="card-body">
                                             <div className="row">
-                                                <div className="col-md-4">
+                                                <div className="col-md-6">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required" htmlFor="patientName">Patient Name</label>
                                                         <input type="text" id="patientName" className="form-control" value={patientName} onChange={(e) => { setPatientName(e.target.value) }} />
                                                     </div>
                                                 </div>
-                                                <div className="col-md-4">
+                                                <div className="col-md-6">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required" htmlFor="contactNumber">Contact Number</label>
                                                         <input type="text" id="contactNumber" className="form-control" value={contactNumber} onChange={(e) => { setContactNumber(e.target.value) }} />
                                                     </div>
                                                 </div>
-                                                <div className="col-md-4">
+                                            </div>
+                                            <div className="row">
+                                                <div className="col-md-3">
+                                                    <div className="form-group">
+                                                        <label className="form-label my-1 required" htmlFor="age">Age</label>
+                                                        <input type="text" id="age" className="form-control" value={age} onChange={(e) => { setAge(e.target.value) }} />
+                                                    </div>
+                                                </div>
+                                                <div className="col-md-3">
+                                                    <div className="form-group">
+                                                        <label className="form-label my-1 required" htmlFor="testMachine">Sex</label>
+                                                        <div className="d-flex gap-1 text-white">
+                                                            <div className={`px-3 py-2 rounded ${sex==="male"?"bg-primary":"bg-secondary"}`} style={{cursor:"pointer"}} onClick={()=>{setSex("male")}}>Male</div>
+                                                            <div className={`px-3 py-2 rounded ${sex==="female"?"bg-primary":"bg-secondary"}`} style={{cursor:"pointer"}} onClick={()=>{setSex("female")}}>Female</div>
+                                                            <div className={`px-3 py-2 rounded ${sex==="others"?"bg-primary":"bg-secondary"}`} style={{cursor:"pointer"}} onClick={()=>{setSex("others")}}>Others</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="col-md-6">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required" htmlFor="testMachine">Test Machine</label>
                                                         <input type="text" id="testMachine" className="form-control" value={testMachine} onChange={(e) => { setTestMachine(e.target.value) }} />
@@ -344,7 +374,7 @@ const Audiometry = () => {
                                                                                         t[i].decibal = t[i].decibal <= 0 ? 0 : t[i].decibal - 5
                                                                                         setLeftEarPta(t)
                                                                                     }}>&ndash;</button>
-                                                                                    <input type="text" className="form-control rounded-0"
+                                                                                    <input type="number" className="form-control rounded-0"
                                                                                         value={(x.decibal === null ? "NR" : x.decibal).toString()}
                                                                                         onChange={(e) => {
                                                                                             let t = leftEarPta.map(x => ({ ...x }))
@@ -415,7 +445,7 @@ const Audiometry = () => {
                                                                                         t[i].decibal = t[i].decibal <= 0 ? 0 : t[i].decibal - 5
                                                                                         setRightEarPta(t)
                                                                                     }}>&ndash;</button>
-                                                                                    <input type="text" className="form-control rounded-0"
+                                                                                    <input type="number" className="form-control rounded-0"
                                                                                         value={(x.decibal === null ? "NR" : x.decibal).toString()}
                                                                                         onChange={(e) => {
                                                                                             let t = rightEarPta.map(x => ({ ...x }))
