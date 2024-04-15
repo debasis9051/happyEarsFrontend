@@ -64,8 +64,8 @@ const designParticulars = (discount_amount,line_items,accessory_items) => {
     }).join("")
 }
 
-const printAudiometryReport = (patient_name,patient_address,contact_number,test_machine,left_ear_pta,right_ear_pta) => {
-    
+const printAudiometryReport = (patient_name,age,sex,date,test_machine,left_ear_pta,right_ear_pta,lhl_text,rhl_text) => {
+
     let html = `
         <div class="container-fluid my-4 fw-bold">
             <div>
@@ -82,27 +82,57 @@ const printAudiometryReport = (patient_name,patient_address,contact_number,test_
             <div class="text-end mx-4" style="font-size:12px;"> Contact : 8100998309 / 310 </div>
 
 
-            
-            <table class="table table-bordered border-dark" style="font-weight: bold; text-align:center;">
-                <tr>
-                    <td colspan="3">Customer Name: ${patient_name}</td>
-                    <td colspan="4">Customer Address & Contact No.: <br>${patient_address}<br>PHONE: ${contact_number}</td>
-                </tr>
-                <tr>
-                    <td colspan="7"></td>
-                </tr>
-                <tr>
-                    <td>Sl No.</td>
-                    <td>Particulars</td>
-                    <td>Manufacturer</td>
-                    <td>Type</td>
-                    <td>Quantity</td>
-                    <td>Rate</td>
-                    <td>Amount</td>
-                </tr>   
+            <h2 class="text-center text-decoration-underline text-primary m-2">Audiogram Hearing Aid Trial</h2>
+            <div class="d-flex my-2">
+                <span class="mx-2">Patient Name : </span>
+                <span class="mx-2 flex-grow-1 border-bottom border-dark">${patient_name}</span>
+                <span class="mx-2">Age/Sex :</span>
+                <span class="mx-2 border-bottom border-dark">${age}/${sex[0].toUpperCase()}</span>
+            </div>
+            <div class="d-flex my-2">
+                <span class="mx-2">Date: </span>
+                <span class="mx-2 flex-grow-1 border-bottom border-dark">${date}<span>
+            </div>
+
+            <div class="row">
+                <div class="col-6">
+                    <div>
+                        <canvas id="leftEarChart"></canvas>
+                    </div>
+                    <div>
+                        <span>PTA (LT EAR) = </span>
+                        <span class="border-bottom border-dark">${left_ear_pta} db Hz</span>
+                    </div>
+                    <div>
+                        <span>Degree of Hearing Loss: </span>
+                        <span>${lhl_text}</span>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div>
+                        <canvas id="rightEarChart"></canvas>
+                    </div>
+                    <div>
+                        <span>PTA (RT EAR) = </span>
+                        <span class="border-bottom border-dark">${right_ear_pta} db Hz</span>
+                    </div>
+                    <div>
+                        <span>Degree of Hearing Loss: </span>
+                        <span>${rhl_text}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <span>Test Machine</span>
+                <span>${test_machine}</span>
+            </div>
+
+            <div>
+                <span>Disclaimer : </span>
+                <span class="text-danger">This is just a trial report based on patient response. This cannot be or should not be treated as medical audiogram report(PTA)</span>
+            </div>
                 
-            </table>
-            
         </div>
     `
 
@@ -110,6 +140,27 @@ const printAudiometryReport = (patient_name,patient_address,contact_number,test_
     nw.document.head.innerHTML = `
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer>
+        new Chart(document.getElementById('leftEarChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                datasets: [{
+                label: '# of Votes',
+                data: [12, 19, 3, 5, 2, 3],
+                borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
     `
     nw.document.body.innerHTML = html
     nw.print()

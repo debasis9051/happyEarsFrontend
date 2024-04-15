@@ -1,22 +1,9 @@
 Todo:
-
-print audiometry report design:-
-
-title: audiogram hearing aid trial
-fields: patient name, age/sex, date
-chart: both ear
-field: degree of hearing loss - with colourful text
-field: trial machine value
-
-audiometry - print report, generate invoice against audiometry report
-
-
-
-
-
-1. all tables major update - implement pagination logic 
-2. frontend and backend deployments cleanup
-3. product individual edit feature and export feature in inventory
+1. print audiometry report
+2. audiometry - print report, generate invoice against audiometry report
+3. all tables major update - implement pagination logic 
+4. frontend and backend deployments cleanup
+5. product individual edit feature and export feature in inventory
 
 
 HAPPY EARS PROJECT - structure
