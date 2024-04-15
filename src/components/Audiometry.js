@@ -175,7 +175,17 @@ const Audiometry = () => {
     }
 
     const calculateHearingLoss = (frequencyData) => {
-        return frequencyData.reduce((p, o) => { return [500, 1000, 2000].includes(o.frequency) ? p + o.decibal : p }, 0) / 3
+        let unit = Math.round((frequencyData.reduce((p, o) => { return [500, 1000, 2000].includes(o.frequency) ? p + o.decibal : p }, 0) / 3)*1000)/1000 
+        let color = "#000000"
+        let text = ""
+
+        if (unit <= 20) { color = "#129dd4"; text = "Normal Hearing"; }
+        else if (unit <= 40) { color = "#68c8ee"; text = "Mild Hearing loss"; }
+        else if (unit <= 70) { color = "#fab330"; text = "Moderate Hearing loss"; }
+        else if (unit <= 90) { color = "#fc8e29"; text = "Severe Hearing loss"; }
+        else { color = "#ff4255"; text = "Profound Hearing loss"; }
+
+        return {unit, color, text}
     }
 
     let tp = Math.ceil(filteredAudiometryList.length / 10)
@@ -237,8 +247,8 @@ const Audiometry = () => {
                                                                 <td>{(currentPage * 10) + i + 1}</td>
                                                                 <td>{x.patient_name}</td>
                                                                 <td>{x.contact_number}</td>
-                                                                <td>{Math.round(calculateHearingLoss(x.left_ear_pta) * 1000) / 1000}</td>
-                                                                <td>{Math.round(calculateHearingLoss(x.right_ear_pta) * 1000) / 1000}</td>
+                                                                <td>{calculateHearingLoss(x.left_ear_pta).unit}</td>
+                                                                <td>{calculateHearingLoss(x.right_ear_pta).unit}</td>
                                                                 <td>{moment.unix(x.created_at._seconds).format("lll")}</td>
                                                                 <td>
                                                                     <Dropdown>
@@ -250,7 +260,7 @@ const Audiometry = () => {
 
                                                                         <Dropdown.Menu>
                                                                             <Dropdown.Item onClick={() => { updateAudiometryReportInit(x) }} >Edit Report </Dropdown.Item>
-                                                                            <Dropdown.Item onClick={() => { printAudiometryReport(x.patient_name, x.age, x.sex, moment(x.created_at).format("DD-MM-YYYY"), x.test_machine, Math.round(calculateHearingLoss(x.left_ear_pta) * 1000) / 1000, Math.round(calculateHearingLoss(x.right_ear_pta) * 1000) / 1000, "left test", "right test") }} >Print Report</Dropdown.Item>
+                                                                            <Dropdown.Item onClick={() => { printAudiometryReport(x.patient_name, x.age, x.sex, moment(x.created_at).format("DD-MM-YYYY"), x.test_machine, x.left_ear_pta, x.right_ear_pta, calculateHearingLoss(x.left_ear_pta), calculateHearingLoss(x.right_ear_pta)) }} >Print Report</Dropdown.Item>
                                                                         </Dropdown.Menu>
                                                                     </Dropdown>
                                                                 </td>
@@ -408,20 +418,12 @@ const Audiometry = () => {
                                                             </div>
                                                         </div>
                                                         <div className="my-2">{(() => {
-                                                            let hl = calculateHearingLoss(leftEarPta)
-                                                            let c = "#000000"
-                                                            let t = ""
-
-                                                            if (hl <= 20) { c = "#129dd4"; t = "Normal Hearing"; }
-                                                            else if (hl <= 40) { c = "#68c8ee"; t = "Mild Hearing loss"; }
-                                                            else if (hl <= 70) { c = "#fab330"; t = "Moderate Hearing loss"; }
-                                                            else if (hl <= 90) { c = "#fc8e29"; t = "Severe Hearing loss"; }
-                                                            else { c = "#ff4255"; t = "Profound Hearing loss"; }
+                                                            let {unit, color, text} = calculateHearingLoss(leftEarPta)
 
                                                             return (
                                                                 <>
-                                                                    <span className="mx-3 fw-bold">LHL - {Math.round(hl * 1000) / 1000}</span>
-                                                                    <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: c }}>{t}</span>
+                                                                    <span className="mx-3 fw-bold">LHL - {Math.round(unit * 1000) / 1000}</span>
+                                                                    <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: color }}>{text}</span>
                                                                 </>
                                                             )
                                                         })()}</div>
@@ -479,20 +481,12 @@ const Audiometry = () => {
                                                             </div>
                                                         </div>
                                                         <div className="my-2">{(() => {
-                                                            let hl = calculateHearingLoss(rightEarPta)
-                                                            let c = "#000000"
-                                                            let t = ""
-
-                                                            if (hl <= 20) { c = "#129dd4"; t = "Normal Hearing"; }
-                                                            else if (hl <= 40) { c = "#68c8ee"; t = "Mild Hearing loss"; }
-                                                            else if (hl <= 70) { c = "#fab330"; t = "Moderate Hearing loss"; }
-                                                            else if (hl <= 90) { c = "#fc8e29"; t = "Severe Hearing loss"; }
-                                                            else { c = "#ff4255"; t = "Profound Hearing loss"; }
+                                                            let {unit, color, text} = calculateHearingLoss(rightEarPta)
 
                                                             return (
                                                                 <>
-                                                                    <span className="mx-3 fw-bold">RHL - {Math.round(hl * 1000) / 1000}</span>
-                                                                    <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: c }}>{t}</span>
+                                                                    <span className="mx-3 fw-bold">LHL - {Math.round(unit * 1000) / 1000}</span>
+                                                                    <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: color }}>{text}</span>
                                                                 </>
                                                             )
                                                         })()}</div>

@@ -1,78 +1,9 @@
-import { ToWords } from 'to-words';
-
-const designParticulars = (discount_amount,line_items,accessory_items) => {
-    let f = [[], [], [], [], [], [], []]
-
-    f[0].push(`<br>`)
-    f[1].push(`<span class="fw-bold">Products :-</span><br>`)
-    f[2].push(`<br>`)
-    f[3].push(`<br>`)
-    f[4].push(`<br>`)
-    f[5].push(`<br>`)
-    f[6].push(`<br>`)
-
-    f = line_items.reduce((p, o, i) => {
-        let t = p.map(x => { return [...x] })
-        t[0].push(`${i + 1}<br><br>`)
-        t[1].push(`${o.product_name}<br>S/N:-${o.serial_number}<br>`)
-        t[2].push(`${o.manufacturer_name}<br><br>`)
-        t[3].push(`${o.product_type}<br><br>`)
-        t[4].push(`${1}<br><br>`)
-        t[5].push(`${o.product_rate}/-<br><br>`)
-        t[6].push(`${o.product_rate}/-<br><br>`)
-        return t
-    }, f)
-
-    f[0].push(`<br>`)
-    f[1].push(`<br>`)
-    f[2].push(`<br>`)
-    f[3].push(`<br>`)
-    f[4].push(`<br>`)
-    f[5].push(`Discount (RS.) :-<br>`)
-    f[6].push(`${discount_amount}<br>`)
-
-    if (accessory_items.find(x => x.accessory !== "")) {
-        f[0].push(`<br>`)
-        f[1].push(`<span class="fw-bold">Accessories :-</span><br>`)
-        f[2].push(`<br>`)
-        f[3].push(`<br>`)
-        f[4].push(`<br>`)
-        f[5].push(`<br>`)
-        f[6].push(`<br>`)
-
-        f = accessory_items.reduce((p, o, i) => {
-            let t = p.map(x => { return [...x] })
-            t[0].push(`${i + 1}<br>`)
-            t[1].push(`${o.accessory}<br>`)
-            t[2].push(`<br>`)
-            t[3].push(`<br>`)
-            t[4].push(`${o.quantity}${(o.accessory.trim().toLowerCase().includes("battery") || o.accessory.trim().toLowerCase().includes("batteries"))?" Strips":""}<br>`)
-            t[5].push(`${o.accessory_rate === 0 ? "Free" : o.accessory_rate + "/-"}<br>`)
-            t[6].push(`${(o.quantity * o.accessory_rate) === 0 ? "Free" : (o.quantity * o.accessory_rate) + "/-"}<br>`)
-            return t
-        }, f)
-    }
-
-    f.forEach(x => {
-        x.push(`<br><br><br>`)
-    })
-
-    f[5].push(`Final Amount : (Rs )`)
-
-    return f.map((x, i, a) => {
-        return `<td ${i !== a.length - 1 ? "rowspan='2'" : ""} class="text-nowrap" >${x.join("<br>")}</td>`
-    }).join("")
-}
-
-const printAudiometryReport = (patient_name,age,sex,date,test_machine,left_ear_pta,right_ear_pta,lhl_text,rhl_text) => {
+const printAudiometryReport = (patient_name, age, sex, date, test_machine, left_ear_pta, right_ear_pta, lhl_data, rhl_data) => {
 
     let html = `
         <div class="container-fluid my-4 fw-bold">
-            <div>
-                <img src="/happy_ears_invoice_header.jpg" alt="header_image" style="width:85%;" >
-            </div> 
             
-            <div class="text-end  mx-4 mt-1" style="font-size:12px;"> Rajpur Sonarpur Branch : </div>
+            <div class="text-end mx-4" style="font-size:12px; margin-top:200px;"> Rajpur Sonarpur Branch : </div>
             <div class="text-end mx-4" style="font-size:12px;"> MAATARA APARTMENT </div>
             <div class="text-end mx-4" style="font-size:12px;">  
             
@@ -82,53 +13,51 @@ const printAudiometryReport = (patient_name,age,sex,date,test_machine,left_ear_p
             <div class="text-end mx-4" style="font-size:12px;"> Contact : 8100998309 / 310 </div>
 
 
-            <h2 class="text-center text-decoration-underline text-primary m-2">Audiogram Hearing Aid Trial</h2>
-            <div class="d-flex my-2">
+            <h2 class="text-center text-decoration-underline m-2" style="color:navy;">Audiogram Hearing Aid Trial</h2>
+            <div class="d-flex my-2 align-items-center">
                 <span class="mx-2">Patient Name : </span>
-                <span class="mx-2 flex-grow-1 border-bottom border-dark">${patient_name}</span>
+                <span class="mx-2 flex-grow-1 border-bottom border-dark fs-4">${patient_name}</span>
                 <span class="mx-2">Age/Sex :</span>
-                <span class="mx-2 border-bottom border-dark">${age}/${sex[0].toUpperCase()}</span>
+                <span class="mx-2 border-bottom border-dark fs-4">${age}/${sex[0].toUpperCase()}</span>
             </div>
-            <div class="d-flex my-2">
+            <div class="d-flex my-2 align-items-center">
                 <span class="mx-2">Date: </span>
-                <span class="mx-2 flex-grow-1 border-bottom border-dark">${date}<span>
+                <span class="mx-2 flex-grow-1 border-bottom border-dark fs-4">${date}<span>
             </div>
 
-            <div class="row">
-                <div class="col-6">
-                    <div>
-                        <canvas id="leftEarChart"></canvas>
-                    </div>
-                    <div>
+            <div class="d-flex text-center" style="gap:100px;">
+                <div>
+                    <h2 style="color:blue; margin:50px 0">Left</h2>
+                    <div style="width: 400px; height: 400px"><canvas id="leftEarChart"></canvas></div>
+                    <div style="margin-top:50px">
                         <span>PTA (LT EAR) = </span>
-                        <span class="border-bottom border-dark">${left_ear_pta} db Hz</span>
+                        <span class="border-bottom border-dark">${lhl_data.unit} db Hz</span>
                     </div>
-                    <div>
+                    <div style="margin-bottom:50px; margin-top:15px;">
                         <span>Degree of Hearing Loss: </span>
-                        <span>${lhl_text}</span>
+                        <span class="p-2 rounded" style="background-color:${lhl_data.color}">${lhl_data.text}</span>
                     </div>
                 </div>
-                <div class="col-6">
-                    <div>
-                        <canvas id="rightEarChart"></canvas>
-                    </div>
-                    <div>
+                <div>
+                    <h2 style="color:red; margin:50px 0">Right</h2>
+                    <div style="width: 400px; height: 400px"><canvas id="rightEarChart"></canvas></div>
+                    <div style="margin-top:50px">
                         <span>PTA (RT EAR) = </span>
-                        <span class="border-bottom border-dark">${right_ear_pta} db Hz</span>
+                        <span class="border-bottom border-dark">${rhl_data.unit} db Hz</span>
                     </div>
-                    <div>
+                    <div style="margin-bottom:50px; margin-top:15px;">
                         <span>Degree of Hearing Loss: </span>
-                        <span>${rhl_text}</span>
+                        <span class="p-2 rounded" style="background-color:${rhl_data.color}">${rhl_data.text}</span>
                     </div>
                 </div>
             </div>
 
-            <div>
-                <span>Test Machine</span>
-                <span>${test_machine}</span>
+            <div class="d-flex align-items-center">
+                <span class="mx-2">Test Machine: </span>
+                <span class="mx-2 border-bottom border-dark fs-4">${test_machine}</span>
             </div>
 
-            <div>
+            <div class="my-5">
                 <span>Disclaimer : </span>
                 <span class="text-danger">This is just a trial report based on patient response. This cannot be or should not be treated as medical audiogram report(PTA)</span>
             </div>
@@ -140,30 +69,108 @@ const printAudiometryReport = (patient_name,age,sex,date,test_machine,left_ear_p
     nw.document.head.innerHTML = `
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer>
-        new Chart(document.getElementById('leftEarChart'), {
-            type: 'bar',
-            data: {
-                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-                datasets: [{
-                label: '# of Votes',
-                data: [12, 19, 3, 5, 2, 3],
-                borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    </script>
     `
     nw.document.body.innerHTML = html
-    nw.print()
+
+    let sc1 = nw.document.createElement("script")
+    sc1.src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
+    sc1.type = "module"
+    sc1.integrity = "sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw=="
+    sc1.crossOrigin = "anonymous"
+    sc1.referrerPolicy = "no-referrer"
+    nw.document.head.appendChild(sc1)
+
+    let sc2 = nw.document.createElement("script")
+    sc2.text = `
+        window.addEventListener("load",()=>{
+            setTimeout(()=>{
+                const ctx1 = document.getElementById('leftEarChart');
+    
+                new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: [250, 500, 1000, 2000, 4000, 6000, 8000],
+                        datasets: [{
+                            data: [${left_ear_pta.map(x=>x.decibal)}],
+                            fill: false,
+                            borderColor: 'rgb(192, 192, 192)',
+                            pointRadius: 10,
+                            pointBorderColor: "blue",
+                            tension: 0.1
+                        }]
+                    },
+                    options:{
+                        maintainAspectRatio: false,
+                        scales:{
+                            yAxis: {
+                                min: 0,
+                                max: 120,
+                                grid:{
+                                    color: "black"
+                                }
+                            },
+                            xAxis:{
+                                grid:{
+                                    color: "black"
+                                }
+                            }
+                        },
+                        plugins:{
+                            legend:{
+                                display: false
+                            }
+                        }
+                    }
+                });
+
+                const ctx2 = document.getElementById('rightEarChart');
+    
+                new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: [250, 500, 1000, 2000, 4000, 6000, 8000],
+                        datasets: [{
+                            data: [${right_ear_pta.map(x=>x.decibal)}],
+                            fill: false,
+                            borderColor: 'rgb(192, 192, 192)',
+                            pointRadius: 10,
+                            pointBorderColor: "red",
+                            tension: 0.1
+                        }]
+                    },
+                    options:{
+                        maintainAspectRatio: false,
+                        scales:{
+                            yAxis: {
+                                min: 0,
+                                max: 120,
+                                grid:{
+                                    color: "black"
+                                }
+                            },
+                            xAxis:{
+                                grid:{
+                                    color: "black"
+                                }
+                            }
+                        },
+                        plugins:{
+                            legend:{
+                                display: false
+                            }
+                        },
+                        elements:{
+                            point:{
+                                pointStyle: "crossRot"
+                            }
+                        }
+                    }
+                });
+            },1000)
+        })
+    `
+    nw.document.head.appendChild(sc2)
+    setTimeout(() => { nw.print() }, 3000);
 }
 
 export { printAudiometryReport }
