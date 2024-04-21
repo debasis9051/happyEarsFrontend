@@ -28,7 +28,7 @@ const printAudiometryReport = (patient_name, age, sex, date, test_machine, left_
             <div class="d-flex text-center" style="gap:100px;">
                 <div>
                     <h2 style="color:blue; margin:50px 0">Left</h2>
-                    <div style="width: 400px; height: 400px"><canvas id="leftEarChart"></canvas></div>
+                    <canvas id="leftEarChart" style="width: 400px; height: 400px" width="500" height="500"></canvas>
                     <div style="margin-top:50px">
                         <span>PTA (LT EAR) = </span>
                         <span class="border-bottom border-dark">${lhl_data.unit} db Hz</span>
@@ -40,7 +40,7 @@ const printAudiometryReport = (patient_name, age, sex, date, test_machine, left_
                 </div>
                 <div>
                     <h2 style="color:red; margin:50px 0">Right</h2>
-                    <div style="width: 400px; height: 400px"><canvas id="rightEarChart"></canvas></div>
+                    <canvas id="rightEarChart" style="width: 400px; height: 400px" width="500" height="500"></canvas>
                     <div style="margin-top:50px">
                         <span>PTA (RT EAR) = </span>
                         <span class="border-bottom border-dark">${rhl_data.unit} db Hz</span>
@@ -72,104 +72,97 @@ const printAudiometryReport = (patient_name, age, sex, date, test_machine, left_
     `
     nw.document.body.innerHTML = html
 
-    let sc1 = nw.document.createElement("script")
-    sc1.src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
-    sc1.type = "module"
-    sc1.integrity = "sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw=="
-    sc1.crossOrigin = "anonymous"
-    sc1.referrerPolicy = "no-referrer"
-    nw.document.head.appendChild(sc1)
-
-    let sc2 = nw.document.createElement("script")
-    sc2.text = `
+    let sc = nw.document.createElement("script")
+    sc.text = `
         window.addEventListener("load",()=>{
-            setTimeout(()=>{
-                const ctx1 = document.getElementById('leftEarChart');
-    
-                new Chart(ctx1, {
-                    type: 'line',
-                    data: {
-                        labels: [250, 500, 1000, 2000, 4000, 6000, 8000],
-                        datasets: [{
-                            data: [${left_ear_pta.map(x=>x.decibal)}],
-                            fill: false,
-                            borderColor: 'rgb(192, 192, 192)',
-                            pointRadius: 10,
-                            pointBorderColor: "blue",
-                            tension: 0.1
-                        }]
-                    },
-                    options:{
-                        maintainAspectRatio: false,
-                        scales:{
-                            yAxis: {
-                                min: 0,
-                                max: 120,
-                                grid:{
-                                    color: "black"
-                                }
-                            },
-                            xAxis:{
-                                grid:{
-                                    color: "black"
-                                }
-                            }
-                        },
-                        plugins:{
-                            legend:{
-                                display: false
-                            }
-                        }
+            function generateChart(ctx, data, marker){
+                function drawMarker(x,y,marker){
+                    if(marker === "circle"){
+                        ctx.beginPath();
+                        ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                        ctx.fillStyle = "blue";
+                        ctx.fill();
                     }
-                });
+                    else if(marker === "cross"){
+                        ctx.beginPath();
+                        ctx.moveTo(x-5,y-5)
+                        ctx.lineTo(x+5,y+5)
+                        ctx.moveTo(x+5,y-5)
+                        ctx.lineTo(x-5,y+5)
+                        ctx.strokeStyle = "red";
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+                    }
+                }
+                
+                ctx.font = "15px Arial"
+                ctx.textAlign = "center"
+                
+                ctx.beginPath();
+                ctx.strokeRect(60, 60, 420, 420)
+                ctx.stroke();
+                
+                ctx.strokeText("Hz",35,30);
+                ctx.strokeText("dB",20,50);
+                ctx.beginPath();
+                ctx.moveTo(15, 25);
+                ctx.lineTo(40, 45)
+                ctx.stroke(); 
 
-                const ctx2 = document.getElementById('rightEarChart');
-    
-                new Chart(ctx2, {
-                    type: 'line',
-                    data: {
-                        labels: [250, 500, 1000, 2000, 4000, 6000, 8000],
-                        datasets: [{
-                            data: [${right_ear_pta.map(x=>x.decibal)}],
-                            fill: false,
-                            borderColor: 'rgb(192, 192, 192)',
-                            pointRadius: 10,
-                            pointBorderColor: "red",
-                            tension: 0.1
-                        }]
-                    },
-                    options:{
-                        maintainAspectRatio: false,
-                        scales:{
-                            yAxis: {
-                                min: 0,
-                                max: 120,
-                                grid:{
-                                    color: "black"
-                                }
-                            },
-                            xAxis:{
-                                grid:{
-                                    color: "black"
-                                }
-                            }
-                        },
-                        plugins:{
-                            legend:{
-                                display: false
-                            }
-                        },
-                        elements:{
-                            point:{
-                                pointStyle: "crossRot"
-                            }
-                        }
-                    }
-                });
+                let x_labels = [250,500,1000,2000,4000,6000,8000]
+                ctx.beginPath();
+                x_labels.forEach((elem,i,arr)=>{
+                    let x = 60 + 420/(arr.length-1) * i
+                    let y = 50 + 0
+
+                    ctx.strokeText(elem,x,y-5);
+                    
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x, y + 420 + 10)
+                })
+                ctx.stroke(); 
+                
+                let y_labels = Array.from({ length: (120 + 10) / 10 + 1}, (_, index) => index * 10 - 10);
+                ctx.beginPath();
+                y_labels.forEach((elem,i,arr)=>{
+                    let x = 50 + 0
+                    let y = 60 + (420-10)/(arr.length-1) * i
+
+                    ctx.strokeText(elem,x-15,y+5);
+                    
+                    ctx.moveTo(x,y);
+                    ctx.lineTo(x + 420 + 10, y)
+                })
+                ctx.stroke(); 
+                
+                ctx.beginPath();
+                ctx.moveTo(60 + 0, 60 + (420-10)/(120+10) * (data[0] + 10));
+                data.slice(1,data.length).forEach((elem,i,arr)=>{
+                    let x = 60 + 420/(arr.length) * (i+1)
+                    let y = 60 + (420-10)/(120+10) * (elem + 10)
+                    
+                    ctx.lineTo(x, y)
+                })
+                ctx.stroke();
+                
+                data.forEach((elem,i,arr)=>{
+                    let x = 60 + 420/(arr.length-1) * i
+                    let y = 60 + (420-10)/(120+10) * (elem + 10)
+
+                    drawMarker(x, y, marker)
+                })
+            }
+
+            setTimeout(()=>{
+                const ctx1 = document.getElementById('leftEarChart').getContext("2d")
+                generateChart(ctx1, [${left_ear_pta.map(x=>x.decibal)}], "circle")
+                
+                const ctx2 = document.getElementById('rightEarChart').getContext("2d")
+                generateChart(ctx2, [${right_ear_pta.map(x=>x.decibal)}], "cross")
             },1000)
         })
     `
-    nw.document.head.appendChild(sc2)
+    nw.document.head.appendChild(sc)
     setTimeout(() => { nw.print() }, 3000);
 }
 

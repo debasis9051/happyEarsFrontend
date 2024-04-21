@@ -1,4 +1,8 @@
 Todo:
+
+constraint audiometry input range from -10 to 120
+redo audiometry report fields
+
 1. print audiometry report
 2. audiometry - print report, generate invoice against audiometry report
 3. all tables major update - implement pagination logic 
