@@ -73,6 +73,7 @@ const printAudiometryReport = (patient_name, age, sex, date, test_machine, left_
     nw.document.body.innerHTML = html
 
     let sc = nw.document.createElement("script")
+    sc.defer = true
     sc.text = `
         window.addEventListener("load",()=>{
             function generateChart(ctx, data, marker){
