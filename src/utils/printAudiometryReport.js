@@ -159,11 +159,11 @@ const printAudiometryReport = (patient_name, age, sex, date, test_machine, left_
                 
                 const ctx2 = document.getElementById('rightEarChart').getContext("2d")
                 generateChart(ctx2, [${right_ear_pta.map(x=>x.decibal)}], "cross")
-            },10000)
+            },1000)
         })
     `
     nw.document.head.appendChild(sc)
-    // setTimeout(() => { nw.print() }, 5000);
+    setTimeout(() => { nw.print() }, 5000);
 }
 
 export { printAudiometryReport }
