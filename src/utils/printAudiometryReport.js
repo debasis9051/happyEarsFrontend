@@ -1,3 +1,81 @@
+const generateChart = (ctx, data, marker) => {
+    const drawMarker = (x,y,marker) => {
+        if(marker === "circle"){
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = "blue";
+            ctx.fill();
+        }
+        else if(marker === "cross"){
+            ctx.beginPath();
+            ctx.moveTo(x-5,y-5)
+            ctx.lineTo(x+5,y+5)
+            ctx.moveTo(x+5,y-5)
+            ctx.lineTo(x-5,y+5)
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+    }
+    
+    ctx.font = "15px Arial"
+    ctx.textAlign = "center"
+    
+    ctx.beginPath();
+    ctx.strokeRect(60, 60, 420, 420)
+    ctx.stroke();
+    
+    ctx.strokeText("Hz",35,30);
+    ctx.strokeText("dB",20,50);
+    ctx.beginPath();
+    ctx.moveTo(15, 25);
+    ctx.lineTo(40, 45)
+    ctx.stroke(); 
+
+    let x_labels = [250,500,1000,2000,4000,6000,8000]
+    ctx.beginPath();
+    x_labels.forEach((elem,i,arr)=>{
+        let x = 60 + 420/(arr.length-1) * i
+        let y = 50 + 0
+
+        ctx.strokeText(elem,x,y-5);
+        
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, y + 420 + 10)
+    })
+    ctx.stroke(); 
+    
+    let y_labels = Array.from({ length: (120 + 10) / 10 + 1}, (_, index) => index * 10 - 10);
+    ctx.beginPath();
+    y_labels.forEach((elem,i,arr)=>{
+        let x = 50 + 0
+        let y = 60 + (420-10)/(arr.length-1) * i
+
+        ctx.strokeText(elem,x-15,y+5);
+        
+        ctx.moveTo(x,y);
+        ctx.lineTo(x + 420 + 10, y)
+    })
+    ctx.stroke(); 
+    
+    ctx.beginPath();
+    ctx.moveTo(60 + 0, 60 + (420-10)/(120+10) * (data[0] + 10));
+    data.slice(1,data.length).forEach((elem,i,arr)=>{
+        let x = 60 + 420/(arr.length) * (i+1)
+        let y = 60 + (420-10)/(120+10) * (elem + 10)
+        
+        ctx.lineTo(x, y)
+    })
+    ctx.stroke();
+    
+    data.forEach((elem,i,arr)=>{
+        let x = 60 + 420/(arr.length-1) * i
+        let y = 60 + (420-10)/(120+10) * (elem + 10)
+
+        drawMarker(x, y, marker)
+    })
+}
+
 const printAudiometryReport = (patient_name, age, sex, date, test_machine, left_ear_pta, right_ear_pta, lhl_data, rhl_data) => {
 
     let html = `
@@ -64,7 +142,7 @@ const printAudiometryReport = (patient_name, age, sex, date, test_machine, left_
                 
         </div>
     `
-
+    
     let nw = window.open()
     nw.document.head.innerHTML = `
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
@@ -72,99 +150,14 @@ const printAudiometryReport = (patient_name, age, sex, date, test_machine, left_
     `
     nw.document.body.innerHTML = html
 
-    let sc = nw.document.createElement("script")
-    sc.defer = true
-    sc.text = `
-        window.addEventListener("load",()=>{
-            function generateChart(ctx, data, marker){
-                function drawMarker(x,y,marker){
-                    if(marker === "circle"){
-                        ctx.beginPath();
-                        ctx.arc(x, y, 5, 0, 2 * Math.PI);
-                        ctx.fillStyle = "blue";
-                        ctx.fill();
-                    }
-                    else if(marker === "cross"){
-                        ctx.beginPath();
-                        ctx.moveTo(x-5,y-5)
-                        ctx.lineTo(x+5,y+5)
-                        ctx.moveTo(x+5,y-5)
-                        ctx.lineTo(x-5,y+5)
-                        ctx.strokeStyle = "red";
-                        ctx.lineWidth = 3;
-                        ctx.stroke();
-                    }
-                }
-                
-                ctx.font = "15px Arial"
-                ctx.textAlign = "center"
-                
-                ctx.beginPath();
-                ctx.strokeRect(60, 60, 420, 420)
-                ctx.stroke();
-                
-                ctx.strokeText("Hz",35,30);
-                ctx.strokeText("dB",20,50);
-                ctx.beginPath();
-                ctx.moveTo(15, 25);
-                ctx.lineTo(40, 45)
-                ctx.stroke(); 
+    let ctx1 = nw.document.getElementById('leftEarChart').getContext("2d")
+    generateChart(ctx1, left_ear_pta.map(x=>x.decibal), "circle")
+    
+    let ctx2 = nw.document.getElementById('rightEarChart').getContext("2d")
+    generateChart(ctx2, right_ear_pta.map(x=>x.decibal), "cross")
 
-                let x_labels = [250,500,1000,2000,4000,6000,8000]
-                ctx.beginPath();
-                x_labels.forEach((elem,i,arr)=>{
-                    let x = 60 + 420/(arr.length-1) * i
-                    let y = 50 + 0
 
-                    ctx.strokeText(elem,x,y-5);
-                    
-                    ctx.moveTo(x, y);
-                    ctx.lineTo(x, y + 420 + 10)
-                })
-                ctx.stroke(); 
-                
-                let y_labels = Array.from({ length: (120 + 10) / 10 + 1}, (_, index) => index * 10 - 10);
-                ctx.beginPath();
-                y_labels.forEach((elem,i,arr)=>{
-                    let x = 50 + 0
-                    let y = 60 + (420-10)/(arr.length-1) * i
-
-                    ctx.strokeText(elem,x-15,y+5);
-                    
-                    ctx.moveTo(x,y);
-                    ctx.lineTo(x + 420 + 10, y)
-                })
-                ctx.stroke(); 
-                
-                ctx.beginPath();
-                ctx.moveTo(60 + 0, 60 + (420-10)/(120+10) * (data[0] + 10));
-                data.slice(1,data.length).forEach((elem,i,arr)=>{
-                    let x = 60 + 420/(arr.length) * (i+1)
-                    let y = 60 + (420-10)/(120+10) * (elem + 10)
-                    
-                    ctx.lineTo(x, y)
-                })
-                ctx.stroke();
-                
-                data.forEach((elem,i,arr)=>{
-                    let x = 60 + 420/(arr.length-1) * i
-                    let y = 60 + (420-10)/(120+10) * (elem + 10)
-
-                    drawMarker(x, y, marker)
-                })
-            }
-
-            setTimeout(()=>{
-                const ctx1 = document.getElementById('leftEarChart').getContext("2d")
-                generateChart(ctx1, [${left_ear_pta.map(x=>x.decibal)}], "circle")
-                
-                const ctx2 = document.getElementById('rightEarChart').getContext("2d")
-                generateChart(ctx2, [${right_ear_pta.map(x=>x.decibal)}], "cross")
-            },1000)
-        })
-    `
-    nw.document.head.appendChild(sc)
-    setTimeout(() => { nw.print() }, 5000);
+    setTimeout(() => { nw.print() }, 2000);
 }
 
 export { printAudiometryReport }
