@@ -105,7 +105,7 @@ const printAudiometryReport = (patient_name, age, sex, date, test_machine, left_
 
             <div class="d-flex text-center" style="gap:100px;">
                 <div>
-                    <h2 style="color:blue; margin:50px 0">Left</h2>
+                    <h2 style="color:blue; margin:40px 0">Left</h2>
                     <canvas id="leftEarChart" style="width: 400px; height: 400px" width="500" height="500"></canvas>
                     <div style="margin-top:50px">
                         <span>PTA (LT EAR) = </span>
@@ -117,7 +117,7 @@ const printAudiometryReport = (patient_name, age, sex, date, test_machine, left_
                     </div>
                 </div>
                 <div>
-                    <h2 style="color:red; margin:50px 0">Right</h2>
+                    <h2 style="color:red; margin:40px 0">Right</h2>
                     <canvas id="rightEarChart" style="width: 400px; height: 400px" width="500" height="500"></canvas>
                     <div style="margin-top:50px">
                         <span>PTA (RT EAR) = </span>
