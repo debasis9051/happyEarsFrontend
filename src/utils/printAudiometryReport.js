@@ -58,6 +58,7 @@ const generateChart = (ctx, data, marker) => {
     })
     ctx.stroke(); 
     
+    ctx.lineWidth = 2
     ctx.beginPath();
     ctx.moveTo(60 + 0, 60 + (420-10)/(120+10) * (data[0] + 10));
     data.slice(1,data.length).forEach((elem,i,arr)=>{
