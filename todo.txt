@@ -25,10 +25,11 @@ rajpur sonarpur address spsacing reduce
 
 
 
-1. audiometry - form update, delete reoprt, print report, generate invoice against audiometry report
-2. all tables major update - implement pagination logic 
-3. frontend and backend deployments cleanup
-4. product individual edit feature and export feature in inventory
+1. udiometry - form update, delete report, print report, generate invoice against audiometry report
+2. user access restriction implementation, set user access restriction admin panel 
+3. all tables major update - implement pagination logic 
+4. frontend and backend deployments cleanup
+5. product individual edit feature and export feature in inventory
 
 
 HAPPY EARS PROJECT - structure

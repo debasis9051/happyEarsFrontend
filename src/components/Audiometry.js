@@ -12,6 +12,20 @@ import { printAudiometryReport } from "../utils/printAudiometryReport"
 
 const frequencyList = [250, 500, 1000, 2000, 4000, 6000, 8000]
 
+const calculateHearingLoss = (frequencyData) => {
+    let unit = Math.round((frequencyData.reduce((p, o) => { return [500, 1000, 2000].includes(o.frequency) ? p + o.decibal : p }, 0) / 3) * 1000) / 1000
+    let color = "#000000"
+    let text = ""
+
+    if (unit <= 20) { color = "#129dd4"; text = "Normal Hearing"; }
+    else if (unit <= 40) { color = "#68c8ee"; text = "Mild Hearing loss"; }
+    else if (unit <= 70) { color = "#fab330"; text = "Moderate Hearing loss"; }
+    else if (unit <= 90) { color = "#fc8e29"; text = "Severe Hearing loss"; }
+    else { color = "#ff4255"; text = "Profound Hearing loss"; }
+
+    return { unit, color, text }
+}
+
 const Audiometry = () => {
     const { currentUserInfo } = useFirebase()
 
@@ -37,12 +51,12 @@ const Audiometry = () => {
     const [remarks, setRemarks] = useState("")
     const [complaint, setComplaint] = useState("")
 
-    const [acLeftEarPta, setAcLeftEarPta] = useState(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
-    const [acRightEarPta, setAcRightEarPta] = useState(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
+    const [acLeftEarPta, setAcLeftEarPta] = useState({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
+    const [acRightEarPta, setAcRightEarPta] = useState({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
 
     const [bcInput, setBcInput] = useState(false)
-    const [bcLeftEarPta, setBcLeftEarPta] = useState(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
-    const [bcRightEarPta, setBcRightEarPta] = useState(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
+    const [bcLeftEarPta, setBcLeftEarPta] = useState({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
+    const [bcRightEarPta, setBcRightEarPta] = useState({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
 
     const [tuningFork, setTuningFork] = useState(0)
     const [rinne, setRinne] = useState({ left: null, right: null })
@@ -188,20 +202,6 @@ const Audiometry = () => {
         setAcRightEarPta(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
 
         setCurrentTab("tab1")
-    }
-
-    const calculateHearingLoss = (frequencyData) => {
-        let unit = Math.round((frequencyData.reduce((p, o) => { return [500, 1000, 2000].includes(o.frequency) ? p + o.decibal : p }, 0) / 3) * 1000) / 1000
-        let color = "#000000"
-        let text = ""
-
-        if (unit <= 20) { color = "#129dd4"; text = "Normal Hearing"; }
-        else if (unit <= 40) { color = "#68c8ee"; text = "Mild Hearing loss"; }
-        else if (unit <= 70) { color = "#fab330"; text = "Moderate Hearing loss"; }
-        else if (unit <= 90) { color = "#fc8e29"; text = "Severe Hearing loss"; }
-        else { color = "#ff4255"; text = "Profound Hearing loss"; }
-
-        return { unit, color, text }
     }
 
     let tp = Math.ceil(filteredAudiometryList.length / 10)
@@ -418,128 +418,12 @@ const Audiometry = () => {
                                             <div className="row">
                                                 <div className="col-xl-6 text-center">
                                                     <h5 className="mt-3">Left Ear PTA</h5>
-                                                    <div className="border border-5 border-primary rounded-5 px-5 d-inline-block">
-                                                        <div className="d-flex justify-content-center">
-                                                            <div className="px-1" style={{ fontSize: "smaller", writingMode: "tb", textOrientation: "upright" }}>frequency</div>
-                                                            <div className="py-3">
-                                                                {
-                                                                    acLeftEarPta.map((x, i) => {
-                                                                        return (
-                                                                            <div key={i} className="row gx-0 align-items-center my-2">
-                                                                                <div className="col-2 px-2">{x.frequency}</div>
-                                                                                <div className="col-9 px-2 d-flex">
-                                                                                    <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= 0} onClick={() => {
-                                                                                        let t = acLeftEarPta.map(x => ({ ...x }))
-                                                                                        t[i].decibal = t[i].decibal <= 0 ? 0 : t[i].decibal - 5
-                                                                                        setAcLeftEarPta(t)
-                                                                                    }}>&ndash;</button>
-                                                                                    <input type="number" className="form-control rounded-0"
-                                                                                        value={(x.decibal === null ? "NR" : x.decibal).toString()}
-                                                                                        onChange={(e) => {
-                                                                                            let t = acLeftEarPta.map(x => ({ ...x }))
-                                                                                            t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > 120 ? 120 : parseInt(e.target.value)
-                                                                                            setAcLeftEarPta(t)
-                                                                                        }}
-                                                                                        onBlur={(e) => {
-                                                                                            let t = acLeftEarPta.map(x => ({ ...x }))
-                                                                                            t[i].decibal = Math.round(t[i].decibal / 5) * 5
-                                                                                            setAcLeftEarPta(t)
-                                                                                        }}
-                                                                                        disabled={x.decibal === null}
-                                                                                    />
-                                                                                    <button className="btn btn-primary rounded-0 rounded-end fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal >= 120} onClick={() => {
-                                                                                        let t = acLeftEarPta.map(x => ({ ...x }))
-                                                                                        t[i].decibal = t[i].decibal >= 120 ? 120 : t[i].decibal + 5
-                                                                                        setAcLeftEarPta(t)
-                                                                                    }}>&#43;</button>
-                                                                                </div>
-                                                                                <div className={`col-1 px-2 rounded-circle ${x.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "30px", height: "30px", cursor: "pointer" }}
-                                                                                    onClick={() => {
-                                                                                        let t = acLeftEarPta.map(x => ({ ...x }))
-                                                                                        t[i].decibal = t[i].decibal !== null ? null : 0
-                                                                                        setAcLeftEarPta(t)
-                                                                                    }}
-                                                                                ></div>
-                                                                            </div>
-                                                                        )
-                                                                    })
-                                                                }
-                                                            </div>
-                                                        </div>
-                                                        <div className="my-2">{(() => {
-                                                            let { unit, color, text } = calculateHearingLoss(acLeftEarPta)
-
-                                                            return (
-                                                                <>
-                                                                    <span className="mx-3 fw-bold">LHL - {Math.round(unit * 1000) / 1000}</span>
-                                                                    <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: color }}>{text}</span>
-                                                                </>
-                                                            )
-                                                        })()}</div>
-                                                    </div>
+                                                    <AudiogramInput ptaData={acLeftEarPta} setPtaData={setAcLeftEarPta} />
                                                 </div>
 
                                                 <div className="col-xl-6 text-center">
                                                     <h5 className="mt-3">Right Ear PTA</h5>
-                                                    <div className="border border-5 border-primary rounded-5 px-5 d-inline-block">
-                                                        <div className="d-flex justify-content-center">
-                                                            <div className="px-1" style={{ fontSize: "smaller", writingMode: "tb", textOrientation: "upright" }}>frequency</div>
-                                                            <div className="py-3">
-                                                                {
-                                                                    acRightEarPta.map((x, i) => {
-                                                                        return (
-                                                                            <div key={i} className="row gx-0 align-items-center my-2">
-                                                                                <div className="col-2 px-2">{x.frequency}</div>
-                                                                                <div className="col-9 px-2 d-flex">
-                                                                                    <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= 0} onClick={() => {
-                                                                                        let t = acRightEarPta.map(x => ({ ...x }))
-                                                                                        t[i].decibal = t[i].decibal <= 0 ? 0 : t[i].decibal - 5
-                                                                                        setAcRightEarPta(t)
-                                                                                    }}>&ndash;</button>
-                                                                                    <input type="number" className="form-control rounded-0"
-                                                                                        value={(x.decibal === null ? "NR" : x.decibal).toString()}
-                                                                                        onChange={(e) => {
-                                                                                            let t = acRightEarPta.map(x => ({ ...x }))
-                                                                                            t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > 120 ? 120 : parseInt(e.target.value)
-                                                                                            setAcRightEarPta(t)
-                                                                                        }}
-                                                                                        onBlur={(e) => {
-                                                                                            let t = acRightEarPta.map(x => ({ ...x }))
-                                                                                            t[i].decibal = Math.round(t[i].decibal / 5) * 5
-                                                                                            setAcRightEarPta(t)
-                                                                                        }}
-                                                                                        disabled={x.decibal === null}
-                                                                                    />
-                                                                                    <button className="btn btn-primary rounded-0 rounded-end fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal >= 120} onClick={() => {
-                                                                                        let t = acRightEarPta.map(x => ({ ...x }))
-                                                                                        t[i].decibal = t[i].decibal >= 120 ? 120 : t[i].decibal + 5
-                                                                                        setAcRightEarPta(t)
-                                                                                    }}>&#43;</button>
-                                                                                </div>
-                                                                                <div className={`col-1 px-2 rounded-circle ${x.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "30px", height: "30px", cursor: "pointer" }}
-                                                                                    onClick={() => {
-                                                                                        let t = acRightEarPta.map(x => ({ ...x }))
-                                                                                        t[i].decibal = t[i].decibal !== null ? null : 0
-                                                                                        setAcRightEarPta(t)
-                                                                                    }}
-                                                                                ></div>
-                                                                            </div>
-                                                                        )
-                                                                    })
-                                                                }
-                                                            </div>
-                                                        </div>
-                                                        <div className="my-2">{(() => {
-                                                            let { unit, color, text } = calculateHearingLoss(acRightEarPta)
-
-                                                            return (
-                                                                <>
-                                                                    <span className="mx-3 fw-bold">LHL - {Math.round(unit * 1000) / 1000}</span>
-                                                                    <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: color }}>{text}</span>
-                                                                </>
-                                                            )
-                                                        })()}</div>
-                                                    </div>
+                                                    <AudiogramInput ptaData={acRightEarPta} setPtaData={setAcRightEarPta} />
                                                 </div>
                                             </div>
 
@@ -550,128 +434,12 @@ const Audiometry = () => {
                                                 <div className="row">
                                                     <div className="col-xl-6 text-center">
                                                         <h5 className="mt-3">Left Ear PTA</h5>
-                                                        <div className="border border-5 border-primary rounded-5 px-5 d-inline-block">
-                                                            <div className="d-flex justify-content-center">
-                                                                <div className="px-1" style={{ fontSize: "smaller", writingMode: "tb", textOrientation: "upright" }}>frequency</div>
-                                                                <div className="py-3">
-                                                                    {
-                                                                        bcLeftEarPta.map((x, i) => {
-                                                                            return (
-                                                                                <div key={i} className="row gx-0 align-items-center my-2">
-                                                                                    <div className="col-2 px-2">{x.frequency}</div>
-                                                                                    <div className="col-9 px-2 d-flex">
-                                                                                        <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= 0} onClick={() => {
-                                                                                            let t = bcLeftEarPta.map(x => ({ ...x }))
-                                                                                            t[i].decibal = t[i].decibal <= 0 ? 0 : t[i].decibal - 5
-                                                                                            setBcLeftEarPta(t)
-                                                                                        }}>&ndash;</button>
-                                                                                        <input type="number" className="form-control rounded-0"
-                                                                                            value={(x.decibal === null ? "NR" : x.decibal).toString()}
-                                                                                            onChange={(e) => {
-                                                                                                let t = bcLeftEarPta.map(x => ({ ...x }))
-                                                                                                t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > 120 ? 120 : parseInt(e.target.value)
-                                                                                                setBcLeftEarPta(t)
-                                                                                            }}
-                                                                                            onBlur={(e) => {
-                                                                                                let t = bcLeftEarPta.map(x => ({ ...x }))
-                                                                                                t[i].decibal = Math.round(t[i].decibal / 5) * 5
-                                                                                                setBcLeftEarPta(t)
-                                                                                            }}
-                                                                                            disabled={x.decibal === null}
-                                                                                        />
-                                                                                        <button className="btn btn-primary rounded-0 rounded-end fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal >= 120} onClick={() => {
-                                                                                            let t = bcLeftEarPta.map(x => ({ ...x }))
-                                                                                            t[i].decibal = t[i].decibal >= 120 ? 120 : t[i].decibal + 5
-                                                                                            setBcLeftEarPta(t)
-                                                                                        }}>&#43;</button>
-                                                                                    </div>
-                                                                                    <div className={`col-1 px-2 rounded-circle ${x.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "30px", height: "30px", cursor: "pointer" }}
-                                                                                        onClick={() => {
-                                                                                            let t = bcLeftEarPta.map(x => ({ ...x }))
-                                                                                            t[i].decibal = t[i].decibal !== null ? null : 0
-                                                                                            setBcLeftEarPta(t)
-                                                                                        }}
-                                                                                    ></div>
-                                                                                </div>
-                                                                            )
-                                                                        })
-                                                                    }
-                                                                </div>
-                                                            </div>
-                                                            <div className="my-2">{(() => {
-                                                                let { unit, color, text } = calculateHearingLoss(bcLeftEarPta)
-
-                                                                return (
-                                                                    <>
-                                                                        <span className="mx-3 fw-bold">LHL - {Math.round(unit * 1000) / 1000}</span>
-                                                                        <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: color }}>{text}</span>
-                                                                    </>
-                                                                )
-                                                            })()}</div>
-                                                        </div>
+                                                        <AudiogramInput ptaData={bcLeftEarPta} setPtaData={setBcLeftEarPta} />
                                                     </div>
 
                                                     <div className="col-xl-6 text-center">
                                                         <h5 className="mt-3">Right Ear PTA</h5>
-                                                        <div className="border border-5 border-primary rounded-5 px-5 d-inline-block">
-                                                            <div className="d-flex justify-content-center">
-                                                                <div className="px-1" style={{ fontSize: "smaller", writingMode: "tb", textOrientation: "upright" }}>frequency</div>
-                                                                <div className="py-3">
-                                                                    {
-                                                                        bcRightEarPta.map((x, i) => {
-                                                                            return (
-                                                                                <div key={i} className="row gx-0 align-items-center my-2">
-                                                                                    <div className="col-2 px-2">{x.frequency}</div>
-                                                                                    <div className="col-9 px-2 d-flex">
-                                                                                        <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= 0} onClick={() => {
-                                                                                            let t = bcRightEarPta.map(x => ({ ...x }))
-                                                                                            t[i].decibal = t[i].decibal <= 0 ? 0 : t[i].decibal - 5
-                                                                                            setBcRightEarPta(t)
-                                                                                        }}>&ndash;</button>
-                                                                                        <input type="number" className="form-control rounded-0"
-                                                                                            value={(x.decibal === null ? "NR" : x.decibal).toString()}
-                                                                                            onChange={(e) => {
-                                                                                                let t = bcRightEarPta.map(x => ({ ...x }))
-                                                                                                t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > 120 ? 120 : parseInt(e.target.value)
-                                                                                                setBcRightEarPta(t)
-                                                                                            }}
-                                                                                            onBlur={(e) => {
-                                                                                                let t = bcRightEarPta.map(x => ({ ...x }))
-                                                                                                t[i].decibal = Math.round(t[i].decibal / 5) * 5
-                                                                                                setBcRightEarPta(t)
-                                                                                            }}
-                                                                                            disabled={x.decibal === null}
-                                                                                        />
-                                                                                        <button className="btn btn-primary rounded-0 rounded-end fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal >= 120} onClick={() => {
-                                                                                            let t = bcRightEarPta.map(x => ({ ...x }))
-                                                                                            t[i].decibal = t[i].decibal >= 120 ? 120 : t[i].decibal + 5
-                                                                                            setBcRightEarPta(t)
-                                                                                        }}>&#43;</button>
-                                                                                    </div>
-                                                                                    <div className={`col-1 px-2 rounded-circle ${x.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "30px", height: "30px", cursor: "pointer" }}
-                                                                                        onClick={() => {
-                                                                                            let t = bcRightEarPta.map(x => ({ ...x }))
-                                                                                            t[i].decibal = t[i].decibal !== null ? null : 0
-                                                                                            setBcRightEarPta(t)
-                                                                                        }}
-                                                                                    ></div>
-                                                                                </div>
-                                                                            )
-                                                                        })
-                                                                    }
-                                                                </div>
-                                                            </div>
-                                                            <div className="my-2">{(() => {
-                                                                let { unit, color, text } = calculateHearingLoss(bcRightEarPta)
-
-                                                                return (
-                                                                    <>
-                                                                        <span className="mx-3 fw-bold">LHL - {Math.round(unit * 1000) / 1000}</span>
-                                                                        <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: color }}>{text}</span>
-                                                                    </>
-                                                                )
-                                                            })()}</div>
-                                                        </div>
+                                                        <AudiogramInput ptaData={bcRightEarPta} setPtaData={setBcRightEarPta} />
                                                     </div>
                                                 </div>
                                             }
@@ -765,6 +533,76 @@ const Audiometry = () => {
                 </AuthWrapper>
             </div>
         </>
+    )
+}
+
+const AudiogramInput = ({ ptaData, setPtaData }) => {
+    return (
+        <div className="border border-5 border-primary rounded-5 px-5 d-inline-block">
+            <div className="d-flex justify-content-center">
+                <div className="px-1" style={{ fontSize: "smaller", writingMode: "tb", textOrientation: "upright" }}>frequency</div>
+                <div className="py-3">
+                    {
+                        ptaData.data.map((x, i) => {
+                            return (
+                                <div key={i} className="row gx-0 align-items-center my-2">
+                                    <div className="col-2 px-2">{x.frequency}</div>
+                                    <div className="col-9 px-2 d-flex">
+                                        <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= 0} onClick={() => {
+                                            let t = ptaData.data.map(x => ({ ...x }))
+                                            t[i].decibal = t[i].decibal <= 0 ? 0 : t[i].decibal - 5
+                                            setPtaData({ ...ptaData, data: t })
+                                        }}>&ndash;</button>
+                                        <input type={x.decibal === null ? "text" : "number"} className="form-control rounded-0"
+                                            value={x.decibal === null ? "NR" : x.decibal.toString()}
+                                            onChange={(e) => {
+                                                let t = ptaData.data.map(x => ({ ...x }))
+                                                t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > 120 ? 120 : parseInt(e.target.value)
+                                                setPtaData({ ...ptaData, data: t })
+                                            }}
+                                            onBlur={(e) => {
+                                                let t = ptaData.data.map(x => ({ ...x }))
+                                                t[i].decibal = Math.round(t[i].decibal / 5) * 5
+                                                setPtaData({ ...ptaData, data: t })
+                                            }}
+                                            disabled={x.decibal === null}
+                                        />
+                                        <button className="btn btn-primary rounded-0 rounded-end fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal >= 120} onClick={() => {
+                                            let t = ptaData.data.map(x => ({ ...x }))
+                                            t[i].decibal = t[i].decibal >= 120 ? 120 : t[i].decibal + 5
+                                            setPtaData({ ...ptaData, data: t })
+                                        }}>&#43;</button>
+                                    </div>
+                                    <div className={`col-1 px-2 rounded-circle ${x.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "30px", height: "30px", cursor: "pointer" }}
+                                        onClick={() => {
+                                            let t = ptaData.data.map(x => ({ ...x }))
+                                            t[i].decibal = t[i].decibal !== null ? null : 0
+                                            setPtaData({ ...ptaData, data: t })
+                                        }}
+                                    ></div>
+                                </div>
+                            )
+                        })
+                    }
+                </div>
+            </div>
+            <div className="my-2 d-flex align-items-center">
+                <h5 className="m-0">Masked</h5>
+                <FormCheck className="fs-4" type="switch" checked={ptaData.masked} onChange={(e) => { setPtaData({ ...ptaData, masked: e.target.checked }); }} />
+                {
+                    (() => {
+                        let { unit, color, text } = calculateHearingLoss(ptaData.data)
+
+                        return (
+                            <>
+                                <span className="mx-3 fw-bold">LHL - {Math.round(unit * 1000) / 1000}</span>
+                                <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: color }}>{text}</span>
+                            </>
+                        )
+                    })()
+                }
+            </div>
+        </div>
     )
 }
 
