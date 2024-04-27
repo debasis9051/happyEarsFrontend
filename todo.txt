@@ -1,13 +1,34 @@
 Todo:
 
 constraint audiometry input range from -10 to 120
-redo audiometry report fields
 
-1. print audiometry report
-2. audiometry - print report, generate invoice against audiometry report
-3. all tables major update - implement pagination logic 
-4. frontend and backend deployments cleanup
-5. product individual edit feature and export feature in inventory
+
+referred by, audiometer instead of test machine
+complaint instead of remarks
+
+multi chart for ac and bc
+
+tuning fork - number
+rinne - positive/negative
+weber - left/right/center
+
+provisional diagnosis, recommendations
+
+doctor entity - signnature, registration number
+
+disclaimer not visible
+
+PRINT PAGE ADJUSTMENTS
+signature in print
+domain/route - mention
+rajpur sonarpur address spsacing reduce
+
+
+
+1. audiometry - form update, delete reoprt, print report, generate invoice against audiometry report
+2. all tables major update - implement pagination logic 
+3. frontend and backend deployments cleanup
+4. product individual edit feature and export feature in inventory
 
 
 HAPPY EARS PROJECT - structure

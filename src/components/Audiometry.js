@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react"
-import { Dropdown, Tab, Tabs } from "react-bootstrap"
+import { Dropdown, Tab, Tabs, FormCheck } from "react-bootstrap"
 import axios from "axios";
 import Swal from "sweetalert2"
 import moment from "moment"
-// import Select from "react-select"
+import Select from "react-select"
 
 import { useFirebase } from "../contexts/firebase-context";
 import { getAudiometryList } from "../utils/getApis"
@@ -25,15 +25,31 @@ const Audiometry = () => {
 
     const [audiometryReportMode, setAudiometryReportMode] = useState("add")
     const [audiometryReportId, setAudiometryReportId] = useState(null)
+    const [trialMode, setTrialMode] = useState(true)
     const [patientName, setPatientName] = useState("")
     const [patientAddress, setPatientAddress] = useState("")
     const [contactNumber, setContactNumber] = useState("")
     const [age, setAge] = useState("")
     const [sex, setSex] = useState("male")
     const [testMachine, setTestMachine] = useState("")
+    const [referredBy, setReferredBy] = useState("")
+    const [audiometer, setAudiometer] = useState("")
     const [remarks, setRemarks] = useState("")
-    const [leftEarPta, setLeftEarPta] = useState(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
-    const [rightEarPta, setRightEarPta] = useState(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
+    const [complaint, setComplaint] = useState("")
+
+    const [acLeftEarPta, setAcLeftEarPta] = useState(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
+    const [acRightEarPta, setAcRightEarPta] = useState(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
+
+    const [bcInput, setBcInput] = useState(false)
+    const [bcLeftEarPta, setBcLeftEarPta] = useState(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
+    const [bcRightEarPta, setBcRightEarPta] = useState(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
+
+    const [tuningFork, setTuningFork] = useState(0)
+    const [rinne, setRinne] = useState({ left: null, right: null })
+    const [weber, setWeber] = useState({ left: null, right: null })
+
+    const [provisionalDiagnosis, setProvisionalDiagnosis] = useState("")
+    const [recommendations, setRecommendations] = useState("")
 
     const [isAudiometryReportApiLoading, setIsAudiometryReportApiLoading] = useState(false)
 
@@ -49,20 +65,20 @@ const Audiometry = () => {
         }
     })
 
-    // const dropDownStyle = {
-    //     option: (styles) => {
-    //         return {
-    //             ...styles,
-    //             color: 'black'
-    //         };
-    //     },
-    //     menu: (styles) => {
-    //         return {
-    //             ...styles,
-    //             minWidth: "max-content"
-    //         };
-    //     }
-    // }
+    const dropDownStyle = {
+        option: (styles) => {
+            return {
+                ...styles,
+                color: 'black'
+            };
+        },
+        menu: (styles) => {
+            return {
+                ...styles,
+                minWidth: "max-content"
+            };
+        }
+    }
 
 
     useEffect(() => {
@@ -81,8 +97,8 @@ const Audiometry = () => {
         setSex(audiometry_report_data.sex)
         setTestMachine(audiometry_report_data.test_machine)
         setRemarks(audiometry_report_data.remarks)
-        setLeftEarPta(audiometry_report_data.left_ear_pta)
-        setRightEarPta(audiometry_report_data.right_ear_pta)
+        setAcLeftEarPta(audiometry_report_data.left_ear_pta)
+        setAcRightEarPta(audiometry_report_data.right_ear_pta)
 
         setCurrentTab("tab2")
     }
@@ -109,14 +125,14 @@ const Audiometry = () => {
             return false
         }
 
-        for (let i = 0; i < leftEarPta.length; i++) {
-            if (leftEarPta[i].decibal === 0) {
+        for (let i = 0; i < acLeftEarPta.length; i++) {
+            if (acLeftEarPta[i].decibal === 0) {
                 Swal.fire('Oops!!', 'Decibal measurement cannot be 0', 'warning');
                 return false
             }
         }
-        for (let i = 0; i < rightEarPta.length; i++) {
-            if (rightEarPta[i].decibal === 0) {
+        for (let i = 0; i < acRightEarPta.length; i++) {
+            if (acRightEarPta[i].decibal === 0) {
                 Swal.fire('Oops!!', 'Decibal measurement cannot be 0', 'warning');
                 return false
             }
@@ -130,8 +146,8 @@ const Audiometry = () => {
             sex: sex,
             test_machine: testMachine,
             remarks: remarks,
-            left_ear_pta: leftEarPta,
-            right_ear_pta: rightEarPta,
+            left_ear_pta: acLeftEarPta,
+            right_ear_pta: acRightEarPta,
 
             current_user_uid: currentUserInfo.uid,
             current_user_name: currentUserInfo.displayName
@@ -168,14 +184,14 @@ const Audiometry = () => {
         setSex("male")
         setTestMachine("")
         setRemarks("")
-        setLeftEarPta(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
-        setRightEarPta(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
+        setAcLeftEarPta(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
+        setAcRightEarPta(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
 
         setCurrentTab("tab1")
     }
 
     const calculateHearingLoss = (frequencyData) => {
-        let unit = Math.round((frequencyData.reduce((p, o) => { return [500, 1000, 2000].includes(o.frequency) ? p + o.decibal : p }, 0) / 3)*1000)/1000 
+        let unit = Math.round((frequencyData.reduce((p, o) => { return [500, 1000, 2000].includes(o.frequency) ? p + o.decibal : p }, 0) / 3) * 1000) / 1000
         let color = "#000000"
         let text = ""
 
@@ -185,7 +201,7 @@ const Audiometry = () => {
         else if (unit <= 90) { color = "#fc8e29"; text = "Severe Hearing loss"; }
         else { color = "#ff4255"; text = "Profound Hearing loss"; }
 
-        return {unit, color, text}
+        return { unit, color, text }
     }
 
     let tp = Math.ceil(filteredAudiometryList.length / 10)
@@ -309,8 +325,12 @@ const Audiometry = () => {
                                 <Tab eventKey="tab2" title="Audiometry Report">
 
                                     <div className="container card container my-5 p-3">
-                                        <div className="card-header rounded">
+                                        <div className="card-header rounded d-flex align-items-center justify-content-between">
                                             <h4 className="m-0">{audiometryReportMode === "add" ? "Add" : "Update"} Audiometry Report</h4>
+                                            <div className="d-flex align-items-center gap-2">
+                                                <h5 className="m-0">Trial Mode</h5>
+                                                <FormCheck className="fs-4" type="switch" checked={trialMode} onChange={(e) => { setTrialMode(e.target.checked); }} />
+                                            </div>
                                         </div>
                                         <div className="card-body">
                                             <div className="row">
@@ -336,20 +356,38 @@ const Audiometry = () => {
                                                 </div>
                                                 <div className="col-xl-3 col-sm-6">
                                                     <div className="form-group">
-                                                        <label className="form-label my-1 required" htmlFor="testMachine">Sex</label>
+                                                        <label className="form-label my-1 required">Sex</label>
                                                         <div className="d-flex gap-1 text-white">
-                                                            <div className={`px-3 py-2 rounded ${sex==="male"?"bg-primary":"bg-secondary"}`} style={{cursor:"pointer"}} onClick={()=>{setSex("male")}}>Male</div>
-                                                            <div className={`px-3 py-2 rounded ${sex==="female"?"bg-primary":"bg-secondary"}`} style={{cursor:"pointer"}} onClick={()=>{setSex("female")}}>Female</div>
-                                                            <div className={`px-3 py-2 rounded ${sex==="others"?"bg-primary":"bg-secondary"}`} style={{cursor:"pointer"}} onClick={()=>{setSex("others")}}>Others</div>
+                                                            <div className={`px-3 py-2 rounded ${sex === "male" ? "bg-primary" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setSex("male") }}>Male</div>
+                                                            <div className={`px-3 py-2 rounded ${sex === "female" ? "bg-primary" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setSex("female") }}>Female</div>
+                                                            <div className={`px-3 py-2 rounded ${sex === "others" ? "bg-primary" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setSex("others") }}>Others</div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="col-xl-7">
-                                                    <div className="form-group">
-                                                        <label className="form-label my-1 required" htmlFor="testMachine">Test Machine</label>
-                                                        <input type="text" id="testMachine" className="form-control" value={testMachine} onChange={(e) => { setTestMachine(e.target.value) }} />
-                                                    </div>
-                                                </div>
+                                                {
+                                                    trialMode ?
+                                                        <div className="col-xl-7">
+                                                            <div className="form-group">
+                                                                <label className="form-label my-1 required" htmlFor="testMachine">Test Machine</label>
+                                                                <input type="text" id="testMachine" className="form-control" value={testMachine} onChange={(e) => { setTestMachine(e.target.value) }} />
+                                                            </div>
+                                                        </div>
+                                                        :
+                                                        <>
+                                                            <div className="col-xl-3">
+                                                                <div className="form-group">
+                                                                    <label className="form-label my-1 required" htmlFor="referredBy">Referred By</label>
+                                                                    <input type="text" id="referredBy" className="form-control" value={referredBy} onChange={(e) => { setReferredBy(e.target.value) }} />
+                                                                </div>
+                                                            </div>
+                                                            <div className="col-xl-4">
+                                                                <div className="form-group">
+                                                                    <label className="form-label my-1 required" htmlFor="audiometer">Audiometer</label>
+                                                                    <input type="text" id="audiometer" className="form-control" value={audiometer} onChange={(e) => { setAudiometer(e.target.value) }} />
+                                                                </div>
+                                                            </div>
+                                                        </>
+                                                }
                                             </div>
                                             <div className="row">
                                                 <div className="col-6">
@@ -358,14 +396,25 @@ const Audiometry = () => {
                                                         <textarea id="patientAddress" rows={3} className="form-control" value={patientAddress} onChange={(e) => { setPatientAddress(e.target.value) }} />
                                                     </div>
                                                 </div>
-                                                <div className="col-6">
-                                                    <div className="form-group">
-                                                        <label className="form-label my-1" htmlFor="remarks">Remarks</label>
-                                                        <textarea id="remarks" rows={3} className="form-control" value={remarks} onChange={(e) => { setRemarks(e.target.value) }} />
-                                                    </div>
-                                                </div>
+                                                {
+                                                    trialMode ?
+                                                        <div className="col-6">
+                                                            <div className="form-group">
+                                                                <label className="form-label my-1" htmlFor="remarks">Remarks</label>
+                                                                <textarea id="remarks" rows={3} className="form-control" value={remarks} onChange={(e) => { setRemarks(e.target.value) }} />
+                                                            </div>
+                                                        </div>
+                                                        :
+                                                        <div className="col-6">
+                                                            <div className="form-group">
+                                                                <label className="form-label my-1" htmlFor="complaint">Complaint</label>
+                                                                <textarea id="complaint" rows={3} className="form-control" value={complaint} onChange={(e) => { setComplaint(e.target.value) }} />
+                                                            </div>
+                                                        </div>
+                                                }
                                             </div>
 
+                                            <h4 className="text-center mt-5">Air Conduction (AC)</h4>
                                             <div className="row">
                                                 <div className="col-xl-6 text-center">
                                                     <h5 className="mt-3">Left Ear PTA</h5>
@@ -374,41 +423,41 @@ const Audiometry = () => {
                                                             <div className="px-1" style={{ fontSize: "smaller", writingMode: "tb", textOrientation: "upright" }}>frequency</div>
                                                             <div className="py-3">
                                                                 {
-                                                                    leftEarPta.map((x, i) => {
+                                                                    acLeftEarPta.map((x, i) => {
                                                                         return (
                                                                             <div key={i} className="row gx-0 align-items-center my-2">
                                                                                 <div className="col-2 px-2">{x.frequency}</div>
                                                                                 <div className="col-9 px-2 d-flex">
                                                                                     <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= 0} onClick={() => {
-                                                                                        let t = leftEarPta.map(x => ({ ...x }))
+                                                                                        let t = acLeftEarPta.map(x => ({ ...x }))
                                                                                         t[i].decibal = t[i].decibal <= 0 ? 0 : t[i].decibal - 5
-                                                                                        setLeftEarPta(t)
+                                                                                        setAcLeftEarPta(t)
                                                                                     }}>&ndash;</button>
                                                                                     <input type="number" className="form-control rounded-0"
                                                                                         value={(x.decibal === null ? "NR" : x.decibal).toString()}
                                                                                         onChange={(e) => {
-                                                                                            let t = leftEarPta.map(x => ({ ...x }))
+                                                                                            let t = acLeftEarPta.map(x => ({ ...x }))
                                                                                             t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > 120 ? 120 : parseInt(e.target.value)
-                                                                                            setLeftEarPta(t)
+                                                                                            setAcLeftEarPta(t)
                                                                                         }}
                                                                                         onBlur={(e) => {
-                                                                                            let t = leftEarPta.map(x => ({ ...x }))
+                                                                                            let t = acLeftEarPta.map(x => ({ ...x }))
                                                                                             t[i].decibal = Math.round(t[i].decibal / 5) * 5
-                                                                                            setLeftEarPta(t)
+                                                                                            setAcLeftEarPta(t)
                                                                                         }}
                                                                                         disabled={x.decibal === null}
                                                                                     />
                                                                                     <button className="btn btn-primary rounded-0 rounded-end fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal >= 120} onClick={() => {
-                                                                                        let t = leftEarPta.map(x => ({ ...x }))
+                                                                                        let t = acLeftEarPta.map(x => ({ ...x }))
                                                                                         t[i].decibal = t[i].decibal >= 120 ? 120 : t[i].decibal + 5
-                                                                                        setLeftEarPta(t)
+                                                                                        setAcLeftEarPta(t)
                                                                                     }}>&#43;</button>
                                                                                 </div>
                                                                                 <div className={`col-1 px-2 rounded-circle ${x.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "30px", height: "30px", cursor: "pointer" }}
                                                                                     onClick={() => {
-                                                                                        let t = leftEarPta.map(x => ({ ...x }))
+                                                                                        let t = acLeftEarPta.map(x => ({ ...x }))
                                                                                         t[i].decibal = t[i].decibal !== null ? null : 0
-                                                                                        setLeftEarPta(t)
+                                                                                        setAcLeftEarPta(t)
                                                                                     }}
                                                                                 ></div>
                                                                             </div>
@@ -418,7 +467,7 @@ const Audiometry = () => {
                                                             </div>
                                                         </div>
                                                         <div className="my-2">{(() => {
-                                                            let {unit, color, text} = calculateHearingLoss(leftEarPta)
+                                                            let { unit, color, text } = calculateHearingLoss(acLeftEarPta)
 
                                                             return (
                                                                 <>
@@ -437,41 +486,41 @@ const Audiometry = () => {
                                                             <div className="px-1" style={{ fontSize: "smaller", writingMode: "tb", textOrientation: "upright" }}>frequency</div>
                                                             <div className="py-3">
                                                                 {
-                                                                    rightEarPta.map((x, i) => {
+                                                                    acRightEarPta.map((x, i) => {
                                                                         return (
                                                                             <div key={i} className="row gx-0 align-items-center my-2">
                                                                                 <div className="col-2 px-2">{x.frequency}</div>
                                                                                 <div className="col-9 px-2 d-flex">
                                                                                     <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= 0} onClick={() => {
-                                                                                        let t = rightEarPta.map(x => ({ ...x }))
+                                                                                        let t = acRightEarPta.map(x => ({ ...x }))
                                                                                         t[i].decibal = t[i].decibal <= 0 ? 0 : t[i].decibal - 5
-                                                                                        setRightEarPta(t)
+                                                                                        setAcRightEarPta(t)
                                                                                     }}>&ndash;</button>
                                                                                     <input type="number" className="form-control rounded-0"
                                                                                         value={(x.decibal === null ? "NR" : x.decibal).toString()}
                                                                                         onChange={(e) => {
-                                                                                            let t = rightEarPta.map(x => ({ ...x }))
+                                                                                            let t = acRightEarPta.map(x => ({ ...x }))
                                                                                             t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > 120 ? 120 : parseInt(e.target.value)
-                                                                                            setRightEarPta(t)
+                                                                                            setAcRightEarPta(t)
                                                                                         }}
                                                                                         onBlur={(e) => {
-                                                                                            let t = rightEarPta.map(x => ({ ...x }))
+                                                                                            let t = acRightEarPta.map(x => ({ ...x }))
                                                                                             t[i].decibal = Math.round(t[i].decibal / 5) * 5
-                                                                                            setRightEarPta(t)
+                                                                                            setAcRightEarPta(t)
                                                                                         }}
                                                                                         disabled={x.decibal === null}
                                                                                     />
                                                                                     <button className="btn btn-primary rounded-0 rounded-end fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal >= 120} onClick={() => {
-                                                                                        let t = rightEarPta.map(x => ({ ...x }))
+                                                                                        let t = acRightEarPta.map(x => ({ ...x }))
                                                                                         t[i].decibal = t[i].decibal >= 120 ? 120 : t[i].decibal + 5
-                                                                                        setRightEarPta(t)
+                                                                                        setAcRightEarPta(t)
                                                                                     }}>&#43;</button>
                                                                                 </div>
                                                                                 <div className={`col-1 px-2 rounded-circle ${x.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "30px", height: "30px", cursor: "pointer" }}
                                                                                     onClick={() => {
-                                                                                        let t = rightEarPta.map(x => ({ ...x }))
+                                                                                        let t = acRightEarPta.map(x => ({ ...x }))
                                                                                         t[i].decibal = t[i].decibal !== null ? null : 0
-                                                                                        setRightEarPta(t)
+                                                                                        setAcRightEarPta(t)
                                                                                     }}
                                                                                 ></div>
                                                                             </div>
@@ -481,7 +530,7 @@ const Audiometry = () => {
                                                             </div>
                                                         </div>
                                                         <div className="my-2">{(() => {
-                                                            let {unit, color, text} = calculateHearingLoss(rightEarPta)
+                                                            let { unit, color, text } = calculateHearingLoss(acRightEarPta)
 
                                                             return (
                                                                 <>
@@ -493,6 +542,215 @@ const Audiometry = () => {
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            <h4 className="text-center mt-5">Bone Conduction (BC)</h4>
+                                            <FormCheck className="fs-4 text-center" type="switch" checked={bcInput} onChange={(e) => { setBcInput(e.target.checked); }} />
+                                            {
+                                                bcInput &&
+                                                <div className="row">
+                                                    <div className="col-xl-6 text-center">
+                                                        <h5 className="mt-3">Left Ear PTA</h5>
+                                                        <div className="border border-5 border-primary rounded-5 px-5 d-inline-block">
+                                                            <div className="d-flex justify-content-center">
+                                                                <div className="px-1" style={{ fontSize: "smaller", writingMode: "tb", textOrientation: "upright" }}>frequency</div>
+                                                                <div className="py-3">
+                                                                    {
+                                                                        bcLeftEarPta.map((x, i) => {
+                                                                            return (
+                                                                                <div key={i} className="row gx-0 align-items-center my-2">
+                                                                                    <div className="col-2 px-2">{x.frequency}</div>
+                                                                                    <div className="col-9 px-2 d-flex">
+                                                                                        <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= 0} onClick={() => {
+                                                                                            let t = bcLeftEarPta.map(x => ({ ...x }))
+                                                                                            t[i].decibal = t[i].decibal <= 0 ? 0 : t[i].decibal - 5
+                                                                                            setBcLeftEarPta(t)
+                                                                                        }}>&ndash;</button>
+                                                                                        <input type="number" className="form-control rounded-0"
+                                                                                            value={(x.decibal === null ? "NR" : x.decibal).toString()}
+                                                                                            onChange={(e) => {
+                                                                                                let t = bcLeftEarPta.map(x => ({ ...x }))
+                                                                                                t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > 120 ? 120 : parseInt(e.target.value)
+                                                                                                setBcLeftEarPta(t)
+                                                                                            }}
+                                                                                            onBlur={(e) => {
+                                                                                                let t = bcLeftEarPta.map(x => ({ ...x }))
+                                                                                                t[i].decibal = Math.round(t[i].decibal / 5) * 5
+                                                                                                setBcLeftEarPta(t)
+                                                                                            }}
+                                                                                            disabled={x.decibal === null}
+                                                                                        />
+                                                                                        <button className="btn btn-primary rounded-0 rounded-end fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal >= 120} onClick={() => {
+                                                                                            let t = bcLeftEarPta.map(x => ({ ...x }))
+                                                                                            t[i].decibal = t[i].decibal >= 120 ? 120 : t[i].decibal + 5
+                                                                                            setBcLeftEarPta(t)
+                                                                                        }}>&#43;</button>
+                                                                                    </div>
+                                                                                    <div className={`col-1 px-2 rounded-circle ${x.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "30px", height: "30px", cursor: "pointer" }}
+                                                                                        onClick={() => {
+                                                                                            let t = bcLeftEarPta.map(x => ({ ...x }))
+                                                                                            t[i].decibal = t[i].decibal !== null ? null : 0
+                                                                                            setBcLeftEarPta(t)
+                                                                                        }}
+                                                                                    ></div>
+                                                                                </div>
+                                                                            )
+                                                                        })
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                            <div className="my-2">{(() => {
+                                                                let { unit, color, text } = calculateHearingLoss(bcLeftEarPta)
+
+                                                                return (
+                                                                    <>
+                                                                        <span className="mx-3 fw-bold">LHL - {Math.round(unit * 1000) / 1000}</span>
+                                                                        <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: color }}>{text}</span>
+                                                                    </>
+                                                                )
+                                                            })()}</div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-xl-6 text-center">
+                                                        <h5 className="mt-3">Right Ear PTA</h5>
+                                                        <div className="border border-5 border-primary rounded-5 px-5 d-inline-block">
+                                                            <div className="d-flex justify-content-center">
+                                                                <div className="px-1" style={{ fontSize: "smaller", writingMode: "tb", textOrientation: "upright" }}>frequency</div>
+                                                                <div className="py-3">
+                                                                    {
+                                                                        bcRightEarPta.map((x, i) => {
+                                                                            return (
+                                                                                <div key={i} className="row gx-0 align-items-center my-2">
+                                                                                    <div className="col-2 px-2">{x.frequency}</div>
+                                                                                    <div className="col-9 px-2 d-flex">
+                                                                                        <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= 0} onClick={() => {
+                                                                                            let t = bcRightEarPta.map(x => ({ ...x }))
+                                                                                            t[i].decibal = t[i].decibal <= 0 ? 0 : t[i].decibal - 5
+                                                                                            setBcRightEarPta(t)
+                                                                                        }}>&ndash;</button>
+                                                                                        <input type="number" className="form-control rounded-0"
+                                                                                            value={(x.decibal === null ? "NR" : x.decibal).toString()}
+                                                                                            onChange={(e) => {
+                                                                                                let t = bcRightEarPta.map(x => ({ ...x }))
+                                                                                                t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > 120 ? 120 : parseInt(e.target.value)
+                                                                                                setBcRightEarPta(t)
+                                                                                            }}
+                                                                                            onBlur={(e) => {
+                                                                                                let t = bcRightEarPta.map(x => ({ ...x }))
+                                                                                                t[i].decibal = Math.round(t[i].decibal / 5) * 5
+                                                                                                setBcRightEarPta(t)
+                                                                                            }}
+                                                                                            disabled={x.decibal === null}
+                                                                                        />
+                                                                                        <button className="btn btn-primary rounded-0 rounded-end fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal >= 120} onClick={() => {
+                                                                                            let t = bcRightEarPta.map(x => ({ ...x }))
+                                                                                            t[i].decibal = t[i].decibal >= 120 ? 120 : t[i].decibal + 5
+                                                                                            setBcRightEarPta(t)
+                                                                                        }}>&#43;</button>
+                                                                                    </div>
+                                                                                    <div className={`col-1 px-2 rounded-circle ${x.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "30px", height: "30px", cursor: "pointer" }}
+                                                                                        onClick={() => {
+                                                                                            let t = bcRightEarPta.map(x => ({ ...x }))
+                                                                                            t[i].decibal = t[i].decibal !== null ? null : 0
+                                                                                            setBcRightEarPta(t)
+                                                                                        }}
+                                                                                    ></div>
+                                                                                </div>
+                                                                            )
+                                                                        })
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                            <div className="my-2">{(() => {
+                                                                let { unit, color, text } = calculateHearingLoss(bcRightEarPta)
+
+                                                                return (
+                                                                    <>
+                                                                        <span className="mx-3 fw-bold">LHL - {Math.round(unit * 1000) / 1000}</span>
+                                                                        <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: color }}>{text}</span>
+                                                                    </>
+                                                                )
+                                                            })()}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+
+                                            {
+                                                !trialMode &&
+                                                <>
+                                                    <div className="row">
+                                                        <div className="col-2">
+                                                            <div className="form-group">
+                                                                <label className="form-label my-1 required" htmlFor="tuningFork">Tuning Fork(Hz)</label>
+                                                                <input type="number" id="tuningFork" className="form-control" value={tuningFork.toString()} onChange={(e) => { setTuningFork(e.target.value === "" ? 0 : e.target.value) }} />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-5">
+                                                            <div className="form-group">
+                                                                <label className="form-label my-1 required">Rinne</label>
+                                                                <div className="d-flex gap-2">
+                                                                    <Select
+                                                                        options={["Positive (+ve)", "Negative (-ve)"].map(x => ({ label: x, value: x }))}
+                                                                        value={rinne.left === null ? null : { label: rinne.left, value: rinne.left }}
+                                                                        onChange={(val) => { setRinne({ ...rinne, left: val.value }) }}
+                                                                        styles={dropDownStyle}
+                                                                        className="flex-grow-1"
+                                                                        placeholder="Select..."
+                                                                    />
+                                                                    <Select
+                                                                        options={["Positive (+ve)", "Negative (-ve)"].map(x => ({ label: x, value: x }))}
+                                                                        value={rinne.right === null ? null : { label: rinne.right, value: rinne.right }}
+                                                                        onChange={(val) => { setRinne({ ...rinne, right: val.value }) }}
+                                                                        styles={dropDownStyle}
+                                                                        className="flex-grow-1"
+                                                                        placeholder="Select..."
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-5">
+                                                            <div className="form-group">
+                                                                <label className="form-label my-1 required">Weber</label>
+                                                                <div className="d-flex gap-2">
+                                                                    <Select
+                                                                        options={["Left", "Center", "Right"].map(x => ({ label: x, value: x }))}
+                                                                        value={weber.left === null ? null : { label: weber.left, value: weber.left }}
+                                                                        onChange={(val) => { setWeber({ ...weber, left: val.value }) }}
+                                                                        styles={dropDownStyle}
+                                                                        className="flex-grow-1"
+                                                                        placeholder="Select..."
+                                                                    />
+                                                                    <Select
+                                                                        options={["Left", "Center", "Right"].map(x => ({ label: x, value: x }))}
+                                                                        value={weber.right === null ? null : { label: weber.right, value: weber.right }}
+                                                                        onChange={(val) => { setWeber({ ...weber, right: val.value }) }}
+                                                                        styles={dropDownStyle}
+                                                                        className="flex-grow-1"
+                                                                        placeholder="Select..."
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="row">
+                                                        <div className="col-6">
+                                                            <div className="form-group">
+                                                                <label className="form-label my-1 required" htmlFor="provisionalDiagnosis">Provisional Diagnosis</label>
+                                                                <textarea id="provisionalDiagnosis" rows={3} className="form-control" value={provisionalDiagnosis} onChange={(e) => { setProvisionalDiagnosis(e.target.value) }} />
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-6">
+                                                            <div className="form-group">
+                                                                <label className="form-label my-1" htmlFor="recommendations">Recommendations</label>
+                                                                <textarea id="recommendations" rows={3} className="form-control" value={recommendations} onChange={(e) => { setRecommendations(e.target.value) }} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            }
                                         </div>
                                         <div className="card-footer rounded text-end">
                                             <button className="btn btn-success mx-2" disabled={isAudiometryReportApiLoading} onClick={() => { !isAudiometryReportApiLoading && processAudiometryReport() }}> {isAudiometryReportApiLoading ? <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> : (audiometryReportMode === "add" ? "Submit" : "Update")} </button>
