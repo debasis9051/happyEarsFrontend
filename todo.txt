@@ -1,24 +1,8 @@
 Todo:
 
-constraint audiometry input range from -10 to 120
-
-
-referred by, audiometer instead of test machine
-complaint instead of remarks
-
-multi chart for ac and bc
-
-tuning fork - number
-rinne - positive/negative
-weber - left/right/center
-
-provisional diagnosis, recommendations
-
-doctor entity - signnature, registration number
+PRINT PAGE ADJUSTMENTS
 
 disclaimer not visible
-
-PRINT PAGE ADJUSTMENTS
 signature in print
 domain/route - mention
 rajpur sonarpur address spsacing reduce

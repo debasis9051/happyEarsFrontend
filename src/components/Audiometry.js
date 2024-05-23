@@ -6,7 +6,7 @@ import moment from "moment"
 import Select from "react-select"
 
 import { useFirebase } from "../contexts/firebase-context";
-import { getAudiometryList } from "../utils/getApis"
+import { getAudiometryList, getDoctorList } from "../utils/getApis"
 import AuthWrapper from "./AuthWrapper";
 import { printAudiometryReport } from "../utils/printAudiometryReport"
 
@@ -32,20 +32,24 @@ const Audiometry = () => {
     const [currentTab, setCurrentTab] = useState("tab1")
 
     const [audiometryList, setAudiometryList] = useState([])
+    const [doctorList, setDoctorList] = useState([])
 
     const [currentPage, setCurrentPage] = useState(0)
     const [searchBarState, setSearchBarState] = useState(false)
     const [searchValue, setSearchValue] = useState("")
 
+
     const [audiometryReportMode, setAudiometryReportMode] = useState("add")
     const [audiometryReportId, setAudiometryReportId] = useState(null)
     const [trialMode, setTrialMode] = useState(true)
+
     const [patientName, setPatientName] = useState("")
     const [patientAddress, setPatientAddress] = useState("")
     const [contactNumber, setContactNumber] = useState("")
     const [age, setAge] = useState("")
     const [sex, setSex] = useState("male")
-    const [testMachine, setTestMachine] = useState("")
+    const [recommendedMachine, setRecommendedMachine] = useState("")
+    const [clientChosenMachine, setClientChosenMachine] = useState("")
     const [referredBy, setReferredBy] = useState("")
     const [audiometer, setAudiometer] = useState("")
     const [remarks, setRemarks] = useState("")
@@ -58,10 +62,10 @@ const Audiometry = () => {
     const [bcLeftEarPta, setBcLeftEarPta] = useState({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
     const [bcRightEarPta, setBcRightEarPta] = useState({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
 
-    const [tuningFork, setTuningFork] = useState(0)
+    const [tuningFork, setTuningFork] = useState(null)
     const [rinne, setRinne] = useState({ left: null, right: null })
     const [weber, setWeber] = useState({ left: null, right: null })
-
+    const [selectedDoctor, setSelectedDoctor] = useState(null)
     const [provisionalDiagnosis, setProvisionalDiagnosis] = useState("")
     const [recommendations, setRecommendations] = useState("")
 
@@ -98,6 +102,7 @@ const Audiometry = () => {
     useEffect(() => {
         if (currentUserInfo !== null) {
             getAudiometryList(currentUserInfo, setAudiometryList)
+            getDoctorList(currentUserInfo, setDoctorList)
         }
     }, [currentUserInfo])
 
@@ -109,7 +114,7 @@ const Audiometry = () => {
         setContactNumber(audiometry_report_data.contact_number)
         setAge(audiometry_report_data.age)
         setSex(audiometry_report_data.sex)
-        setTestMachine(audiometry_report_data.test_machine)
+        setRecommendedMachine(audiometry_report_data.test_machine)
         setRemarks(audiometry_report_data.remarks)
         setAcLeftEarPta(audiometry_report_data.left_ear_pta)
         setAcRightEarPta(audiometry_report_data.right_ear_pta)
@@ -122,10 +127,6 @@ const Audiometry = () => {
             Swal.fire('Oops!!', 'Patient name cannot be empty', 'warning');
             return false
         }
-        if (patientAddress === "") {
-            Swal.fire('Oops!!', 'Patient address cannot be empty', 'warning');
-            return false
-        }
         if (contactNumber === "") {
             Swal.fire('Oops!!', 'Contact Number cannot be empty', 'warning');
             return false
@@ -134,34 +135,75 @@ const Audiometry = () => {
             Swal.fire('Oops!!', 'Age cannot be empty', 'warning');
             return false
         }
-        if (testMachine === "") {
-            Swal.fire('Oops!!', 'Test Machine cannot be empty', 'warning');
+        if (patientAddress === "") {
+            Swal.fire('Oops!!', 'Patient address cannot be empty', 'warning');
             return false
         }
 
-        for (let i = 0; i < acLeftEarPta.length; i++) {
-            if (acLeftEarPta[i].decibal === 0) {
-                Swal.fire('Oops!!', 'Decibal measurement cannot be 0', 'warning');
+        if(trialMode){
+            if (recommendedMachine === "") {
+                Swal.fire('Oops!!', 'Recommended Machine cannot be empty', 'warning');
+                return false
+            }
+            if (clientChosenMachine === "") {
+                Swal.fire('Oops!!', 'Client Chosen Machine cannot be empty', 'warning');
                 return false
             }
         }
-        for (let i = 0; i < acRightEarPta.length; i++) {
-            if (acRightEarPta[i].decibal === 0) {
-                Swal.fire('Oops!!', 'Decibal measurement cannot be 0', 'warning');
+        else{
+            if (complaint === "") {
+                Swal.fire('Oops!!', 'Complaint cannot be empty', 'warning');
+                return false
+            }
+            if ((rinne.left === null) || (rinne.right === null)) {
+                Swal.fire('Oops!!', 'Select values for All Rinne fields', 'warning');
+                return false
+            }
+            if ((weber.left === null) || (weber.right === null)) {
+                Swal.fire('Oops!!', 'Select values for All Weber fields', 'warning');
+                return false
+            }
+            if (selectedDoctor === null) {
+                Swal.fire('Oops!!', 'Select a Doctor', 'warning');
+                return false
+            }
+            if (provisionalDiagnosis === "") {
+                Swal.fire('Oops!!', 'Enter a Provisional Diagnosis', 'warning');
+                return false
+            }
+            if (recommendations === "") {
+                Swal.fire('Oops!!', 'Enter Recommendations', 'warning');
                 return false
             }
         }
 
         let data = {
             patient_name: patientName,
-            patient_address: patientAddress,
             contact_number: contactNumber,
             age: age,
             sex: sex,
-            test_machine: testMachine,
+            patient_address: patientAddress,
+
+            recommended_machine: recommendedMachine,
+            client_chosen_machine: clientChosenMachine,
+            
             remarks: remarks,
-            left_ear_pta: acLeftEarPta,
-            right_ear_pta: acRightEarPta,
+            complaint: complaint,
+
+            ac_left_ear_pta: acLeftEarPta,
+            ac_right_ear_pta: acRightEarPta,
+            // bc_input: bcInput,
+            bc_left_ear_pta: bcLeftEarPta,
+            bc_right_ear_pta: bcRightEarPta,
+
+            tuning_fork: tuningFork,
+            rinne: rinne,
+            weber: weber,
+
+            doctor_id: selectedDoctor.value, 
+
+            provisional_diagnosis: provisionalDiagnosis,
+            recommendations: recommendations,
 
             current_user_uid: currentUserInfo.uid,
             current_user_name: currentUserInfo.displayName
@@ -189,19 +231,37 @@ const Audiometry = () => {
     }
 
     const handleAudiometryReportClose = () => {
-        setAudiometryReportMode("add")
-        setAudiometryReportId(null)
+        setCurrentTab("tab1")
+        clearAudiometryForm()
+    }
+
+    const clearAudiometryForm = () => {
         setPatientName("")
         setPatientAddress("")
         setContactNumber("")
         setAge("")
         setSex("male")
-        setTestMachine("")
+        setRecommendedMachine("")
+        setClientChosenMachine("")
+        setReferredBy("")
+        setAudiometer("")
         setRemarks("")
-        setAcLeftEarPta(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
-        setAcRightEarPta(frequencyList.map(x => ({ frequency: x, decibal: 0 })))
+        setComplaint("")
 
-        setCurrentTab("tab1")
+        setAcLeftEarPta({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
+        setAcRightEarPta({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
+
+        setBcInput(false)
+        setBcLeftEarPta({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
+        setBcRightEarPta({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
+
+        setTuningFork(null)
+        setRinne({ left: null, right: null })
+        setWeber({ left: null, right: null })
+        setSelectedDoctor(null)
+
+        setProvisionalDiagnosis("")
+        setRecommendations("")
     }
 
     let tp = Math.ceil(filteredAudiometryList.length / 10)
@@ -329,7 +389,7 @@ const Audiometry = () => {
                                             <h4 className="m-0">{audiometryReportMode === "add" ? "Add" : "Update"} Audiometry Report</h4>
                                             <div className="d-flex align-items-center gap-2">
                                                 <h5 className="m-0">Trial Mode</h5>
-                                                <FormCheck className="fs-4" type="switch" checked={trialMode} onChange={(e) => { setTrialMode(e.target.checked); }} />
+                                                <FormCheck className="fs-4" type="switch" checked={trialMode} onChange={(e) => { setTrialMode(e.target.checked); clearAudiometryForm(); }} />
                                             </div>
                                         </div>
                                         <div className="card-body">
@@ -366,12 +426,20 @@ const Audiometry = () => {
                                                 </div>
                                                 {
                                                     trialMode ?
-                                                        <div className="col-xl-7">
-                                                            <div className="form-group">
-                                                                <label className="form-label my-1 required" htmlFor="testMachine">Test Machine</label>
-                                                                <input type="text" id="testMachine" className="form-control" value={testMachine} onChange={(e) => { setTestMachine(e.target.value) }} />
+                                                        <>
+                                                            <div className="col-xl-3">
+                                                                <div className="form-group">
+                                                                    <label className="form-label my-1 required" htmlFor="recommendedMachine">Recommended Machine</label>
+                                                                    <input type="text" id="recommendedMachine" className="form-control" value={recommendedMachine} onChange={(e) => { setRecommendedMachine(e.target.value) }} />
+                                                                </div>
                                                             </div>
-                                                        </div>
+                                                            <div className="col-xl-4">
+                                                                <div className="form-group">
+                                                                    <label className="form-label my-1 required" htmlFor="clientChosenMachine">Client Chosen Machine</label>
+                                                                    <input type="text" id="clientChosenMachine" className="form-control" value={clientChosenMachine} onChange={(e) => { setClientChosenMachine(e.target.value) }} />
+                                                                </div>
+                                                            </div>
+                                                        </>
                                                         :
                                                         <>
                                                             <div className="col-xl-3">
@@ -407,14 +475,15 @@ const Audiometry = () => {
                                                         :
                                                         <div className="col-6">
                                                             <div className="form-group">
-                                                                <label className="form-label my-1" htmlFor="complaint">Complaint</label>
+                                                                <label className="form-label my-1 required" htmlFor="complaint">Complaint</label>
                                                                 <textarea id="complaint" rows={3} className="form-control" value={complaint} onChange={(e) => { setComplaint(e.target.value) }} />
                                                             </div>
                                                         </div>
                                                 }
                                             </div>
 
-                                            <h4 className="text-center mt-5">Air Conduction (AC)</h4>
+                                            <br />
+                                            <h4 className="text-center my-2">Air Conduction (AC)</h4>
                                             <div className="row">
                                                 <div className="col-xl-6 text-center">
                                                     <h5 className="mt-3">Left Ear PTA</h5>
@@ -426,9 +495,9 @@ const Audiometry = () => {
                                                     <AudiogramInput ptaData={acRightEarPta} setPtaData={setAcRightEarPta} />
                                                 </div>
                                             </div>
-
-                                            <h4 className="text-center mt-5">Bone Conduction (BC)</h4>
-                                            <FormCheck className="fs-4 text-center" type="switch" checked={bcInput} onChange={(e) => { setBcInput(e.target.checked); }} />
+                                            <br />
+                                            <h4 className="text-center my-2">Bone Conduction (BC)</h4>
+                                            <FormCheck className="fs-4 text-center" type="switch" checked={bcInput} onChange={(e) => { setBcInput(e.target.checked); setBcLeftEarPta({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) }); setBcRightEarPta({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) }); }} />
                                             {
                                                 bcInput &&
                                                 <div className="row">
@@ -443,63 +512,92 @@ const Audiometry = () => {
                                                     </div>
                                                 </div>
                                             }
+                                            <br />
 
                                             {
                                                 !trialMode &&
                                                 <>
                                                     <div className="row">
-                                                        <div className="col-2">
+                                                        <div className="col-4">
                                                             <div className="form-group">
-                                                                <label className="form-label my-1 required" htmlFor="tuningFork">Tuning Fork(Hz)</label>
-                                                                <input type="number" id="tuningFork" className="form-control" value={tuningFork.toString()} onChange={(e) => { setTuningFork(e.target.value === "" ? 0 : e.target.value) }} />
+                                                                <label className="form-label my-1">Tuning Fork(Hz)</label>
+                                                                <Select
+                                                                    options={["520(hz)", "256(hz)"].map(x => ({ label: x, value: x }))}
+                                                                    value={tuningFork === null ? null : { label: tuningFork, value: tuningFork }}
+                                                                    onChange={(val) => { setTuningFork(val.value) }}
+                                                                    styles={dropDownStyle}
+                                                                    className="flex-grow-1"
+                                                                    placeholder="Select Tuning Fork..."
+                                                                />
                                                             </div>
                                                         </div>
 
-                                                        <div className="col-5">
+                                                        <div className="col-4">
                                                             <div className="form-group">
-                                                                <label className="form-label my-1 required">Rinne</label>
-                                                                <div className="d-flex gap-2">
-                                                                    <Select
-                                                                        options={["Positive (+ve)", "Negative (-ve)"].map(x => ({ label: x, value: x }))}
-                                                                        value={rinne.left === null ? null : { label: rinne.left, value: rinne.left }}
-                                                                        onChange={(val) => { setRinne({ ...rinne, left: val.value }) }}
-                                                                        styles={dropDownStyle}
-                                                                        className="flex-grow-1"
-                                                                        placeholder="Select..."
-                                                                    />
-                                                                    <Select
-                                                                        options={["Positive (+ve)", "Negative (-ve)"].map(x => ({ label: x, value: x }))}
-                                                                        value={rinne.right === null ? null : { label: rinne.right, value: rinne.right }}
-                                                                        onChange={(val) => { setRinne({ ...rinne, right: val.value }) }}
-                                                                        styles={dropDownStyle}
-                                                                        className="flex-grow-1"
-                                                                        placeholder="Select..."
-                                                                    />
-                                                                </div>
+                                                                <label className="form-label my-1 required">Rinne (Left)</label>
+                                                                <Select
+                                                                    options={["Positive (+ve)", "Negative (-ve)"].map(x => ({ label: x, value: x }))}
+                                                                    value={rinne.left === null ? null : { label: rinne.left, value: rinne.left }}
+                                                                    onChange={(val) => { setRinne({ ...rinne, left: val.value }) }}
+                                                                    styles={dropDownStyle}
+                                                                    className="flex-grow-1"
+                                                                    placeholder="Select..."
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-4">
+                                                            <div className="form-group">
+                                                                <label className="form-label my-1 required">Rinne (Right)</label>
+                                                                <Select
+                                                                    options={["Positive (+ve)", "Negative (-ve)"].map(x => ({ label: x, value: x }))}
+                                                                    value={rinne.right === null ? null : { label: rinne.right, value: rinne.right }}
+                                                                    onChange={(val) => { setRinne({ ...rinne, right: val.value }) }}
+                                                                    styles={dropDownStyle}
+                                                                    className="flex-grow-1"
+                                                                    placeholder="Select..."
+                                                                />
                                                             </div>
                                                         </div>
 
-                                                        <div className="col-5">
+                                                    </div>
+                                                    <div className="row">
+                                                        <div className="col-4">
                                                             <div className="form-group">
-                                                                <label className="form-label my-1 required">Weber</label>
-                                                                <div className="d-flex gap-2">
-                                                                    <Select
-                                                                        options={["Left", "Center", "Right"].map(x => ({ label: x, value: x }))}
-                                                                        value={weber.left === null ? null : { label: weber.left, value: weber.left }}
-                                                                        onChange={(val) => { setWeber({ ...weber, left: val.value }) }}
-                                                                        styles={dropDownStyle}
-                                                                        className="flex-grow-1"
-                                                                        placeholder="Select..."
-                                                                    />
-                                                                    <Select
-                                                                        options={["Left", "Center", "Right"].map(x => ({ label: x, value: x }))}
-                                                                        value={weber.right === null ? null : { label: weber.right, value: weber.right }}
-                                                                        onChange={(val) => { setWeber({ ...weber, right: val.value }) }}
-                                                                        styles={dropDownStyle}
-                                                                        className="flex-grow-1"
-                                                                        placeholder="Select..."
-                                                                    />
-                                                                </div>
+                                                                <label className="form-label my-1 required">Doctor</label>
+                                                                <Select
+                                                                    options={doctorList.map(x => ({ label: x.doctor_name, value: x.id }))}
+                                                                    value={selectedDoctor}
+                                                                    onChange={(val) => { setSelectedDoctor(val); }}
+                                                                    styles={dropDownStyle}
+                                                                    placeholder="Select a Doctor..."
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="col-4">
+                                                            <div className="form-group">
+                                                                <label className="form-label my-1 required">Weber (Left)</label>
+                                                                <Select
+                                                                    options={["Left", "Center", "Right"].map(x => ({ label: x, value: x }))}
+                                                                    value={weber.left === null ? null : { label: weber.left, value: weber.left }}
+                                                                    onChange={(val) => { setWeber({ ...weber, left: val.value }) }}
+                                                                    styles={dropDownStyle}
+                                                                    className="flex-grow-1"
+                                                                    placeholder="Select..."
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-4">
+                                                            <div className="form-group">
+                                                                <label className="form-label my-1 required">Weber (Right)</label>
+                                                                <Select
+                                                                    options={["Left", "Center", "Right"].map(x => ({ label: x, value: x }))}
+                                                                    value={weber.right === null ? null : { label: weber.right, value: weber.right }}
+                                                                    onChange={(val) => { setWeber({ ...weber, right: val.value }) }}
+                                                                    styles={dropDownStyle}
+                                                                    className="flex-grow-1"
+                                                                    placeholder="Select..."
+                                                                />
                                                             </div>
                                                         </div>
                                                     </div>
@@ -512,7 +610,7 @@ const Audiometry = () => {
                                                         </div>
                                                         <div className="col-6">
                                                             <div className="form-group">
-                                                                <label className="form-label my-1" htmlFor="recommendations">Recommendations</label>
+                                                                <label className="form-label my-1 required" htmlFor="recommendations">Recommendations</label>
                                                                 <textarea id="recommendations" rows={3} className="form-control" value={recommendations} onChange={(e) => { setRecommendations(e.target.value) }} />
                                                             </div>
                                                         </div>
@@ -548,16 +646,16 @@ const AudiogramInput = ({ ptaData, setPtaData }) => {
                                 <div key={i} className="row gx-0 align-items-center my-2">
                                     <div className="col-2 px-2">{x.frequency}</div>
                                     <div className="col-9 px-2 d-flex">
-                                        <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= 0} onClick={() => {
+                                        <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= -10} onClick={() => {
                                             let t = ptaData.data.map(x => ({ ...x }))
-                                            t[i].decibal = t[i].decibal <= 0 ? 0 : t[i].decibal - 5
+                                            t[i].decibal = t[i].decibal <= -10 ? -10 : t[i].decibal - 5
                                             setPtaData({ ...ptaData, data: t })
                                         }}>&ndash;</button>
                                         <input type={x.decibal === null ? "text" : "number"} className="form-control rounded-0"
                                             value={x.decibal === null ? "NR" : x.decibal.toString()}
                                             onChange={(e) => {
                                                 let t = ptaData.data.map(x => ({ ...x }))
-                                                t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > 120 ? 120 : parseInt(e.target.value)
+                                                t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > 120 ? 120 : parseInt(e.target.value) < -10 ? -10 : parseInt(e.target.value)
                                                 setPtaData({ ...ptaData, data: t })
                                             }}
                                             onBlur={(e) => {
