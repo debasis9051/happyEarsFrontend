@@ -48,11 +48,13 @@ const Audiometry = () => {
     const [contactNumber, setContactNumber] = useState("")
     const [age, setAge] = useState("")
     const [sex, setSex] = useState("male")
+
     const [recommendedMachine, setRecommendedMachine] = useState("")
     const [clientChosenMachine, setClientChosenMachine] = useState("")
+    const [remarks, setRemarks] = useState("")
+
     const [referredBy, setReferredBy] = useState("")
     const [audiometer, setAudiometer] = useState("")
-    const [remarks, setRemarks] = useState("")
     const [complaint, setComplaint] = useState("")
 
     const [acLeftEarPta, setAcLeftEarPta] = useState({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
@@ -66,10 +68,12 @@ const Audiometry = () => {
     const [rinne, setRinne] = useState({ left: null, right: null })
     const [weber, setWeber] = useState({ left: null, right: null })
     const [selectedDoctor, setSelectedDoctor] = useState(null)
-    const [provisionalDiagnosis, setProvisionalDiagnosis] = useState("")
+
+    const [provisionalDiagnosis, setProvisionalDiagnosis] = useState({ left: "", right: "" })
     const [recommendations, setRecommendations] = useState("")
 
     const [isAudiometryReportApiLoading, setIsAudiometryReportApiLoading] = useState(false)
+
 
     const filteredAudiometryList = audiometryList.filter(x => {
         if (searchBarState && searchValue !== "") {
@@ -109,15 +113,39 @@ const Audiometry = () => {
     const updateAudiometryReportInit = (audiometry_report_data) => {
         setAudiometryReportMode("update");
         setAudiometryReportId(audiometry_report_data.id)
+        setTrialMode(audiometry_report_data.trial_mode)
+
         setPatientName(audiometry_report_data.patient_name)
         setPatientAddress(audiometry_report_data.patient_address)
         setContactNumber(audiometry_report_data.contact_number)
         setAge(audiometry_report_data.age)
         setSex(audiometry_report_data.sex)
-        setRecommendedMachine(audiometry_report_data.test_machine)
-        setRemarks(audiometry_report_data.remarks)
-        setAcLeftEarPta(audiometry_report_data.left_ear_pta)
-        setAcRightEarPta(audiometry_report_data.right_ear_pta)
+
+        setAcLeftEarPta(audiometry_report_data.ac_left_ear_pta)
+        setAcRightEarPta(audiometry_report_data.ac_right_ear_pta)
+
+        setBcInput(audiometry_report_data.bc_input)
+        setBcLeftEarPta(audiometry_report_data.bc_left_ear_pta)
+        setBcRightEarPta(audiometry_report_data.bc_right_ear_pta)
+
+        if (audiometry_report_data.trialMode) {
+            setRecommendedMachine(audiometry_report_data.recommended_machine)
+            setClientChosenMachine(audiometry_report_data.client_chosen_machine)
+            setRemarks(audiometry_report_data.remarks)
+        }
+        else {
+            setReferredBy(audiometry_report_data.referred_by)
+            setAudiometer(audiometry_report_data.audiometer)
+            setComplaint(audiometry_report_data.complaint)
+
+            setTuningFork(audiometry_report_data.tuning_fork)
+            setRinne(audiometry_report_data.rinne)
+            setWeber(audiometry_report_data.weber)
+            setSelectedDoctor({ label: doctorList.find(x => x.id === audiometry_report_data.doctor_id).doctor_name, value: audiometry_report_data.doctor_id })
+
+            setProvisionalDiagnosis(audiometry_report_data.provisional_diagnosis)
+            setRecommendations(audiometry_report_data.recommendations)
+        }
 
         setCurrentTab("tab2")
     }
@@ -140,7 +168,7 @@ const Audiometry = () => {
             return false
         }
 
-        if(trialMode){
+        if (trialMode) {
             if (recommendedMachine === "") {
                 Swal.fire('Oops!!', 'Recommended Machine cannot be empty', 'warning');
                 return false
@@ -150,11 +178,21 @@ const Audiometry = () => {
                 return false
             }
         }
-        else{
+        else {
+            if (referredBy === "") {
+                Swal.fire('Oops!!', 'Referred By cannot be empty', 'warning');
+                return false
+            }
+            if (audiometer === "") {
+                Swal.fire('Oops!!', 'Audiometer cannot be empty', 'warning');
+                return false
+            }
+
             if (complaint === "") {
                 Swal.fire('Oops!!', 'Complaint cannot be empty', 'warning');
                 return false
             }
+
             if ((rinne.left === null) || (rinne.right === null)) {
                 Swal.fire('Oops!!', 'Select values for All Rinne fields', 'warning');
                 return false
@@ -167,8 +205,9 @@ const Audiometry = () => {
                 Swal.fire('Oops!!', 'Select a Doctor', 'warning');
                 return false
             }
-            if (provisionalDiagnosis === "") {
-                Swal.fire('Oops!!', 'Enter a Provisional Diagnosis', 'warning');
+
+            if (provisionalDiagnosis.left === "" || provisionalDiagnosis.right === "") {
+                Swal.fire('Oops!!', 'Enter a Provisional Diagnosis for both ears', 'warning');
                 return false
             }
             if (recommendations === "") {
@@ -178,32 +217,36 @@ const Audiometry = () => {
         }
 
         let data = {
+            trial_mode: trialMode,
+
             patient_name: patientName,
             contact_number: contactNumber,
             age: age,
             sex: sex,
             patient_address: patientAddress,
 
-            recommended_machine: recommendedMachine,
-            client_chosen_machine: clientChosenMachine,
-            
-            remarks: remarks,
-            complaint: complaint,
+            recommended_machine: trialMode ? recommendedMachine : null,
+            client_chosen_machine: trialMode ? clientChosenMachine : null,
+            remarks: trialMode ? remarks : null,
+
+            referred_by: trialMode ? null : referredBy,
+            audiometer: trialMode ? null : audiometer,
+            complaint: trialMode ? null : complaint,
 
             ac_left_ear_pta: acLeftEarPta,
             ac_right_ear_pta: acRightEarPta,
-            // bc_input: bcInput,
+
+            bc_input: bcInput,
             bc_left_ear_pta: bcLeftEarPta,
             bc_right_ear_pta: bcRightEarPta,
 
-            tuning_fork: tuningFork,
-            rinne: rinne,
-            weber: weber,
+            tuning_fork: trialMode ? null : tuningFork,
+            rinne: trialMode ? null : rinne,
+            weber: trialMode ? null : weber,
+            doctor_id: trialMode ? null : selectedDoctor.value,
 
-            doctor_id: selectedDoctor.value, 
-
-            provisional_diagnosis: provisionalDiagnosis,
-            recommendations: recommendations,
+            provisional_diagnosis: trialMode ? null : provisionalDiagnosis,
+            recommendations: trialMode ? null : recommendations,
 
             current_user_uid: currentUserInfo.uid,
             current_user_name: currentUserInfo.displayName
@@ -232,6 +275,11 @@ const Audiometry = () => {
 
     const handleAudiometryReportClose = () => {
         setCurrentTab("tab1")
+
+        setAudiometryReportMode("add")
+        setAudiometryReportId(null)
+        setTrialMode(true)
+
         clearAudiometryForm()
     }
 
@@ -241,11 +289,13 @@ const Audiometry = () => {
         setContactNumber("")
         setAge("")
         setSex("male")
+
         setRecommendedMachine("")
         setClientChosenMachine("")
+        setRemarks("")
+
         setReferredBy("")
         setAudiometer("")
-        setRemarks("")
         setComplaint("")
 
         setAcLeftEarPta({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
@@ -260,7 +310,7 @@ const Audiometry = () => {
         setWeber({ left: null, right: null })
         setSelectedDoctor(null)
 
-        setProvisionalDiagnosis("")
+        setProvisionalDiagnosis({ left: "", right: "" })
         setRecommendations("")
     }
 
@@ -283,8 +333,12 @@ const Audiometry = () => {
                         <div className="container-fluid">
                             <Tabs className="mb-3" activeKey={currentTab}
                                 onSelect={(k) => {
-                                    setCurrentTab(k);
-                                    if (k === "tab1") handleAudiometryReportClose();
+                                    if (k === "tab1") {
+                                        handleAudiometryReportClose();
+                                    }
+                                    else {
+                                        setCurrentTab(k);
+                                    }
                                 }}
                             >
                                 <Tab eventKey="tab1" title="Records">
@@ -323,8 +377,8 @@ const Audiometry = () => {
                                                                 <td>{(currentPage * 10) + i + 1}</td>
                                                                 <td>{x.patient_name}</td>
                                                                 <td>{x.contact_number}</td>
-                                                                <td>{calculateHearingLoss(x.left_ear_pta).unit}</td>
-                                                                <td>{calculateHearingLoss(x.right_ear_pta).unit}</td>
+                                                                <td>{calculateHearingLoss(x.ac_left_ear_pta.data).unit}</td>
+                                                                <td>{calculateHearingLoss(x.ac_right_ear_pta.data).unit}</td>
                                                                 <td>{moment.unix(x.created_at._seconds).format("lll")}</td>
                                                                 <td>
                                                                     <Dropdown>
@@ -389,7 +443,7 @@ const Audiometry = () => {
                                             <h4 className="m-0">{audiometryReportMode === "add" ? "Add" : "Update"} Audiometry Report</h4>
                                             <div className="d-flex align-items-center gap-2">
                                                 <h5 className="m-0">Trial Mode</h5>
-                                                <FormCheck className="fs-4" type="switch" checked={trialMode} onChange={(e) => { setTrialMode(e.target.checked); clearAudiometryForm(); }} />
+                                                <FormCheck className="fs-4" type="switch" disabled={audiometryReportMode === "update"} checked={trialMode} onChange={(e) => { setTrialMode(e.target.checked); clearAudiometryForm(); }} />
                                             </div>
                                         </div>
                                         <div className="card-body">
@@ -568,6 +622,7 @@ const Audiometry = () => {
                                                                     options={doctorList.map(x => ({ label: x.doctor_name, value: x.id }))}
                                                                     value={selectedDoctor}
                                                                     onChange={(val) => { setSelectedDoctor(val); }}
+                                                                    isDisabled={audiometryReportMode === "update"}
                                                                     styles={dropDownStyle}
                                                                     placeholder="Select a Doctor..."
                                                                 />
@@ -602,13 +657,19 @@ const Audiometry = () => {
                                                         </div>
                                                     </div>
                                                     <div className="row">
-                                                        <div className="col-6">
+                                                        <div className="col-4">
                                                             <div className="form-group">
-                                                                <label className="form-label my-1 required" htmlFor="provisionalDiagnosis">Provisional Diagnosis</label>
-                                                                <textarea id="provisionalDiagnosis" rows={3} className="form-control" value={provisionalDiagnosis} onChange={(e) => { setProvisionalDiagnosis(e.target.value) }} />
+                                                                <label className="form-label my-1 required" htmlFor="provisionalDiagnosisLeft">Provisional Diagnosis (Left)</label>
+                                                                <textarea id="provisionalDiagnosisLeft" rows={3} className="form-control" value={provisionalDiagnosis.left} onChange={(e) => { setProvisionalDiagnosis({...provisionalDiagnosis, left: e.target.value}) }} />
                                                             </div>
                                                         </div>
-                                                        <div className="col-6">
+                                                        <div className="col-4">
+                                                            <div className="form-group">
+                                                                <label className="form-label my-1 required" htmlFor="provisionalDiagnosisRight">Provisional Diagnosis (Right)</label>
+                                                                <textarea id="provisionalDiagnosisRight" rows={3} className="form-control" value={provisionalDiagnosis.right} onChange={(e) => { setProvisionalDiagnosis({...provisionalDiagnosis, right: e.target.value}) }} />
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-4">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required" htmlFor="recommendations">Recommendations</label>
                                                                 <textarea id="recommendations" rows={3} className="form-control" value={recommendations} onChange={(e) => { setRecommendations(e.target.value) }} />

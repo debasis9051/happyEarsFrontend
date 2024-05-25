@@ -208,7 +208,7 @@ const AdminPanel = () => {
                                                 data.append("doctor_registration_number", doctorRegistrationNumber)
                                                 data.append("doctor_signature_file", doctorSignatureFile)
                                                 data.append("current_user_uid", currentUserInfo.uid)
-                                                data.append("current_user_name", currentUserInfo.displayNam)
+                                                data.append("current_user_name", currentUserInfo.displayName)
                                                 
                                                 setDoctorApiState(true)
                                                 axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/save-doctor`, data, { headers: { 'Content-Type': 'multipart/form-data' } })

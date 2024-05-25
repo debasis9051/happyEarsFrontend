@@ -9,7 +9,7 @@ rajpur sonarpur address spsacing reduce
 
 
 
-1. udiometry - form update, delete report, print report, generate invoice against audiometry report
+1. audiometry - delete report, print report, generate invoice against audiometry report
 2. user access restriction implementation, set user access restriction admin panel 
 3. all tables major update - implement pagination logic 
 4. frontend and backend deployments cleanup
@@ -40,6 +40,8 @@ frontend routes:
         i. export all invoices data with export button --- NOT DONE
         ii. print action button
         iii. edit action button 
+7. "/admin-panel" - Admin Panel for additional apis and to execute custom scripts
+
 
 database collections:
 1. users - each document representing all information of one user and access authorization
@@ -47,7 +49,8 @@ database collections:
 3. products - each document representing one serial with all basic product information
 4. product_logs - log against per product containing current user, reason, operation [operation types: import, invoiced, transfer_add, transfer_remove, returned, add, update(NOT USED) ]
 5. branches - each document representing one branch with basic information
-5. audiometry - each document representing one audiomtry report against a patient with patient information and remarks
+6. audiometry - each document representing one audiomtry report against a patient with patient information and remarks
+7. doctor - each document representing a doctor entity with their respective details and signature file
 
 
 
