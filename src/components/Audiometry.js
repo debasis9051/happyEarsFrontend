@@ -390,7 +390,7 @@ const Audiometry = () => {
 
                                                                         <Dropdown.Menu>
                                                                             <Dropdown.Item onClick={() => { updateAudiometryReportInit(x) }} >Edit Report </Dropdown.Item>
-                                                                            <Dropdown.Item onClick={() => { printAudiometryReport(x.patient_name, x.age, x.sex, moment(x.created_at).format("DD-MM-YYYY"), x.test_machine, x.ac_left_ear_pta, x.ac_right_ear_pta, calculateHearingLoss(x.ac_left_ear_pta.data), calculateHearingLoss(x.ac_right_ear_pta.data)) }} >Print Report</Dropdown.Item>
+                                                                            <Dropdown.Item onClick={() => { printAudiometryReport(x, calculateHearingLoss) }} >Print Report</Dropdown.Item>
                                                                         </Dropdown.Menu>
                                                                     </Dropdown>
                                                                 </td>

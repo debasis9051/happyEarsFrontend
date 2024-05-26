@@ -1,5 +1,7 @@
 Todo:
 
+calculateHearingLoss adjustment for null value
+
 PRINT PAGE ADJUSTMENTS
 
 disclaimer not visible
