@@ -163,7 +163,6 @@ const printAudiometryReport = (reportData, calculateHearingLoss, signature) => {
     let html = `
         <div class="container-fluid my-4 fw-bold">
 
-
             <h2 class="text-center text-decoration-underline text-uppercase m-2" style="color:navy;">${reportData.trial_mode ? "Audiogram Hearing Aid Trial" : "Pure Tone Audiogram"} </h2>
             <div class="d-flex my-2 align-items-center">
                 <span class="mx-2">Patient Name : </span>
@@ -171,8 +170,9 @@ const printAudiometryReport = (reportData, calculateHearingLoss, signature) => {
                 <span class="mx-2">Age/Sex :</span>
                 <span class="mx-2 border-bottom border-dark fs-4">${reportData.age}/${reportData.sex[0].toUpperCase()}</span>
             </div>
-            ${reportData.trial_mode ?
-            `<div class="row gx-0 my-2">
+            ${
+                reportData.trial_mode ?
+                `<div class="row gx-0 my-2">
                     <div class="col-6 d-flex align-items-center">
                         <span class="mx-2">Recommended Machine: </span>
                         <span class="mx-2 border-bottom border-dark fs-4 flex-grow-1">${reportData.recommended_machine}</span>
@@ -182,8 +182,8 @@ const printAudiometryReport = (reportData, calculateHearingLoss, signature) => {
                         <span class="mx-2 border-bottom border-dark fs-4 flex-grow-1">${reportData.client_chosen_machine}</span>
                     </div>
                 </div>`
-            :
-            `<div class="row gx-0 my-2">
+                :
+                `<div class="row gx-0 my-2">
                     <div class="col-6 d-flex align-items-center">
                         <span class="mx-2">Referred By: </span>
                         <span class="mx-2 border-bottom border-dark fs-4 flex-grow-1">${reportData.referred_by}</span>
@@ -193,17 +193,18 @@ const printAudiometryReport = (reportData, calculateHearingLoss, signature) => {
                         <span class="mx-2 border-bottom border-dark fs-4 flex-grow-1">${reportData.audiometer}</span>
                     </div>
                 </div>`
-        }
+            }
             <div class="d-flex my-2 align-items-center">
                 <span class="mx-2">Date: </span>
                 <span class="mx-2 flex-grow-1 border-bottom border-dark fs-4">${moment(reportData.created_at).format("DD-MM-YYYY")}</span>
             </div>
-            ${!reportData.trial_mode ?
-            `<div class="d-flex flex-wrap my-2 align-items-center">
+            ${
+                !reportData.trial_mode ?
+                `<div class="d-flex flex-wrap my-2 align-items-center">
                     <span class="mx-2">Complaint: </span>
                     <span class="mx-2 flex-grow-1 border-bottom border-dark fs-4">${reportData.complaint}</span>
                 </div>` : ""
-        }
+            }
 
             <div class="d-flex text-center" style="gap:30px;">
                 <div>
@@ -248,8 +249,9 @@ const printAudiometryReport = (reportData, calculateHearingLoss, signature) => {
                 </div>
             </div>
 
-            ${!reportData.trial_mode ?
-            `<div class="d-flex align-items-center gap-3">
+            ${
+                !reportData.trial_mode ?
+                `<div class="d-flex align-items-center gap-3">
                     <div class="d-flex flex-wrap mb-1 align-items-center">
                         <span class="mx-2">Tuning Fork: </span>
                         <span class="mx-2 border-bottom border-dark fs-4">${reportData.tuning_fork}</span>
@@ -283,26 +285,30 @@ const printAudiometryReport = (reportData, calculateHearingLoss, signature) => {
                     <span class="mx-2">Recommendations: </span>
                     <span class="mx-2 flex-grow-1 border-bottom border-dark fs-4">${reportData.recommendations}</span>
                 </div>` : ""
-        }
+            }
 
-            ${!reportData.trial_mode ?
-            `<div class="my-2 ms-auto" style="width:max-content; margin-right: 6rem" >
+            ${
+                !reportData.trial_mode ?
+                `<div class="my-2 ms-auto" style="width:max-content; margin-right: 6rem" >
                     <img class="d-block" src=${signature} alt="doctor_signature" height="60">
                     <span>Clinical Audiologist <br> & Speech Therapist </span>
                 </div>` : ""
-        }
-            ${reportData.trial_mode ?
-            `<div class="my-5">
+            }
+            ${
+                reportData.trial_mode ?
+                `<div class="my-5">
                     <span>Disclaimer :: </span>
                     <span class="text-danger">This is just a trial report based on patient response. This cannot be or should not be treated as medical audiogram report(PTA)</span>
                 </div>` : ""
-        }
-                
+            }
+
+            <div>Domain: ${window.location.href}</div>
         </div>
     `
 
     let nw = window.open()
     nw.document.head.innerHTML = `
+    <title>Audiogram</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     `
