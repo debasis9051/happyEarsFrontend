@@ -110,6 +110,22 @@ const Audiometry = () => {
         }
     }, [currentUserInfo])
 
+    const getDoctorSignature = (doctor_id) => {
+        return axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-doctor-signature`, { doctor_id: doctor_id, current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
+            .then((res) => {
+                if (res.data.operation === "success") {
+                    return res.data.info     
+                }
+                else {
+                    Swal.fire('Oops!', res.data.message, 'error');
+                }
+            })
+            .catch((err) => {
+                console.log(err)
+                Swal.fire('Error!!', err.message, 'error');
+            })
+    }
+
     const updateAudiometryReportInit = (audiometry_report_data) => {
         setAudiometryReportMode("update");
         setAudiometryReportId(audiometry_report_data.id)
@@ -390,7 +406,15 @@ const Audiometry = () => {
 
                                                                         <Dropdown.Menu>
                                                                             <Dropdown.Item onClick={() => { updateAudiometryReportInit(x) }} >Edit Report </Dropdown.Item>
-                                                                            <Dropdown.Item onClick={() => { printAudiometryReport(x, calculateHearingLoss) }} >Print Report</Dropdown.Item>
+                                                                            <Dropdown.Item 
+                                                                                onClick={() => { 
+                                                                                    getDoctorSignature(x.doctor_id)
+                                                                                    .then((signature)=>{
+                                                                                        printAudiometryReport(x, calculateHearingLoss, signature) 
+                                                                                    })
+                                                                                }} 
+                                                                            >Print Report
+                                                                            </Dropdown.Item>
                                                                         </Dropdown.Menu>
                                                                     </Dropdown>
                                                                 </td>

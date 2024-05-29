@@ -2,9 +2,16 @@ Todo:
 
 calculateHearingLoss adjustment for null value
 
+--------------------------------------------------
+
 PRINT PAGE ADJUSTMENTS
 
+rinne, weber
+symbol chart
+diagram chart - nr case fix
 disclaimer not visible
+
+
 signature in print
 domain/route - mention
 rajpur sonarpur address spsacing reduce
