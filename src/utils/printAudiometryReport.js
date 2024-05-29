@@ -233,8 +233,8 @@ const printAudiometryReport = (reportData, calculateHearingLoss, signature) => {
                 <div>
                     <table class="table table-bordered text-center" style="margin-top: 130px;">
                         <tr><td class="py-1 bg-primary text-white">AC</td></td>
-                        <tr><td class="py-1"><span class="me-5">L</span><span>&#9675;</span></td></td>
-                        <tr><td class="py-1"><span class="me-5">R</span><span>&#128936;</span></td></td>
+                        <tr><td class="py-1"><span class="me-5">L</span><span>&#128936;</span></td></td>
+                        <tr><td class="py-1"><span class="me-5">R</span><span>&#9675;</span></td></td>
                         <tr><td class="py-1 bg-primary text-white">BC</td></td>
                         <tr><td class="py-1"><span class="me-5">L</span><span>></span></td></td>
                         <tr><td class="py-1"><span class="me-5">R</span><span><</span></td></td>
