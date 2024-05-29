@@ -20,29 +20,18 @@ const drawMarker = (ctx, x, y, marker, arrowFlag) => {
     }
     else if (marker === "left_arrow") {
         ctx.beginPath();
-        ctx.moveTo(x - 5, y - 5)
-        ctx.lineTo(x + 5, y)
-        ctx.lineTo(x - 5, y + 5)
+        ctx.moveTo(x + 5, y - 5)
+        ctx.lineTo(x - 5, y)
+        ctx.lineTo(x + 5, y + 5)
         ctx.strokeStyle = "red";
         ctx.lineWidth = 1;
         ctx.stroke();
     }
     else if (marker === "right_arrow") {
         ctx.beginPath();
-        ctx.moveTo(x + 5, y - 5)
-        ctx.lineTo(x - 5, y)
-        ctx.lineTo(x + 5, y + 5)
-        ctx.strokeStyle = "blue";
-        ctx.lineWidth = 1;
-        ctx.stroke();
-    }
-    else if (marker === "rectangle") {
-        ctx.beginPath();
-        ctx.moveTo(x - 8, y - 5)
-        ctx.lineTo(x + 8, y - 5)
-        ctx.lineTo(x + 8, y + 5)
-        ctx.lineTo(x - 8, y + 5)
-        ctx.lineTo(x - 8, y - 6)
+        ctx.moveTo(x - 5, y - 5)
+        ctx.lineTo(x + 5, y)
+        ctx.lineTo(x - 5, y + 5)
         ctx.strokeStyle = "blue";
         ctx.lineWidth = 1;
         ctx.stroke();
@@ -57,12 +46,13 @@ const drawMarker = (ctx, x, y, marker, arrowFlag) => {
         ctx.lineWidth = 1;
         ctx.stroke();
     }
-    else if (marker === "right_bracket") {
+    else if (marker === "rectangle") {
         ctx.beginPath();
-        ctx.moveTo(x - 5, y - 5)
-        ctx.lineTo(x, y - 5)
-        ctx.lineTo(x, y + 5)
-        ctx.lineTo(x - 5, y + 5)
+        ctx.moveTo(x - 8, y - 5)
+        ctx.lineTo(x + 8, y - 5)
+        ctx.lineTo(x + 8, y + 5)
+        ctx.lineTo(x - 8, y + 5)
+        ctx.lineTo(x - 8, y - 6)
         ctx.strokeStyle = "blue";
         ctx.lineWidth = 1;
         ctx.stroke();
@@ -77,6 +67,17 @@ const drawMarker = (ctx, x, y, marker, arrowFlag) => {
         ctx.lineWidth = 1;
         ctx.stroke();
     }
+    else if (marker === "right_bracket") {
+        ctx.beginPath();
+        ctx.moveTo(x - 5, y - 5)
+        ctx.lineTo(x, y - 5)
+        ctx.lineTo(x, y + 5)
+        ctx.lineTo(x - 5, y + 5)
+        ctx.strokeStyle = "blue";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+    
 
     if (arrowFlag) {
         ctx.lineWidth = 1;
