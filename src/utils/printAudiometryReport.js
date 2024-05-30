@@ -133,10 +133,16 @@ const setupChart = (ctx) => {
     ctx.stroke();
 }
 
-const drawChartData = (ctx, data, marker) => {
+const drawChartData = (ctx, data, lineType, marker) => {
     ctx.strokeStyle = "black"
     ctx.lineWidth = 2
 
+    if(lineType === "solid"){
+        ctx.setLineDash([]);
+    }
+    else if(lineType === "dashed"){
+        ctx.setLineDash([5, 10]);
+    }
     ctx.beginPath()
     ctx.moveTo(60 + 0, 60 + (420 - 10) / (120 + 10) * (data[0] + 10));
     data.slice(1, data.length).forEach((elem, i, arr) => {
@@ -146,6 +152,7 @@ const drawChartData = (ctx, data, marker) => {
         ctx.lineTo(x, y)
     })
     ctx.stroke();
+    ctx.setLineDash([]);
 
     data.forEach((elem, i, arr) => {
         let x = 60 + 420 / (arr.length - 1) * i
@@ -165,10 +172,10 @@ const printAudiometryReport = (reportData, calculateHearingLoss, signature) => {
 
             <h2 class="text-center text-decoration-underline text-uppercase m-2" style="color:navy;">${reportData.trial_mode ? "Audiogram Hearing Aid Trial" : "Pure Tone Audiogram"} </h2>
             <div class="d-flex my-2 align-items-center">
-                <span class="mx-2">Patient Name : </span>
-                <span class="mx-2 flex-grow-1 border-bottom border-dark fs-4">${reportData.patient_name}</span>
-                <span class="mx-2">Age/Sex :</span>
-                <span class="mx-2 border-bottom border-dark fs-4">${reportData.age}/${reportData.sex[0].toUpperCase()}</span>
+                <span class="mx-2" >Patient Name : </span>
+                <span class="mx-2 border-bottom border-dark fs-4" style="flex:7;" >${reportData.patient_name}</span>
+                <span class="mx-2" >Age/Sex :</span>
+                <span class="mx-2 border-bottom border-dark fs-4" style="flex:2;" >${reportData.age}/${reportData.sex[0].toUpperCase()}</span>
             </div>
             ${
                 reportData.trial_mode ?
@@ -211,8 +218,8 @@ const printAudiometryReport = (reportData, calculateHearingLoss, signature) => {
                     <h2 style="color:blue; margin:30px 0">Left</h2>
                     <canvas id="acLeftEarChart" style="width: 400px; height: 400px" width="500" height="500"></canvas>
                     <div style="margin-top:30px">
-                        <span>PTA (LT EAR) = </span>
-                        <span class="border-bottom border-dark">${ac_lhl_data.unit} db Hz</span>
+                        <span style="color:blue;">PTA (LT EAR) </span> =
+                        <span class="border-bottom border-dark">${ac_lhl_data.unit} db</span>
                     </div>
                     <div style="margin-bottom:30px; margin-top:15px;">
                         <span>Degree of Hearing Loss: </span>
@@ -223,8 +230,8 @@ const printAudiometryReport = (reportData, calculateHearingLoss, signature) => {
                     <h2 style="color:red; margin:30px 0">Right</h2>
                     <canvas id="acRightEarChart" style="width: 400px; height: 400px" width="500" height="500"></canvas>
                     <div style="margin-top:30px">
-                        <span>PTA (RT EAR) = </span>
-                        <span class="border-bottom border-dark">${ac_rhl_data.unit} db Hz</span>
+                        <span style="color:red;">PTA (RT EAR) </span> =
+                        <span class="border-bottom border-dark">${ac_rhl_data.unit} db</span>
                     </div>
                     <div style="margin-bottom:30px; margin-top:15px;">
                         <span>Degree of Hearing Loss: </span>
@@ -278,8 +285,8 @@ const printAudiometryReport = (reportData, calculateHearingLoss, signature) => {
                 </div>
                 <div class="my-4">
                     <span class="mx-2">Provisional Diagnosis: </span>
-                    <div class="mx-2 border-bottom border-dark fs-4"><span class="fst-italic">Lt.</span> ${reportData.provisional_diagnosis.left}</div>
-                    <div class="mx-2 border-bottom border-dark fs-4"><span class="fst-italic">Rt.</span> ${reportData.provisional_diagnosis.right}</div>
+                    <div class="mx-2 border-bottom border-dark fs-4"><span class="fst-italic" style="color:blue;">Lt.</span> ${reportData.provisional_diagnosis.left}</div>
+                    <div class="mx-2 border-bottom border-dark fs-4"><span class="fst-italic" style="color:red;">Rt.</span> ${reportData.provisional_diagnosis.right}</div>
                 </div>
                 <div class="d-flex flex-wrap my-2 align-items-center">
                     <span class="mx-2">Recommendations: </span>
@@ -302,7 +309,8 @@ const printAudiometryReport = (reportData, calculateHearingLoss, signature) => {
                 </div>` : ""
             }
 
-            <div>Domain: ${window.location.href}</div>
+            <hr>
+            <div class="text-center" >${window.location.href}</div>
         </div>
     `
 
@@ -319,11 +327,11 @@ const printAudiometryReport = (reportData, calculateHearingLoss, signature) => {
     setupChart(ctx1)
     setupChart(ctx2)
 
-    drawChartData(ctx1, reportData.ac_left_ear_pta.data.map(x => x.decibal), reportData.ac_left_ear_pta.masked ? "rectangle" : "cross")
-    drawChartData(ctx2, reportData.ac_right_ear_pta.data.map(x => x.decibal), reportData.ac_right_ear_pta.masked ? "triangle" : "circle")
+    drawChartData(ctx1, reportData.ac_left_ear_pta.data.map(x => x.decibal), "solid", reportData.ac_left_ear_pta.masked ? "rectangle" : "cross")
+    drawChartData(ctx2, reportData.ac_right_ear_pta.data.map(x => x.decibal), "solid", reportData.ac_right_ear_pta.masked ? "triangle" : "circle")
     if (reportData.bc_input) {
-        drawChartData(ctx1, reportData.bc_left_ear_pta.data.map(x => x.decibal), reportData.bc_left_ear_pta.masked ? "right_bracket" : "right_arrow")
-        drawChartData(ctx2, reportData.bc_right_ear_pta.data.map(x => x.decibal), reportData.bc_right_ear_pta.masked ? "left_bracket" : "left_arrow")
+        drawChartData(ctx1, reportData.bc_left_ear_pta.data.map(x => x.decibal), "dashed", reportData.bc_left_ear_pta.masked ? "right_bracket" : "right_arrow")
+        drawChartData(ctx2, reportData.bc_right_ear_pta.data.map(x => x.decibal), "dashed", reportData.bc_right_ear_pta.masked ? "left_bracket" : "left_arrow")
     }
 
     setTimeout(() => { nw.print() }, 2000);

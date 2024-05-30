@@ -13,7 +13,10 @@ import { printAudiometryReport } from "../utils/printAudiometryReport"
 const frequencyList = [250, 500, 1000, 2000, 4000, 6000, 8000]
 
 const calculateHearingLoss = (frequencyData) => {
-    let unit = Math.round((frequencyData.reduce((p, o) => { return [500, 1000, 2000].includes(o.frequency) ? p + o.decibal : p }, 0) / 3) * 1000) / 1000
+    let unit = Math.round((frequencyData.reduce((p, o) => { 
+        console.log(o)
+        return [500, 1000, 2000].includes(o.frequency) ? p + o.decibal : p 
+    }, 0) / 3) * 1000) / 1000
     let color = "#000000"
     let text = ""
 
@@ -144,7 +147,7 @@ const Audiometry = () => {
         setBcLeftEarPta(audiometry_report_data.bc_left_ear_pta)
         setBcRightEarPta(audiometry_report_data.bc_right_ear_pta)
 
-        if (audiometry_report_data.trialMode) {
+        if (audiometry_report_data.trial_mode) {
             setRecommendedMachine(audiometry_report_data.recommended_machine)
             setClientChosenMachine(audiometry_report_data.client_chosen_machine)
             setRemarks(audiometry_report_data.remarks)
