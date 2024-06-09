@@ -19,19 +19,19 @@ const calculateHearingLoss = (frequencyData) => {
     }, {})
 
     let unit
-    if(readings[500] === null){
+    if (readings[500] === null) {
         unit = 0
     }
-    else if(readings[1000] === null){
+    else if (readings[1000] === null) {
         unit = readings[500] / 3
     }
-    else if(readings[2000] === null){
+    else if (readings[2000] === null) {
         unit = (readings[500] + readings[1000]) / 3
     }
-    else{
+    else {
         unit = (readings[500] + readings[1000] + readings[2000]) / 3
     }
-    unit = Math.round( unit * 100) / 100
+    unit = Math.round(unit * 100) / 100
 
     // console.log(readings, unit)
 
@@ -429,15 +429,27 @@ const Audiometry = () => {
                                                                             <Dropdown.Item onClick={() => { updateAudiometryReportInit(x) }} >Edit Report </Dropdown.Item>
                                                                             <Dropdown.Item
                                                                                 onClick={() => {
-                                                                                    if (x.trial_mode) {
-                                                                                        printAudiometryReport(x, calculateHearingLoss, null)
-                                                                                    }
-                                                                                    else {
-                                                                                        getDoctorSignature(x.doctor_id)
-                                                                                            .then((signature) => {
-                                                                                                printAudiometryReport(x, calculateHearingLoss, signature)
-                                                                                            })
-                                                                                    }
+                                                                                    Swal.fire({
+                                                                                        title: "Print with Header On/Off?",
+                                                                                        showDenyButton: true,
+                                                                                        showCancelButton: true,
+                                                                                        confirmButtonText: "On",
+                                                                                        denyButtonText: `Off`
+                                                                                    }).then((result) => {
+                                                                                        let h = result.isConfirmed?true:result.isDenied?false:null
+
+                                                                                        if(h !== null){
+                                                                                            if (x.trial_mode) {
+                                                                                                printAudiometryReport(x, calculateHearingLoss, h, null)
+                                                                                            }
+                                                                                            else {
+                                                                                                getDoctorSignature(x.doctor_id)
+                                                                                                    .then((signature) => {
+                                                                                                        printAudiometryReport(x, calculateHearingLoss, h, signature)
+                                                                                                    })
+                                                                                            }
+                                                                                        }
+                                                                                    });
                                                                                 }}
                                                                             >Print Report
                                                                             </Dropdown.Item>

@@ -162,13 +162,17 @@ const drawChartData = (ctx, data, lineType, marker) => {
     })
 }
 
-const printAudiometryReport = (reportData, calculateHearingLoss, signature) => {
+const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, signature) => {
 
     let ac_lhl_data = calculateHearingLoss(reportData.ac_left_ear_pta.data)
     let ac_rhl_data = calculateHearingLoss(reportData.ac_right_ear_pta.data)
 
     let html = `
         <div class="container-fluid my-4 fw-bold">
+
+            <div>
+                <img src="${headerVisible? "/happy_ears_invoice_header_1.png":"/happy_ears_invoice_header_empty.jpg"}" alt="header_image" style="width:100%;" >
+            </div> 
 
             <h2 class="text-center text-decoration-underline text-uppercase m-2" style="color:navy;">${reportData.trial_mode ? "Audiogram Hearing Aid Trial" : "Pure Tone Audiogram"} </h2>
             <div class="d-flex my-2 align-items-center">
@@ -215,31 +219,31 @@ const printAudiometryReport = (reportData, calculateHearingLoss, signature) => {
 
             <div class="d-flex text-center" style="gap:30px;">
                 <div>
-                    <h2 style="color:blue; margin:30px 0">Left</h2>
+                    <h2 style="color:blue; margin:0;">Left</h2>
                     <canvas id="acLeftEarChart" style="width: 400px; height: 400px" width="500" height="500"></canvas>
-                    <div style="margin-top:30px">
+                    <div style="margin-top:5px">
                         <span style="color:blue;">PTA (LT EAR) </span> =
                         <span class="border-bottom border-dark">${ac_lhl_data.unit} db</span>
                     </div>
-                    <div style="margin-bottom:30px; margin-top:15px;">
+                    <div style="margin:15px 0;">
                         <span>Degree of Hearing Loss: </span>
                         <span class="p-2 rounded" style="background-color:${ac_lhl_data.color}">${ac_lhl_data.text}</span>
                     </div>
                 </div>
                 <div>
-                    <h2 style="color:red; margin:30px 0">Right</h2>
+                    <h2 style="color:red; margin:0;">Right</h2>
                     <canvas id="acRightEarChart" style="width: 400px; height: 400px" width="500" height="500"></canvas>
-                    <div style="margin-top:30px">
+                    <div style="margin-top:5px">
                         <span style="color:red;">PTA (RT EAR) </span> =
                         <span class="border-bottom border-dark">${ac_rhl_data.unit} db</span>
                     </div>
-                    <div style="margin-bottom:30px; margin-top:15px;">
+                    <div style="margin:15px 0;">
                         <span>Degree of Hearing Loss: </span>
                         <span class="p-2 rounded" style="background-color:${ac_rhl_data.color}">${ac_rhl_data.text}</span>
                     </div>
                 </div>
                 <div>
-                    <table class="table table-bordered text-center" style="margin-top: 130px;">
+                    <table class="table table-bordered text-center" style="margin-top: 60px;">
                         <tr><td class="py-1 bg-primary text-white">AC</td></td>
                         <tr><td class="py-1"><span class="me-5">L</span><span>&#128936;</span></td></td>
                         <tr><td class="py-1"><span class="me-5">R</span><span>&#9675;</span></td></td>
