@@ -13,10 +13,28 @@ import { printAudiometryReport } from "../utils/printAudiometryReport"
 const frequencyList = [250, 500, 1000, 2000, 4000, 6000, 8000]
 
 const calculateHearingLoss = (frequencyData) => {
-    let unit = Math.round((frequencyData.reduce((p, o) => { 
-        console.log(o)
-        return [500, 1000, 2000].includes(o.frequency) ? p + o.decibal : p 
-    }, 0) / 3) * 1000) / 1000
+    let readings = frequencyData.reduce((p, o) => {
+        if ([500, 1000, 2000].includes(o.frequency)) { p[o.frequency] = o.decibal; return p }
+        else { return p }
+    }, {})
+
+    let unit
+    if(readings[500] === null){
+        unit = 0
+    }
+    else if(readings[1000] === null){
+        unit = readings[500] / 3
+    }
+    else if(readings[2000] === null){
+        unit = (readings[500] + readings[1000]) / 3
+    }
+    else{
+        unit = (readings[500] + readings[1000] + readings[2000]) / 3
+    }
+    unit = Math.round( unit * 100) / 100
+
+    // console.log(readings, unit)
+
     let color = "#000000"
     let text = ""
 
@@ -117,7 +135,7 @@ const Audiometry = () => {
         return axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-doctor-signature`, { doctor_id: doctor_id, current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
             .then((res) => {
                 if (res.data.operation === "success") {
-                    return res.data.info     
+                    return res.data.info
                 }
                 else {
                     Swal.fire('Oops!', res.data.message, 'error');
@@ -409,13 +427,18 @@ const Audiometry = () => {
 
                                                                         <Dropdown.Menu>
                                                                             <Dropdown.Item onClick={() => { updateAudiometryReportInit(x) }} >Edit Report </Dropdown.Item>
-                                                                            <Dropdown.Item 
-                                                                                onClick={() => { 
-                                                                                    getDoctorSignature(x.doctor_id)
-                                                                                    .then((signature)=>{
-                                                                                        printAudiometryReport(x, calculateHearingLoss, signature) 
-                                                                                    })
-                                                                                }} 
+                                                                            <Dropdown.Item
+                                                                                onClick={() => {
+                                                                                    if (x.trial_mode) {
+                                                                                        printAudiometryReport(x, calculateHearingLoss, null)
+                                                                                    }
+                                                                                    else {
+                                                                                        getDoctorSignature(x.doctor_id)
+                                                                                            .then((signature) => {
+                                                                                                printAudiometryReport(x, calculateHearingLoss, signature)
+                                                                                            })
+                                                                                    }
+                                                                                }}
                                                                             >Print Report
                                                                             </Dropdown.Item>
                                                                         </Dropdown.Menu>
@@ -687,13 +710,13 @@ const Audiometry = () => {
                                                         <div className="col-4">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required" htmlFor="provisionalDiagnosisLeft">Provisional Diagnosis (Left)</label>
-                                                                <textarea id="provisionalDiagnosisLeft" rows={3} className="form-control" value={provisionalDiagnosis.left} onChange={(e) => { setProvisionalDiagnosis({...provisionalDiagnosis, left: e.target.value}) }} />
+                                                                <textarea id="provisionalDiagnosisLeft" rows={3} className="form-control" value={provisionalDiagnosis.left} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, left: e.target.value }) }} />
                                                             </div>
                                                         </div>
                                                         <div className="col-4">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required" htmlFor="provisionalDiagnosisRight">Provisional Diagnosis (Right)</label>
-                                                                <textarea id="provisionalDiagnosisRight" rows={3} className="form-control" value={provisionalDiagnosis.right} onChange={(e) => { setProvisionalDiagnosis({...provisionalDiagnosis, right: e.target.value}) }} />
+                                                                <textarea id="provisionalDiagnosisRight" rows={3} className="form-control" value={provisionalDiagnosis.right} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, right: e.target.value }) }} />
                                                             </div>
                                                         </div>
                                                         <div className="col-4">

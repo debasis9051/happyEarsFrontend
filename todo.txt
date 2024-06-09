@@ -1,7 +1,6 @@
 Todo:
 
-calculateHearingLoss adjustment for null value
-
+test calculateHearingLoss adjustment for null value
 test with trial data
 
 print adjustments for both:
