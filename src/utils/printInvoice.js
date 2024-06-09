@@ -69,7 +69,7 @@ const printInvoice = (patient_name,patient_address,contact_number,branch_name,in
     let html = `
         <div class="container-fluid my-4 fw-bold">
             <div>
-                <img src="/happy_ears_invoice_header.jpg" alt="header_image" style="width:85%;" >
+                <img src="/happy_ears_invoice_header_empty.jpg" alt="header_image" style="width:100%;" >
             </div> 
             
             <div class="text-end  mx-4 mt-1" style="font-size:12px;"> Rajpur Sonarpur Branch : </div>
