@@ -1,92 +1,92 @@
 import moment from "moment"
 
-const drawMarker = (ctx, x, y, marker, arrowFlag) => {
+const drawMarker = (ctx, x, y, marker, markerColor, arrowFlag) => {
     if (marker === "circle") {
-        ctx.strokeStyle = "red";
+        ctx.strokeStyle = markerColor;
         ctx.beginPath();
-        ctx.arc(x, y, 5, 0, 2 * Math.PI);
-        ctx.fillStyle = "red";
-        ctx.fill();
+        ctx.arc(x, y, 9, 0, 2 * Math.PI);
+        ctx.lineWidth = 3;
+        ctx.stroke();
     }
     else if (marker === "cross") {
         ctx.beginPath();
-        ctx.moveTo(x - 5, y - 5)
-        ctx.lineTo(x + 5, y + 5)
-        ctx.moveTo(x + 5, y - 5)
-        ctx.lineTo(x - 5, y + 5)
-        ctx.strokeStyle = "blue";
-        ctx.lineWidth = 1;
+        ctx.moveTo(x - 9, y - 9)
+        ctx.lineTo(x + 9, y + 9)
+        ctx.moveTo(x + 9, y - 9)
+        ctx.lineTo(x - 9, y + 9)
+        ctx.strokeStyle = markerColor;
+        ctx.lineWidth = 3;
         ctx.stroke();
     }
     else if (marker === "left_arrow") {
         ctx.beginPath();
-        ctx.moveTo(x + 5, y - 5)
-        ctx.lineTo(x - 5, y)
-        ctx.lineTo(x + 5, y + 5)
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 1;
+        ctx.moveTo(x + 18, y - 9)
+        ctx.lineTo(x, y)
+        ctx.lineTo(x + 18, y + 9)
+        ctx.strokeStyle = markerColor;
+        ctx.lineWidth = 3;
         ctx.stroke();
     }
     else if (marker === "right_arrow") {
         ctx.beginPath();
-        ctx.moveTo(x - 5, y - 5)
-        ctx.lineTo(x + 5, y)
-        ctx.lineTo(x - 5, y + 5)
-        ctx.strokeStyle = "blue";
-        ctx.lineWidth = 1;
+        ctx.moveTo(x - 18, y - 9)
+        ctx.lineTo(x, y)
+        ctx.lineTo(x - 18, y + 9)
+        ctx.strokeStyle = markerColor;
+        ctx.lineWidth = 3;
         ctx.stroke();
     }
     else if (marker === "triangle") {
         ctx.beginPath();
-        ctx.moveTo(x, y - 5)
-        ctx.lineTo(x + 5, y + 5)
-        ctx.lineTo(x - 5, y + 5)
-        ctx.lineTo(x, y - 5)
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 1;
+        ctx.moveTo(x, y - 9)
+        ctx.lineTo(x + 9, y + 9)
+        ctx.lineTo(x - 9, y + 9)
+        ctx.lineTo(x, y - 9)
+        ctx.strokeStyle = markerColor;
+        ctx.lineWidth = 2;
         ctx.stroke();
     }
     else if (marker === "rectangle") {
         ctx.beginPath();
-        ctx.moveTo(x - 8, y - 5)
-        ctx.lineTo(x + 8, y - 5)
-        ctx.lineTo(x + 8, y + 5)
-        ctx.lineTo(x - 8, y + 5)
-        ctx.lineTo(x - 8, y - 6)
-        ctx.strokeStyle = "blue";
-        ctx.lineWidth = 1;
+        ctx.moveTo(x - 12, y - 9)
+        ctx.lineTo(x + 12, y - 9)
+        ctx.lineTo(x + 12, y + 9)
+        ctx.lineTo(x - 12, y + 9)
+        ctx.lineTo(x - 12, y - 10)
+        ctx.strokeStyle = markerColor;
+        ctx.lineWidth = 2;
         ctx.stroke();
     }
     else if (marker === "left_bracket") {
         ctx.beginPath();
-        ctx.moveTo(x + 5, y - 5)
-        ctx.lineTo(x, y - 5)
-        ctx.lineTo(x, y + 5)
-        ctx.lineTo(x + 5, y + 5)
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 1;
+        ctx.moveTo(x + 9, y - 9)
+        ctx.lineTo(x, y - 9)
+        ctx.lineTo(x, y + 9)
+        ctx.lineTo(x + 9, y + 9)
+        ctx.strokeStyle = markerColor;
+        ctx.lineWidth = 2;
         ctx.stroke();
     }
     else if (marker === "right_bracket") {
         ctx.beginPath();
-        ctx.moveTo(x - 5, y - 5)
-        ctx.lineTo(x, y - 5)
-        ctx.lineTo(x, y + 5)
-        ctx.lineTo(x - 5, y + 5)
-        ctx.strokeStyle = "blue";
-        ctx.lineWidth = 1;
+        ctx.moveTo(x - 9, y - 9)
+        ctx.lineTo(x, y - 9)
+        ctx.lineTo(x, y + 9)
+        ctx.lineTo(x - 9, y + 9)
+        ctx.strokeStyle = markerColor;
+        ctx.lineWidth = 2;
         ctx.stroke();
     }
     
 
     if (arrowFlag) {
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(x, y)
-        ctx.lineTo(x - 9, y + 9)
-        ctx.lineTo(x - 5, y)
-        ctx.moveTo(x - 9, y + 9)
-        ctx.lineTo(x, y + 5)
+        ctx.lineTo(x - 18, y + 10)
+        ctx.lineTo(x - 13, y)
+        ctx.moveTo(x - 19, y + 11)
+        ctx.lineTo(x - 7, y + 12)
         ctx.stroke();
     }
 }
@@ -133,9 +133,8 @@ const setupChart = (ctx) => {
     ctx.stroke();
 }
 
-const drawChartData = (ctx, data, lineType, marker) => {
-    ctx.strokeStyle = "black"
-    ctx.lineWidth = 2
+const drawChartData = (ctx, data, lineType, lineColor, marker) => {
+    ctx.lineWidth = 4
 
     if(lineType === "solid"){
         ctx.setLineDash([]);
@@ -143,6 +142,9 @@ const drawChartData = (ctx, data, lineType, marker) => {
     else if(lineType === "dashed"){
         ctx.setLineDash([5, 10]);
     }
+
+    ctx.strokeStyle = lineColor
+
     ctx.beginPath()
     ctx.moveTo(60 + 0, 60 + (420 - 10) / (120 + 10) * (data[0] + 10));
     data.slice(1, data.length).forEach((elem, i, arr) => {
@@ -158,7 +160,7 @@ const drawChartData = (ctx, data, lineType, marker) => {
         let x = 60 + 420 / (arr.length - 1) * i
         let y = 60 + (420 - 10) / (120 + 10) * ((elem === null ? 120 : elem) + 10)
 
-        drawMarker(ctx, x, y, marker, (elem === null ? true : false))
+        drawMarker(ctx, x, y, marker, lineColor, (elem === null ? true : false))
     })
 }
 
@@ -207,7 +209,7 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
             }
             <div class="d-flex my-2 align-items-center">
                 <span class="mx-2">Date: </span>
-                <span class="mx-2 flex-grow-1 border-bottom border-dark fs-4">${moment(reportData.created_at).format("DD-MM-YYYY")}</span>
+                <span class="mx-2 flex-grow-1 border-bottom border-dark fs-4">${moment.unix(reportData.created_at._seconds).format("DD-MM-YYYY")}</span>
             </div>
             ${
                 !reportData.trial_mode ?
@@ -221,7 +223,7 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                 <div>
                     <h2 style="color:blue; margin:0;">Left</h2>
                     <canvas id="acLeftEarChart" style="width: 400px; height: 400px" width="500" height="500"></canvas>
-                    <div style="margin-top:5px">
+                    <div>
                         <span style="color:blue;">PTA (LT EAR) </span> =
                         <span class="border-bottom border-dark">${ac_lhl_data.unit} db</span>
                     </div>
@@ -233,7 +235,7 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                 <div>
                     <h2 style="color:red; margin:0;">Right</h2>
                     <canvas id="acRightEarChart" style="width: 400px; height: 400px" width="500" height="500"></canvas>
-                    <div style="margin-top:5px">
+                    <div>
                         <span style="color:red;">PTA (RT EAR) </span> =
                         <span class="border-bottom border-dark">${ac_rhl_data.unit} db</span>
                     </div>
@@ -243,7 +245,7 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                     </div>
                 </div>
                 <div>
-                    <table class="table table-bordered text-center" style="margin-top: 60px;">
+                    <table class="table table-bordered border-dark text-center" style="margin-top: 60px;">
                         <tr><td class="py-1 bg-primary text-white">AC</td></td>
                         <tr><td class="py-1"><span class="me-5">L</span><span>&#128936;</span></td></td>
                         <tr><td class="py-1"><span class="me-5">R</span><span>&#9675;</span></td></td>
@@ -268,7 +270,7 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                         <span class="mx-2 border-bottom border-dark fs-4">${reportData.tuning_fork}</span>
                     </div>
                     <div class="flex-grow-1">
-                        <table class="table table-bordered border-dark">
+                        <table class="table table-sm table-bordered border-dark m-0">
                             <tr>
                                 <td></td>
                                 <td><span class="fw-bold" style="color:blue;">Left</span></td>
@@ -287,7 +289,7 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                         </table>
                     </div>
                 </div>
-                <div class="my-4">
+                <div class="mb-2">
                     <span class="mx-2">Provisional Diagnosis: </span>
                     <div class="mx-2 border-bottom border-dark fs-4"><span class="fst-italic" style="color:blue;">Lt.</span> ${reportData.provisional_diagnosis.left}</div>
                     <div class="mx-2 border-bottom border-dark fs-4"><span class="fst-italic" style="color:red;">Rt.</span> ${reportData.provisional_diagnosis.right}</div>
@@ -300,8 +302,8 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
 
             ${
                 !reportData.trial_mode ?
-                `<div class="my-2 ms-auto" style="width:max-content; margin-right: 6rem" >
-                    <img class="d-block" src=${signature} alt="doctor_signature" height="60">
+                `<div class="my-2 ms-auto d-flex flex-column" style="width:max-content; margin-right: 6rem" >
+                    <diV class="text-center"><img src=${signature} alt="doctor_signature" height="40"></div>
                     <span>Clinical Audiologist <br> & Speech Therapist </span>
                 </div>` : ""
             }
@@ -331,11 +333,11 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
     setupChart(ctx1)
     setupChart(ctx2)
 
-    drawChartData(ctx1, reportData.ac_left_ear_pta.data.map(x => x.decibal), "solid", reportData.ac_left_ear_pta.masked ? "rectangle" : "cross")
-    drawChartData(ctx2, reportData.ac_right_ear_pta.data.map(x => x.decibal), "solid", reportData.ac_right_ear_pta.masked ? "triangle" : "circle")
+    drawChartData(ctx1, reportData.ac_left_ear_pta.data.map(x => x.decibal), "solid", "blue", reportData.ac_left_ear_pta.masked ? "rectangle" : "cross")
+    drawChartData(ctx2, reportData.ac_right_ear_pta.data.map(x => x.decibal), "solid", "red", reportData.ac_right_ear_pta.masked ? "triangle" : "circle")
     if (reportData.bc_input) {
-        drawChartData(ctx1, reportData.bc_left_ear_pta.data.map(x => x.decibal), "dashed", reportData.bc_left_ear_pta.masked ? "right_bracket" : "right_arrow")
-        drawChartData(ctx2, reportData.bc_right_ear_pta.data.map(x => x.decibal), "dashed", reportData.bc_right_ear_pta.masked ? "left_bracket" : "left_arrow")
+        drawChartData(ctx1, reportData.bc_left_ear_pta.data.map(x => x.decibal), "dashed", "blue", reportData.bc_left_ear_pta.masked ? "right_bracket" : "right_arrow")
+        drawChartData(ctx2, reportData.bc_right_ear_pta.data.map(x => x.decibal), "dashed", "red", reportData.bc_right_ear_pta.masked ? "left_bracket" : "left_arrow")
     }
 
     setTimeout(() => { nw.print() }, 2000);
