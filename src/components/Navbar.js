@@ -32,15 +32,9 @@ const Navbar = () => {
                                             <g transform="translate(50 50)">
                                                 <g>
                                                     <animateTransform attributeName="transform" type="rotate" calcMode="discrete" values="0;90;180;270;360" keyTimes="0;0.25;0.5;0.75;1" dur="2.5s" repeatCount="indefinite"></animateTransform>
-                                                    <path d="M-40 0A40 40 0 1 0 40 0" fill="#e15b64">
-                                                        <animate attributeName="fill" calcMode="discrete" values="#e15b64;#f47e60;#f8b26a;#abbd81;#e15b64" keyTimes="0;0.24;0.49;0.74;0.99" dur="2.5s" repeatCount="indefinite"></animate>
-                                                    </path>
-                                                    <path d="M-40 0A40 40 0 0 1 40 0" fill="#f47e60">
-                                                        <animate attributeName="fill" calcMode="discrete" values="#f47e60;#f8b26a;#abbd81;#e15b64;#f47e60" keyTimes="0;0.25;0.5;0.75;1" dur="2.5s" repeatCount="indefinite"></animate>
-                                                    </path>
-                                                    <path d="M-39 0L39 0" stroke="#bb222c" strokeWidth="2">
-                                                        <animate attributeName="stroke" values="#e15b64;#bb222c;#df390f;#f47e60;#df390f;#ed7d0b;#f8b26a;#ed7d0b;#7d924d;#abbd81;#7d924d;#bb222c;#e15b64" keyTimes="0;0.124;0.125;0.25;0.374;0.375;0.5;0.624;0.625;0.75;0.874;0.875;1" dur="2.5s" repeatCount="indefinite"></animate>
-                                                    </path>
+                                                    <path d="M-40 0A40 40 0 1 0 40 0" fill="#e15b64"><animate attributeName="fill" calcMode="discrete" values="#e15b64;#f47e60;#f8b26a;#abbd81;#e15b64" keyTimes="0;0.24;0.49;0.74;0.99" dur="2.5s" repeatCount="indefinite"></animate></path>
+                                                    <path d="M-40 0A40 40 0 0 1 40 0" fill="#f47e60"><animate attributeName="fill" calcMode="discrete" values="#f47e60;#f8b26a;#abbd81;#e15b64;#f47e60" keyTimes="0;0.25;0.5;0.75;1" dur="2.5s" repeatCount="indefinite"></animate></path>
+                                                    <path d="M-39 0L39 0" stroke="#bb222c" strokeWidth="2"><animate attributeName="stroke" values="#e15b64;#bb222c;#df390f;#f47e60;#df390f;#ed7d0b;#f8b26a;#ed7d0b;#7d924d;#abbd81;#7d924d;#bb222c;#e15b64" keyTimes="0;0.124;0.125;0.25;0.374;0.375;0.5;0.624;0.625;0.75;0.874;0.875;1" dur="2.5s" repeatCount="indefinite"></animate></path>
                                                     <g>
                                                         <path d="M-40 0A40 40 0 0 1 40 0Z" fill="#bb222c">
                                                             <animate attributeName="fill" values="#e15b64;#bb222c;#df390f;#f47e60;#df390f;#ed7d0b;#f8b26a;#ed7d0b;#7d924d;#abbd81;#7d924d;#bb222c;#e15b64" keyTimes="0;0.124;0.125;0.25;0.374;0.375;0.5;0.624;0.625;0.75;0.874;0.875;1" dur="2.5s" repeatCount="indefinite"></animate>

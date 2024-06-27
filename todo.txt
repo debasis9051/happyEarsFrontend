@@ -1,17 +1,21 @@
 Todo:
-form - date field
-complaints - character limit - 100 characters
-provisional diagnosis both - character limit - 100 characters
-recommendations points wise - limit 4 point - 50 chars per point
+
+
+print part adjustments
+
+
 
 
 1. user access restriction implementation, set user access restriction admin panel 
 2. audiometry - generate invoice against audiometry report
 
+
+
+
+
+
+
 3. vercel frontend and backend deployments cleanup
-
-
-
 
 4. all tables major update - implement pagination logic 
 5. product individual edit feature and export feature in inventory

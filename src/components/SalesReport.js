@@ -602,7 +602,7 @@ const SalesReport = () => {
                                                         t.splice(i, 1)
                                                         setAccessoryItems(t)
                                                     }}>
-                                                        <span className="text-danger">✖</span>
+                                                        <span className="">✖</span>
                                                     </button>
                                                 }
                                             </div>

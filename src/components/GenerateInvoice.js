@@ -342,7 +342,7 @@ const GenerateInvoice = () => {
                                                         t.splice(i, 1)
                                                         setLineItems(t)
                                                     }}>
-                                                        <span className="text-danger">✖</span>
+                                                        <span className="">✖</span>
                                                     </button>
                                                 }
                                             </div>
@@ -431,7 +431,7 @@ const GenerateInvoice = () => {
                                                             t.splice(i, 1)
                                                             setAccessoryItems(t)
                                                         }}>
-                                                            <span className="text-danger">✖</span>
+                                                            <span className="">✖</span>
                                                         </button>
                                                     }
                                                 </div>

@@ -10,7 +10,24 @@ import { getAudiometryList, getDoctorList } from "../utils/getApis"
 import AuthWrapper from "./AuthWrapper";
 import { printAudiometryReport } from "../utils/printAudiometryReport"
 
-const frequencyList = [250, 500, 1000, 2000, 4000, 6000, 8000]
+const acConfig = [
+    { frequency: 250, min: -10, max: 120 },
+    { frequency: 500, min: -10, max: 120 },
+    { frequency: 1000, min: -10, max: 120 },
+    { frequency: 2000, min: -10, max: 120 },
+    { frequency: 4000, min: -10, max: 120 },
+    { frequency: 6000, min: -10, max: 120 },
+    { frequency: 8000, min: -10, max: 100 }
+]
+const bcConfig = [
+    { frequency: 250, min: -10, max: 80 },
+    { frequency: 500, min: -10, max: 80 },
+    { frequency: 1000, min: -10, max: 80 },
+    { frequency: 2000, min: -10, max: 80 },
+    { frequency: 4000, min: -10, max: 80 },
+    { frequency: 6000, min: -10, max: 65 },
+]
+
 
 const calculateHearingLoss = (frequencyData) => {
     let readings = frequencyData.reduce((p, o) => {
@@ -67,6 +84,7 @@ const Audiometry = () => {
     const [patientName, setPatientName] = useState("")
     const [patientAddress, setPatientAddress] = useState("")
     const [contactNumber, setContactNumber] = useState("")
+    const [date, setDate] = useState(moment().format("YYYY-MM-DD"))
     const [age, setAge] = useState("")
     const [sex, setSex] = useState("male")
 
@@ -78,12 +96,12 @@ const Audiometry = () => {
     const [audiometer, setAudiometer] = useState("")
     const [complaint, setComplaint] = useState("")
 
-    const [acLeftEarPta, setAcLeftEarPta] = useState({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
-    const [acRightEarPta, setAcRightEarPta] = useState({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
+    const [acLeftEarPta, setAcLeftEarPta] = useState({ masked: false, data: acConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: acConfig })
+    const [acRightEarPta, setAcRightEarPta] = useState({ masked: false, data: acConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: acConfig })
 
     const [bcInput, setBcInput] = useState(false)
-    const [bcLeftEarPta, setBcLeftEarPta] = useState({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
-    const [bcRightEarPta, setBcRightEarPta] = useState({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
+    const [bcLeftEarPta, setBcLeftEarPta] = useState({ masked: false, data: bcConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: bcConfig })
+    const [bcRightEarPta, setBcRightEarPta] = useState({ masked: false, data: bcConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: bcConfig })
 
     const [tuningFork, setTuningFork] = useState(null)
     const [rinne, setRinne] = useState({ left: null, right: null })
@@ -91,7 +109,7 @@ const Audiometry = () => {
     const [selectedDoctor, setSelectedDoctor] = useState(null)
 
     const [provisionalDiagnosis, setProvisionalDiagnosis] = useState({ left: "", right: "" })
-    const [recommendations, setRecommendations] = useState("")
+    const [recommendations, setRecommendations] = useState([""])
 
     const [isAudiometryReportApiLoading, setIsAudiometryReportApiLoading] = useState(false)
 
@@ -155,6 +173,7 @@ const Audiometry = () => {
         setPatientName(audiometry_report_data.patient_name)
         setPatientAddress(audiometry_report_data.patient_address)
         setContactNumber(audiometry_report_data.contact_number)
+        setDate(moment.unix(audiometry_report_data.date._seconds).format("YYYY-MM-DD"))
         setAge(audiometry_report_data.age)
         setSex(audiometry_report_data.sex)
 
@@ -194,6 +213,10 @@ const Audiometry = () => {
         }
         if (contactNumber === "") {
             Swal.fire('Oops!!', 'Contact Number cannot be empty', 'warning');
+            return false
+        }
+        if (date === "") {
+            Swal.fire('Oops!!', 'Date cannot be empty', 'warning');
             return false
         }
         if (age === "") {
@@ -247,8 +270,8 @@ const Audiometry = () => {
                 Swal.fire('Oops!!', 'Enter a Provisional Diagnosis for both ears', 'warning');
                 return false
             }
-            if (recommendations === "") {
-                Swal.fire('Oops!!', 'Enter Recommendations', 'warning');
+            if (!recommendations.find(x => x !== "")) {
+                Swal.fire('Oops!!', 'Enter at least 1 Recommendation', 'warning');
                 return false
             }
         }
@@ -258,6 +281,7 @@ const Audiometry = () => {
 
             patient_name: patientName,
             contact_number: contactNumber,
+            date: date,
             age: age,
             sex: sex,
             patient_address: patientAddress,
@@ -283,7 +307,7 @@ const Audiometry = () => {
             doctor_id: trialMode ? null : selectedDoctor.value,
 
             provisional_diagnosis: trialMode ? null : provisionalDiagnosis,
-            recommendations: trialMode ? null : recommendations,
+            recommendations: trialMode ? null : recommendations.filter(x => x !== ""),
 
             current_user_uid: currentUserInfo.uid,
             current_user_name: currentUserInfo.displayName
@@ -324,6 +348,7 @@ const Audiometry = () => {
         setPatientName("")
         setPatientAddress("")
         setContactNumber("")
+        setDate(moment().format("YYYY-MM-DD"))
         setAge("")
         setSex("male")
 
@@ -335,12 +360,12 @@ const Audiometry = () => {
         setAudiometer("")
         setComplaint("")
 
-        setAcLeftEarPta({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
-        setAcRightEarPta({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
+        setAcLeftEarPta({ masked: false, data: acConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: acConfig })
+        setAcRightEarPta({ masked: false, data: acConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: acConfig })
 
         setBcInput(false)
-        setBcLeftEarPta({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
-        setBcRightEarPta({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) })
+        setBcLeftEarPta({ masked: false, data: bcConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: bcConfig })
+        setBcRightEarPta({ masked: false, data: bcConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: bcConfig })
 
         setTuningFork(null)
         setRinne({ left: null, right: null })
@@ -348,7 +373,7 @@ const Audiometry = () => {
         setSelectedDoctor(null)
 
         setProvisionalDiagnosis({ left: "", right: "" })
-        setRecommendations("")
+        setRecommendations([""])
     }
 
     let tp = Math.ceil(filteredAudiometryList.length / 10)
@@ -436,9 +461,9 @@ const Audiometry = () => {
                                                                                         confirmButtonText: "On",
                                                                                         denyButtonText: `Off`
                                                                                     }).then((result) => {
-                                                                                        let h = result.isConfirmed?true:result.isDenied?false:null
+                                                                                        let h = result.isConfirmed ? true : result.isDenied ? false : null
 
-                                                                                        if(h !== null){
+                                                                                        if (h !== null) {
                                                                                             if (x.trial_mode) {
                                                                                                 printAudiometryReport(x, calculateHearingLoss, h, null)
                                                                                             }
@@ -523,33 +548,43 @@ const Audiometry = () => {
                                                     </div>
                                                 </div>
                                             </div>
+
                                             <div className="row">
-                                                <div className="col-xl-2 col-sm-6">
+                                                <div className="col-4">
+                                                    <div className="form-group">
+                                                        <label className="form-label my-1 required" htmlFor="date">Date</label>
+                                                        <input type="date" id="date" className="form-control" value={date} onChange={(e) => { setDate(e.target.value) }} />
+                                                    </div>
+                                                </div>
+                                                <div className="col-4">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required" htmlFor="age">Age</label>
                                                         <input type="text" id="age" className="form-control" value={age} onChange={(e) => { setAge(e.target.value) }} />
                                                     </div>
                                                 </div>
-                                                <div className="col-xl-3 col-sm-6">
+                                                <div className="col-4">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required">Sex</label>
-                                                        <div className="d-flex gap-1 text-white">
-                                                            <div className={`px-3 py-2 rounded ${sex === "male" ? "bg-primary" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setSex("male") }}>Male</div>
-                                                            <div className={`px-3 py-2 rounded ${sex === "female" ? "bg-primary" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setSex("female") }}>Female</div>
-                                                            <div className={`px-3 py-2 rounded ${sex === "others" ? "bg-primary" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setSex("others") }}>Others</div>
+                                                        <div className="d-flex gap-2 text-white">
+                                                            <div className={`px-3 py-2 flex-grow-1 text-center rounded ${sex === "male" ? "bg-primary" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setSex("male") }}>Male</div>
+                                                            <div className={`px-3 py-2 flex-grow-1 text-center rounded ${sex === "female" ? "bg-primary" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setSex("female") }}>Female</div>
+                                                            <div className={`px-3 py-2 flex-grow-1 text-center rounded ${sex === "others" ? "bg-primary" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setSex("others") }}>Others</div>
                                                         </div>
                                                     </div>
                                                 </div>
+                                            </div>
+
+                                            <div className="row">
                                                 {
                                                     trialMode ?
                                                         <>
-                                                            <div className="col-xl-3">
+                                                            <div className="col-6">
                                                                 <div className="form-group">
                                                                     <label className="form-label my-1 required" htmlFor="recommendedMachine">Recommended Machine</label>
                                                                     <input type="text" id="recommendedMachine" className="form-control" value={recommendedMachine} onChange={(e) => { setRecommendedMachine(e.target.value) }} />
                                                                 </div>
                                                             </div>
-                                                            <div className="col-xl-4">
+                                                            <div className="col-6">
                                                                 <div className="form-group">
                                                                     <label className="form-label my-1 required" htmlFor="clientChosenMachine">Client Chosen Machine</label>
                                                                     <input type="text" id="clientChosenMachine" className="form-control" value={clientChosenMachine} onChange={(e) => { setClientChosenMachine(e.target.value) }} />
@@ -558,13 +593,13 @@ const Audiometry = () => {
                                                         </>
                                                         :
                                                         <>
-                                                            <div className="col-xl-3">
+                                                            <div className="col-6">
                                                                 <div className="form-group">
                                                                     <label className="form-label my-1 required" htmlFor="referredBy">Referred By</label>
                                                                     <input type="text" id="referredBy" className="form-control" value={referredBy} onChange={(e) => { setReferredBy(e.target.value) }} />
                                                                 </div>
                                                             </div>
-                                                            <div className="col-xl-4">
+                                                            <div className="col-6">
                                                                 <div className="form-group">
                                                                     <label className="form-label my-1 required" htmlFor="audiometer">Audiometer</label>
                                                                     <input type="text" id="audiometer" className="form-control" value={audiometer} onChange={(e) => { setAudiometer(e.target.value) }} />
@@ -573,6 +608,7 @@ const Audiometry = () => {
                                                         </>
                                                 }
                                             </div>
+
                                             <div className="row">
                                                 <div className="col-6">
                                                     <div className="form-group">
@@ -592,7 +628,7 @@ const Audiometry = () => {
                                                         <div className="col-6">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required" htmlFor="complaint">Complaint</label>
-                                                                <textarea id="complaint" rows={3} className="form-control" value={complaint} onChange={(e) => { setComplaint(e.target.value) }} />
+                                                                <textarea id="complaint" rows={3} maxLength={200} className="form-control" value={complaint} onChange={(e) => { setComplaint(e.target.value) }} />
                                                             </div>
                                                         </div>
                                                 }
@@ -613,7 +649,7 @@ const Audiometry = () => {
                                             </div>
                                             <br />
                                             <h4 className="text-center my-2">Bone Conduction (BC)</h4>
-                                            <FormCheck className="fs-4 text-center" type="switch" checked={bcInput} onChange={(e) => { setBcInput(e.target.checked); setBcLeftEarPta({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) }); setBcRightEarPta({ masked: false, data: frequencyList.map(x => ({ frequency: x, decibal: 0 })) }); }} />
+                                            <FormCheck className="fs-4 text-center" type="switch" checked={bcInput} onChange={(e) => { setBcInput(e.target.checked); setBcLeftEarPta({ masked: false, data: bcConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: bcConfig }); setBcRightEarPta({ masked: false, data: bcConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: bcConfig }); }} />
                                             {
                                                 bcInput &&
                                                 <div className="row">
@@ -647,7 +683,6 @@ const Audiometry = () => {
                                                                 />
                                                             </div>
                                                         </div>
-
                                                         <div className="col-4">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required">Rinne (Left)</label>
@@ -674,8 +709,8 @@ const Audiometry = () => {
                                                                 />
                                                             </div>
                                                         </div>
-
                                                     </div>
+
                                                     <div className="row">
                                                         <div className="col-4">
                                                             <div className="form-group">
@@ -690,7 +725,6 @@ const Audiometry = () => {
                                                                 />
                                                             </div>
                                                         </div>
-
                                                         <div className="col-4">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required">Weber (Left)</label>
@@ -718,24 +752,51 @@ const Audiometry = () => {
                                                             </div>
                                                         </div>
                                                     </div>
+
                                                     <div className="row">
-                                                        <div className="col-4">
+                                                        <div className="col-6">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required" htmlFor="provisionalDiagnosisLeft">Provisional Diagnosis (Left)</label>
-                                                                <textarea id="provisionalDiagnosisLeft" rows={3} className="form-control" value={provisionalDiagnosis.left} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, left: e.target.value }) }} />
+                                                                <textarea id="provisionalDiagnosisLeft" rows={3} maxLength={200} className="form-control" value={provisionalDiagnosis.left} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, left: e.target.value }) }} />
                                                             </div>
                                                         </div>
-                                                        <div className="col-4">
+                                                        <div className="col-6">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required" htmlFor="provisionalDiagnosisRight">Provisional Diagnosis (Right)</label>
-                                                                <textarea id="provisionalDiagnosisRight" rows={3} className="form-control" value={provisionalDiagnosis.right} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, right: e.target.value }) }} />
+                                                                <textarea id="provisionalDiagnosisRight" rows={3} maxLength={200} className="form-control" value={provisionalDiagnosis.right} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, right: e.target.value }) }} />
                                                             </div>
                                                         </div>
-                                                        <div className="col-4">
-                                                            <div className="form-group">
-                                                                <label className="form-label my-1 required" htmlFor="recommendations">Recommendations</label>
-                                                                <textarea id="recommendations" rows={3} className="form-control" value={recommendations} onChange={(e) => { setRecommendations(e.target.value) }} />
-                                                            </div>
+                                                    </div>
+
+                                                    <div className="row">
+                                                        <div className="col-12">
+                                                            <label className="form-label my-1 required" htmlFor="recommendations">Recommendations</label>
+                                                            {
+                                                                recommendations.map((x, i) => {
+                                                                    return (
+                                                                        <div key={i} className="d-flex align-items-center gap-5 my-2">
+                                                                            <input type="text" className="form-control" maxLength={60} value={x}
+                                                                                onChange={(e) => {
+                                                                                    let t = [...recommendations]
+                                                                                    t.splice(i, 1, e.target.value)
+                                                                                    setRecommendations(t)
+                                                                                }}
+                                                                            />
+                                                                            {
+                                                                                recommendations.length > 1 &&
+                                                                                <button className="btn btn-outline-danger rounded-pill" onClick={() => {
+                                                                                    let t = [...recommendations]
+                                                                                    t.splice(i, 1)
+                                                                                    setRecommendations(t)
+                                                                                }}>
+                                                                                    <span className="">✖</span>
+                                                                                </button>
+                                                                            }
+                                                                        </div>
+                                                                    )
+                                                                })
+                                                            }
+                                                            {recommendations.length < 4 && <button className="btn btn-primary" onClick={() => { setRecommendations([...recommendations, ""]) }}>+ Add</button>}
                                                         </div>
                                                     </div>
                                                 </>
@@ -765,20 +826,25 @@ const AudiogramInput = ({ ptaData, setPtaData }) => {
                 <div className="py-3">
                     {
                         ptaData.data.map((x, i) => {
+
+                            let t = ptaData.config.find(y => y.frequency === x.frequency)
+                            let min = t.min
+                            let max = t.max
+
                             return (
                                 <div key={i} className="row gx-0 align-items-center my-2">
                                     <div className="col-2 px-2">{x.frequency}</div>
                                     <div className="col-9 px-2 d-flex">
-                                        <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= -10} onClick={() => {
+                                        <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= min} onClick={() => {
                                             let t = ptaData.data.map(x => ({ ...x }))
-                                            t[i].decibal = t[i].decibal <= -10 ? -10 : t[i].decibal - 5
+                                            t[i].decibal = t[i].decibal <= min ? min : t[i].decibal - 5
                                             setPtaData({ ...ptaData, data: t })
                                         }}>&ndash;</button>
                                         <input type={x.decibal === null ? "text" : "number"} className="form-control rounded-0"
                                             value={x.decibal === null ? "NR" : x.decibal.toString()}
                                             onChange={(e) => {
                                                 let t = ptaData.data.map(x => ({ ...x }))
-                                                t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > 120 ? 120 : parseInt(e.target.value) < -10 ? -10 : parseInt(e.target.value)
+                                                t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > max ? max : parseInt(e.target.value) < min ? min : parseInt(e.target.value)
                                                 setPtaData({ ...ptaData, data: t })
                                             }}
                                             onBlur={(e) => {
@@ -788,9 +854,9 @@ const AudiogramInput = ({ ptaData, setPtaData }) => {
                                             }}
                                             disabled={x.decibal === null}
                                         />
-                                        <button className="btn btn-primary rounded-0 rounded-end fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal >= 120} onClick={() => {
+                                        <button className="btn btn-primary rounded-0 rounded-end fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal >= max} onClick={() => {
                                             let t = ptaData.data.map(x => ({ ...x }))
-                                            t[i].decibal = t[i].decibal >= 120 ? 120 : t[i].decibal + 5
+                                            t[i].decibal = t[i].decibal >= max ? max : t[i].decibal + 5
                                             setPtaData({ ...ptaData, data: t })
                                         }}>&#43;</button>
                                     </div>
