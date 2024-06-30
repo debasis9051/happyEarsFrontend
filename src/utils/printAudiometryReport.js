@@ -77,16 +77,16 @@ const drawMarker = (ctx, x, y, marker, markerColor, arrowFlag) => {
         ctx.lineWidth = 2;
         ctx.stroke();
     }
-    
+
 
     if (arrowFlag) {
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(x, y)
-        ctx.lineTo(x - 18, y + 10)
-        ctx.lineTo(x - 13, y)
-        ctx.moveTo(x - 19, y + 11)
-        ctx.lineTo(x - 7, y + 12)
+        ctx.lineTo(x - 23, y + 21)
+        ctx.lineTo(x - 21, y + 7)
+        ctx.moveTo(x - 23, y + 21)
+        ctx.lineTo(x - 8, y + 19)
         ctx.stroke();
     }
 }
@@ -133,34 +133,42 @@ const setupChart = (ctx) => {
     ctx.stroke();
 }
 
-const drawChartData = (ctx, data, lineType, lineColor, marker) => {
+const drawChartData = (ctx, ptaData, lineType, lineColor, marker) => {
     ctx.lineWidth = 4
 
-    if(lineType === "solid"){
+    if (lineType === "solid") {
         ctx.setLineDash([]);
     }
-    else if(lineType === "dashed"){
+    else if (lineType === "dashed") {
         ctx.setLineDash([5, 10]);
     }
 
     ctx.strokeStyle = lineColor
 
     ctx.beginPath()
-    ctx.moveTo(60 + 0, 60 + (420 - 10) / (120 + 10) * (data[0] + 10));
-    data.slice(1, data.length).forEach((elem, i, arr) => {
-        let x = 60 + 420 / (arr.length) * (i + 1)
-        let y = 60 + (420 - 10) / (120 + 10) * ((elem === null ? 120 : elem) + 10)
 
-        ctx.lineTo(x, y)
+
+    ptaData.data.forEach((elem, i) => {
+        let max = ptaData.config.find(a => a.frequency === elem.frequency).max
+        let x = 60 + 420 / 6 * i
+        let y = 60 + (420 - 10) / (120 + 10) * ((elem.decibal === null ? max : elem.decibal) + 10)
+
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        }
+        else {
+            ctx.lineTo(x, y)
+        }
     })
     ctx.stroke();
     ctx.setLineDash([]);
 
-    data.forEach((elem, i, arr) => {
-        let x = 60 + 420 / (arr.length - 1) * i
-        let y = 60 + (420 - 10) / (120 + 10) * ((elem === null ? 120 : elem) + 10)
+    ptaData.data.forEach((elem, i) => {
+        let max = ptaData.config.find(a => a.frequency === elem.frequency).max
+        let x = 60 + 420 / 6 * i
+        let y = 60 + (420 - 10) / (120 + 10) * ((elem.decibal === null ? max : elem.decibal) + 10)
 
-        drawMarker(ctx, x, y, marker, lineColor, (elem === null ? true : false))
+        drawMarker(ctx, x, y, marker, lineColor, (elem.decibal === null ? true : false))
     })
 }
 
@@ -173,54 +181,54 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
         <div class="container-fluid my-4 fw-bold">
 
             <div>
-                <img src="${headerVisible? "/happy_ears_invoice_header_1.png":"/happy_ears_invoice_header_empty.jpg"}" alt="header_image" style="width:100%;" >
+                <img src="${headerVisible ? "/happy_ears_invoice_header_1.png" : "/happy_ears_invoice_header_empty.jpg"}" alt="header_image" style="width:100%;" >
             </div> 
 
             <h2 class="text-center text-decoration-underline text-uppercase m-2" style="color:navy;">${reportData.trial_mode ? "Audiogram Hearing Aid Trial" : "Pure Tone Audiogram"} </h2>
             <div class="d-flex my-2 align-items-center">
-                <span class="mx-2" >Patient Name : </span>
-                <span class="mx-2 border-bottom border-dark fs-4" style="flex:7;" >${reportData.patient_name}</span>
-                <span class="mx-2" >Age/Sex :</span>
-                <span class="mx-2 border-bottom border-dark fs-4" style="flex:2;" >${reportData.age}/${reportData.sex[0].toUpperCase()}</span>
+                <span class="mx-2 fs-5 " >Patient Name : </span>
+                <span class="mx-2 border-bottom border-dark fs-5" style="flex:7;" >${reportData.patient_name}</span>
+                <span class="mx-2 fs-5 " >Age/Sex :</span>
+                <span class="mx-2 border-bottom border-dark fs-5" style="flex:2;" >${reportData.age}/${reportData.sex[0].toUpperCase()}</span>
             </div>
             ${
                 reportData.trial_mode ?
                 `<div class="row gx-0 my-2">
                     <div class="col-6 d-flex align-items-center">
-                        <span class="mx-2">Recommended Machine: </span>
-                        <span class="mx-2 border-bottom border-dark fs-4 flex-grow-1">${reportData.recommended_machine}</span>
+                        <span class="mx-2 fs-5 ">Recommended Machine: </span>
+                        <span class="mx-2 border-bottom border-dark fs-5 flex-grow-1">${reportData.recommended_machine}</span>
                     </div>
                     <div class="col-6 d-flex align-items-center">
-                        <span class="mx-2">Client Chosen Machine: </span>
-                        <span class="mx-2 border-bottom border-dark fs-4 flex-grow-1">${reportData.client_chosen_machine}</span>
+                        <span class="mx-2 fs-5 ">Client Chosen Machine: </span>
+                        <span class="mx-2 border-bottom border-dark fs-5 flex-grow-1">${reportData.client_chosen_machine}</span>
                     </div>
                 </div>`
                 :
                 `<div class="row gx-0 my-2">
                     <div class="col-6 d-flex align-items-center">
-                        <span class="mx-2">Referred By: </span>
-                        <span class="mx-2 border-bottom border-dark fs-4 flex-grow-1">${reportData.referred_by}</span>
+                        <span class="mx-2 fs-5">Referred By: </span>
+                        <span class="mx-2 border-bottom border-dark fs-5 flex-grow-1">${reportData.referred_by}</span>
                     </div>
                     <div class="col-6 d-flex align-items-center">
-                        <span class="mx-2">Audiometer: </span>
-                        <span class="mx-2 border-bottom border-dark fs-4 flex-grow-1">${reportData.audiometer}</span>
+                        <span class="mx-2 fs-5">Audiometer: </span>
+                        <span class="mx-2 border-bottom border-dark fs-5 flex-grow-1">${reportData.audiometer}</span>
                     </div>
                 </div>`
             }
             <div class="d-flex my-2 align-items-center">
-                <span class="mx-2">Date: </span>
-                <span class="mx-2 flex-grow-1 border-bottom border-dark fs-4">${moment.unix(reportData.created_at._seconds).format("DD-MM-YYYY")}</span>
+                <span class="mx-2 fs-5">Date: </span>
+                <span class="mx-2 flex-grow-1 border-bottom border-dark fs-5">${moment.unix(reportData.date._seconds).format("DD-MM-YYYY")}</span>
             </div>
             ${
                 !reportData.trial_mode ?
-                `<div class="d-flex flex-wrap my-2 align-items-center">
-                    <span class="mx-2">Complaint: </span>
-                    <span class="mx-2 flex-grow-1 border-bottom border-dark fs-4">${reportData.complaint}</span>
+                `<div class="my-2">
+                    <span class="mx-2 fs-5">Complaint: </span>
+                    <span class="mx-2 flex-grow-1 border-bottom border-dark fs-5">${reportData.complaint}</span>
                 </div>` : ""
             }
 
-            <div class="d-flex text-center" style="gap:30px;">
-                <div>
+            <div class="d-flex text-center" style="gap:10px;">
+                <div class="flex-grow-1">
                     <h2 style="color:blue; margin:0;">Left</h2>
                     <canvas id="acLeftEarChart" style="width: 400px; height: 400px" width="500" height="500"></canvas>
                     <div>
@@ -232,7 +240,7 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                         <span class="p-2 rounded" style="background-color:${ac_lhl_data.color}">${ac_lhl_data.text}</span>
                     </div>
                 </div>
-                <div>
+                <div class="flex-grow-1">
                     <h2 style="color:red; margin:0;">Right</h2>
                     <canvas id="acRightEarChart" style="width: 400px; height: 400px" width="500" height="500"></canvas>
                     <div>
@@ -266,8 +274,8 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                 !reportData.trial_mode ?
                 `<div class="d-flex align-items-center gap-3">
                     <div class="d-flex flex-wrap mb-1 align-items-center">
-                        <span class="mx-2">Tuning Fork: </span>
-                        <span class="mx-2 border-bottom border-dark fs-4">${reportData.tuning_fork}</span>
+                        <span class="mx-2 fs-5">Tuning Fork: </span>
+                        <span class="mx-2 border-bottom border-dark fs-5">${reportData.tuning_fork}</span>
                     </div>
                     <div class="flex-grow-1">
                         <table class="table table-sm table-bordered border-dark m-0">
@@ -289,14 +297,16 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                         </table>
                     </div>
                 </div>
-                <div class="mb-2">
-                    <span class="mx-2">Provisional Diagnosis: </span>
-                    <div class="mx-2 border-bottom border-dark fs-4"><span class="fst-italic" style="color:blue;">Lt.</span> ${reportData.provisional_diagnosis.left}</div>
-                    <div class="mx-2 border-bottom border-dark fs-4"><span class="fst-italic" style="color:red;">Rt.</span> ${reportData.provisional_diagnosis.right}</div>
+                <div class="my-3 d-flex align-items-center">
+                    <span class="fs-5">Provisional Diagnosis: </span>
+                    <div class="">
+                        <div class="mx-2 border-bottom border-dark fs-5"><span class="fst-italic" style="color:blue;">Lt.</span> ${reportData.provisional_diagnosis.left}</div>
+                        <div class="mx-2 border-bottom border-dark fs-5"><span class="fst-italic" style="color:red;">Rt.</span> ${reportData.provisional_diagnosis.right}</div>
+                    </div>
                 </div>
-                <div class="d-flex flex-wrap my-2 align-items-center">
-                    <span class="mx-2">Recommendations: </span>
-                    <span class="mx-2 flex-grow-1 border-bottom border-dark fs-4">${reportData.recommendations}</span>
+                <div class="my-3">
+                    <span class="mx-2 fs-5">Recommendations: </span>
+                    <span class="mx-2 flex-grow-1 border-bottom border-dark fs-5">${reportData.recommendations.map((x,i)=> `<span style="color:blue;">${i+1}.</span> ${x}`).join(", ")}</span>
                 </div>` : ""
             }
 
@@ -333,11 +343,11 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
     setupChart(ctx1)
     setupChart(ctx2)
 
-    drawChartData(ctx1, reportData.ac_left_ear_pta.data.map(x => x.decibal), "solid", "blue", reportData.ac_left_ear_pta.masked ? "rectangle" : "cross")
-    drawChartData(ctx2, reportData.ac_right_ear_pta.data.map(x => x.decibal), "solid", "red", reportData.ac_right_ear_pta.masked ? "triangle" : "circle")
+    drawChartData(ctx1, reportData.ac_left_ear_pta, "solid", "blue", reportData.ac_left_ear_pta.masked ? "rectangle" : "cross")
+    drawChartData(ctx2, reportData.ac_right_ear_pta, "solid", "red", reportData.ac_right_ear_pta.masked ? "triangle" : "circle")
     if (reportData.bc_input) {
-        drawChartData(ctx1, reportData.bc_left_ear_pta.data.map(x => x.decibal), "dashed", "blue", reportData.bc_left_ear_pta.masked ? "right_bracket" : "right_arrow")
-        drawChartData(ctx2, reportData.bc_right_ear_pta.data.map(x => x.decibal), "dashed", "red", reportData.bc_right_ear_pta.masked ? "left_bracket" : "left_arrow")
+        drawChartData(ctx1, reportData.bc_left_ear_pta, "dashed", "blue", reportData.bc_left_ear_pta.masked ? "right_bracket" : "right_arrow")
+        drawChartData(ctx2, reportData.bc_right_ear_pta, "dashed", "red", reportData.bc_right_ear_pta.masked ? "left_bracket" : "left_arrow")
     }
 
     setTimeout(() => { nw.print() }, 2000);

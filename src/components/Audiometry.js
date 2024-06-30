@@ -628,7 +628,7 @@ const Audiometry = () => {
                                                         <div className="col-6">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required" htmlFor="complaint">Complaint</label>
-                                                                <textarea id="complaint" rows={3} maxLength={200} className="form-control" value={complaint} onChange={(e) => { setComplaint(e.target.value) }} />
+                                                                <textarea id="complaint" rows={3} maxLength={150} className="form-control" value={complaint} onChange={(e) => { setComplaint(e.target.value) }} />
                                                             </div>
                                                         </div>
                                                 }
@@ -655,12 +655,12 @@ const Audiometry = () => {
                                                 <div className="row">
                                                     <div className="col-xl-6 text-center">
                                                         <h5 className="mt-3">Left Ear PTA</h5>
-                                                        <AudiogramInput ptaData={bcLeftEarPta} setPtaData={setBcLeftEarPta} />
+                                                        <AudiogramInput ptaData={bcLeftEarPta} setPtaData={setBcLeftEarPta} hearingLossRatingPanel={false} />
                                                     </div>
 
                                                     <div className="col-xl-6 text-center">
                                                         <h5 className="mt-3">Right Ear PTA</h5>
-                                                        <AudiogramInput ptaData={bcRightEarPta} setPtaData={setBcRightEarPta} />
+                                                        <AudiogramInput ptaData={bcRightEarPta} setPtaData={setBcRightEarPta} hearingLossRatingPanel={false} />
                                                     </div>
                                                 </div>
                                             }
@@ -757,13 +757,13 @@ const Audiometry = () => {
                                                         <div className="col-6">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required" htmlFor="provisionalDiagnosisLeft">Provisional Diagnosis (Left)</label>
-                                                                <textarea id="provisionalDiagnosisLeft" rows={3} maxLength={200} className="form-control" value={provisionalDiagnosis.left} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, left: e.target.value }) }} />
+                                                                <textarea id="provisionalDiagnosisLeft" rows={3} maxLength={55} className="form-control" value={provisionalDiagnosis.left} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, left: e.target.value }) }} />
                                                             </div>
                                                         </div>
                                                         <div className="col-6">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required" htmlFor="provisionalDiagnosisRight">Provisional Diagnosis (Right)</label>
-                                                                <textarea id="provisionalDiagnosisRight" rows={3} maxLength={200} className="form-control" value={provisionalDiagnosis.right} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, right: e.target.value }) }} />
+                                                                <textarea id="provisionalDiagnosisRight" rows={3} maxLength={55} className="form-control" value={provisionalDiagnosis.right} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, right: e.target.value }) }} />
                                                             </div>
                                                         </div>
                                                     </div>
@@ -775,7 +775,7 @@ const Audiometry = () => {
                                                                 recommendations.map((x, i) => {
                                                                     return (
                                                                         <div key={i} className="d-flex align-items-center gap-5 my-2">
-                                                                            <input type="text" className="form-control" maxLength={60} value={x}
+                                                                            <input type="text" className="form-control" maxLength={30} value={x}
                                                                                 onChange={(e) => {
                                                                                     let t = [...recommendations]
                                                                                     t.splice(i, 1, e.target.value)
@@ -818,7 +818,7 @@ const Audiometry = () => {
     )
 }
 
-const AudiogramInput = ({ ptaData, setPtaData }) => {
+const AudiogramInput = ({ ptaData, setPtaData, hearingLossRatingPanel = true }) => {
     return (
         <div className="border border-5 border-primary rounded-5 px-5 d-inline-block">
             <div className="d-flex justify-content-center">
@@ -873,18 +873,19 @@ const AudiogramInput = ({ ptaData, setPtaData }) => {
                     }
                 </div>
             </div>
-            <div className="my-2 d-flex align-items-center">
+            <div className="my-2 d-flex align-items-center justify-content-center">
                 <h5 className="m-0">Masked</h5>
                 <FormCheck className="fs-4" type="switch" checked={ptaData.masked} onChange={(e) => { setPtaData({ ...ptaData, masked: e.target.checked }); }} />
                 {
+                    hearingLossRatingPanel &&
                     (() => {
                         let { unit, color, text } = calculateHearingLoss(ptaData.data)
 
                         return (
-                            <>
+                            <div>
                                 <span className="mx-3 fw-bold">LHL - {Math.round(unit * 1000) / 1000}</span>
                                 <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: color }}>{text}</span>
-                            </>
+                            </div>
                         )
                     })()
                 }
