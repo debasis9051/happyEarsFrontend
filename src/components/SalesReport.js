@@ -303,7 +303,21 @@ const SalesReport = () => {
 
                                                             <Dropdown.Menu>
                                                                 <Dropdown.Item onClick={() => { editInvoiceModalInit(x) }} >Edit</Dropdown.Item>
-                                                                <Dropdown.Item onClick={() => { printInvoice(x.patient_name, x.patient_address, x.contact_number, branchList.find(b => b.id === x.branch_id).branch_name, x.invoice_number, moment.unix(x.date._seconds).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items) }} >Print</Dropdown.Item>
+                                                                <Dropdown.Item onClick={() => {
+                                                                    Swal.fire({
+                                                                        title: "Print with Header On/Off?",
+                                                                        showDenyButton: true,
+                                                                        showCancelButton: true,
+                                                                        confirmButtonText: "On",
+                                                                        denyButtonText: `Off`
+                                                                    }).then((result) => {
+                                                                        let h = result.isConfirmed ? true : result.isDenied ? false : null
+
+                                                                        if (h !== null) {
+                                                                            printInvoice(x.patient_name, x.patient_address, x.contact_number, branchList.find(b => b.id === x.branch_id).branch_name, x.invoice_number, moment.unix(x.date._seconds).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items, h)
+                                                                        }
+                                                                    });
+                                                                }} >Print</Dropdown.Item>
                                                             </Dropdown.Menu>
                                                         </Dropdown>
                                                     </td>

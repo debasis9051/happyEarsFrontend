@@ -496,20 +496,32 @@ const GenerateInvoice = () => {
                                             }
                                         })
 
-                                        if (!isInvoiceSaved) {
-                                            Swal.fire({
-                                                title: "This Invoice is not saved yet. Are you sure?",
-                                                showCancelButton: true,
-                                                confirmButtonText: "Print",
-                                            }).then((result) => {
-                                                if (result.isConfirmed) {
-                                                    printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems)
+                                        Swal.fire({
+                                            title: "Print with Header On/Off?",
+                                            showDenyButton: true,
+                                            showCancelButton: true,
+                                            confirmButtonText: "On",
+                                            denyButtonText: `Off`
+                                        }).then((result) => {
+                                            let h = result.isConfirmed ? true : result.isDenied ? false : null
+
+                                            if (h !== null) {
+                                                if (!isInvoiceSaved) {
+                                                    Swal.fire({
+                                                        title: "This Invoice is not saved yet. Are you sure?",
+                                                        showCancelButton: true,
+                                                        confirmButtonText: "Print",
+                                                    }).then((result) => {
+                                                        if (result.isConfirmed) {
+                                                            printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, h)
+                                                        }
+                                                    });
                                                 }
-                                            });
-                                        }
-                                        else {
-                                            printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems)
-                                        }
+                                                else {
+                                                    printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, h)
+                                                }
+                                            }
+                                        });
                                     }
                                 }}
                             >Print</button>

@@ -1,11 +1,5 @@
 Todo:
 
-
-print part adjustments
-
-
-
-
 1. user access restriction implementation, set user access restriction admin panel 
 2. audiometry - generate invoice against audiometry report
 

@@ -64,12 +64,12 @@ const designParticulars = (discount_amount,line_items,accessory_items) => {
     }).join("")
 }
 
-const printInvoice = (patient_name,patient_address,contact_number,branch_name,invoice_number,date,mode_of_payment,discount_amount,line_items,accessory_items) => {
+const printInvoice = (patient_name,patient_address,contact_number,branch_name,invoice_number,date,mode_of_payment,discount_amount,line_items,accessory_items, headerVisible) => {
     let toWords = new ToWords()
     let html = `
         <div class="container-fluid my-4 fw-bold">
             <div>
-                <img src="/happy_ears_invoice_header_empty.jpg" alt="header_image" style="width:100%;" >
+                <img src="${headerVisible ? "/happy_ears_invoice_header_1.png" : "/happy_ears_invoice_header_empty.jpg"}" alt="header_image" style="width:100%;" >
             </div> 
             
             <div class="text-end  mx-4 mt-1" style="font-size:12px;"> Rajpur Sonarpur Branch : </div>
