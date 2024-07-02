@@ -71,15 +71,6 @@ const printInvoice = (patient_name,patient_address,contact_number,branch_name,in
             <div>
                 <img src="${headerVisible ? "/happy_ears_invoice_header_1.png" : "/happy_ears_invoice_header_empty.jpg"}" alt="header_image" style="width:100%;" >
             </div> 
-            
-            <div class="text-end  mx-4 mt-1" style="font-size:12px;"> Rajpur Sonarpur Branch : </div>
-            <div class="text-end mx-4" style="font-size:12px;"> MAATARA APARTMENT </div>
-            <div class="text-end mx-4" style="font-size:12px;">  
-            
-            121, N.S.C, Bose Road, RAJPUR, PIN-700149 
-
-            </div>
-            <div class="text-end mx-4" style="font-size:12px;"> Contact : 8100998309 / 310 </div>
 
             <div class="mt-2 text-end mx-4">Branch:- ${branch_name}</div>
             
