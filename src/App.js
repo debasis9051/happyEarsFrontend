@@ -13,6 +13,7 @@ import { FirebaseProvider } from './contexts/firebase-context';
 import Navbar from "./components/Navbar.js"
 
 import NotFound from "./components/NotFound.js"
+import Unauthorized from "./components/Unauthorized.js"
 import Home from "./components/Home.js"
 import AdminPanel from "./components/AdminPanel.js"
 import Audiometry from "./components/Audiometry.js"
@@ -29,6 +30,7 @@ function App() {
 
                     <Routes>
                         <Route path="*" element={<NotFound />} />
+                        <Route path="/unauthorized" element={<Unauthorized />} />
                         <Route path="/" element={<Home />} />
                         <Route path="/admin-panel" element={<AdminPanel />} />
                         <Route path="/audiometry" element={<Audiometry />} />

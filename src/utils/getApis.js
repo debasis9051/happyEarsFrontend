@@ -10,7 +10,7 @@ const getProductList = async (currentUserInfo, svRef) => {
                 svRef(res.data.info)
             }
             else {
-                Swal.fire('Oops!', res.data.message, 'error');
+                console.log(res.data.message,"/get-product-list");
             }
         })
         .catch((err) => {
@@ -26,7 +26,7 @@ const getBranchList = async (currentUserInfo, svRef) => {
                 svRef(res.data.info)
             }
             else {
-                Swal.fire('Oops!', res.data.message, 'error');
+                console.log(res.data.message,"/get-branch-list");
             }
         })
         .catch((err) => {
@@ -42,7 +42,7 @@ const getSalespersonList = async (currentUserInfo, svRef) => {
                 svRef(res.data.info)
             }
             else {
-                Swal.fire('Oops!', res.data.message, 'error');
+                console.log(res.data.message,"/get-salesperson-list");
             }
         })
         .catch((err) => {
@@ -58,7 +58,7 @@ const getInvoiceList = async (currentUserInfo, svRef) => {
                 svRef(res.data.info)
             }
             else {
-                Swal.fire('Oops!', res.data.message, 'error');
+                console.log(res.data.message,"/get-invoice-list");
             }
         })
         .catch((err) => {
@@ -74,7 +74,7 @@ const getAudiometryList = async (currentUserInfo, svRef) => {
                 svRef(res.data.info)
             }
             else {
-                Swal.fire('Oops!', res.data.message, 'error');
+                console.log(res.data.message,"/get-audiometry-list");
             }
         })
         .catch((err) => {
@@ -90,7 +90,7 @@ const getDoctorList = async (currentUserInfo, svRef) => {
                 svRef(res.data.info)
             }
             else {
-                Swal.fire('Oops!', res.data.message, 'error');
+                console.log(res.data.message,"/get-doctor-list");
             }
         })
         .catch((err) => {
@@ -99,4 +99,20 @@ const getDoctorList = async (currentUserInfo, svRef) => {
         })
 }
 
-export { getProductList, getBranchList, getSalespersonList, getInvoiceList, getAudiometryList, getDoctorList }
+const getUserList = async (currentUserInfo, svRef) => {
+    axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-user-list`, { current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
+        .then((res) => {
+            if (res.data.operation === "success") {
+                svRef(res.data.info)
+            }
+            else {
+                console.log(res.data.message,"/get-user-list");
+            }
+        })
+        .catch((err) => {
+            console.log(err)
+            Swal.fire('Error!!', err.message, 'error');
+        })
+}
+
+export { getProductList, getBranchList, getSalespersonList, getInvoiceList, getAudiometryList, getDoctorList, getUserList }

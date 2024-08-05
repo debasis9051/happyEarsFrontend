@@ -1,12 +1,13 @@
 import React from "react";
 import { useFirebase } from "../contexts/firebase-context";
+import { Navigate } from "react-router-dom";
 
-const AuthWrapper = ({ children }) => {
-    const { isLoading, isLoggedIn, isAuthenticated } = useFirebase()
+const AuthWrapper = ({ children, page }) => {
+    const { isLoading, isLoggedIn, userAccess } = useFirebase()
 
     if (!isLoading) {
         if (isLoggedIn) {
-            if (isAuthenticated) {
+            if (userAccess[page]) {
                 return (
                     <>
                         {children}
@@ -14,7 +15,7 @@ const AuthWrapper = ({ children }) => {
                 )
             }
             else {
-                return <div className="bg-white font-monospace fs-2 m-5 p-5 rounded text-black text-center">This account is not authenticated</div>
+                return <Navigate to="/unauthorized" replace={true} />
             }
         }
         else {

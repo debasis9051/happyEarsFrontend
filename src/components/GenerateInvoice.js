@@ -181,7 +181,7 @@ const GenerateInvoice = () => {
                 <span className="fs-3 px-3 pt-3">Generate Invoice</span>
             </div>
 
-            <AuthWrapper>
+            <AuthWrapper page={"generate_invoice"}>
                 <>
                     <div className="container" style={{ marginBottom: "10rem" }}>
 

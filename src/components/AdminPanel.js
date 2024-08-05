@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from "react"
 import axios from "axios";
 import Swal from "sweetalert2"
-import { useNavigate } from "react-router-dom";
 import Dropzone from 'react-dropzone'
+import { Accordion } from 'react-bootstrap';
 
 import { useFirebase } from "../contexts/firebase-context";
 import AuthWrapper from "./AuthWrapper";
+import { getUserList } from "../utils/getApis"
+
+const defaultAccess = {
+    admin_panel: false,
+    audiometry: false,
+    generate_invoice: false,
+    inventory: false,
+    sales_report: false,
+}
 
 const AdminPanel = () => {
     const { currentUserInfo } = useFirebase()
-
-    const navigate = useNavigate()
 
     const [salespersonName, setSalespersonName] = useState("")
     const [salespersonApiState, setSalespersonApiState] = useState(false)
@@ -27,13 +34,16 @@ const AdminPanel = () => {
 
     const [scriptApiState, setScriptApiState] = useState(false)
 
+    const [userList, setUserList] = useState([])
+    const [selectedUser, setSelectedUser] = useState(null)
+    const [selectedUserAccess, setSelectedUserAccess] = useState(defaultAccess)
+    const [accessApiState, setAccessApiState] = useState(false)
+
     useEffect(() => {
-        if (currentUserInfo) {
-            if (!(process.env.REACT_APP_ADMIN_UID_LIST.split(",").includes(currentUserInfo.uid))) {
-                navigate("/not-found")
-            }
+        if (currentUserInfo !== null) {
+            getUserList(currentUserInfo, setUserList)
         }
-    }, [currentUserInfo, navigate])
+    }, [currentUserInfo])
 
     return (
         <>
@@ -42,11 +52,11 @@ const AdminPanel = () => {
                     <span className="fs-3 px-3 pt-3">Admin Panel</span>
                 </div>
 
-                <AuthWrapper>
+                <AuthWrapper page={"admin_panel"}>
                     <>
                         <div className="container my-4">
 
-                            <div className="card my-1 bg-success">
+                            <div className="card my-1" style={{ backgroundColor: "skyblue" }}>
                                 <div className="card-body">
                                     <div className="row g-0 align-items-end">
                                         <div className="col-md-5 p-1 form-group">
@@ -169,10 +179,10 @@ const AdminPanel = () => {
                                             {
                                                 doctorSignatureFile === null ?
                                                     <Dropzone maxFiles={1}
-                                                        onDrop={acceptedFiles => { 
-                                                            if(acceptedFiles.length){
+                                                        onDrop={acceptedFiles => {
+                                                            if (acceptedFiles.length) {
                                                                 setDoctorSignatureFile(acceptedFiles[0]);
-                                                                setDoctorSignatureImage(URL.createObjectURL(acceptedFiles[0])); 
+                                                                setDoctorSignatureImage(URL.createObjectURL(acceptedFiles[0]));
                                                             }
                                                         }}
                                                         accept={{
@@ -190,7 +200,7 @@ const AdminPanel = () => {
                                                     </Dropzone>
                                                     :
                                                     <div className="fs-5 text-white">
-                                                        <img className="m-3" src={doctorSignatureImage} alt="signature" height="200" onLoad={()=>{ URL.revokeObjectURL(doctorSignatureImage); }} /><br/>
+                                                        <img className="m-3" src={doctorSignatureImage} alt="signature" height="200" onLoad={() => { URL.revokeObjectURL(doctorSignatureImage); }} /><br />
                                                         <span className="me-3 fw-bold">Selected File:</span> {doctorSignatureFile.path}
                                                         <button className="btn btn-outline-danger ms-3 rounded-pill" onClick={() => { setDoctorSignatureFile(null); setDoctorSignatureImage(null); }}>🗙</button>
                                                     </div>
@@ -209,7 +219,7 @@ const AdminPanel = () => {
                                                 data.append("doctor_signature_file", doctorSignatureFile)
                                                 data.append("current_user_uid", currentUserInfo.uid)
                                                 data.append("current_user_name", currentUserInfo.displayName)
-                                                
+
                                                 setDoctorApiState(true)
                                                 axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/save-doctor`, data, { headers: { 'Content-Type': 'multipart/form-data' } })
                                                     .then((res) => {
@@ -238,6 +248,89 @@ const AdminPanel = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            <Accordion>
+                                <Accordion.Item eventKey="0">
+                                    <Accordion.Header>All Users</Accordion.Header>
+                                    <Accordion.Body>
+                                        <div className="row rounded" style={{ backgroundColor: "#002410" }}>
+                                            <div className="col-md-6 p-3 border-end border-secondary scrollbar-custom" style={{ maxHeight: "400px", overflowY: "auto" }}>
+                                                {
+                                                    userList.length === 0 ? <span className="fs-4 text-center text-secondary">No users added</span> :
+                                                        userList.map((x) => {
+                                                            return (
+                                                                <div key={x.id} className={`d-flex gap-2 p-2 bg-hover-3a4e1e rounded ${selectedUser && selectedUser.id === x.id ? "bg-164d9d" : ""}`} onClick={() => { setSelectedUser(x); setSelectedUserAccess(x?.auth_access ? { ...x.auth_access } : { ...defaultAccess }); }}>
+                                                                    <div>
+                                                                        <img src={x.user_photo} alt='user_image' className='rounded' width="40" referrerPolicy="no-referrer" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <div>{x.user_name}</div>
+                                                                        <div style={{ fontSize: "smaller", color: "#6cd584" }}>{x.user_email}</div>
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        })
+                                                }
+                                            </div>
+                                            <div className="col-md-6 p-3">
+                                                {
+                                                    selectedUser ?
+                                                        <>
+                                                            <span className="fs-6">Access for <span className="fw-bold">{selectedUser.user_name}</span></span>
+                                                            <div className="my-4">
+                                                                {
+                                                                    (() => {
+                                                                        let t = Object.keys(selectedUserAccess)
+                                                                        t.sort()
+
+                                                                        return t.map((x, i) => {
+                                                                            return (
+                                                                                <div key={i} className="form-check fs-4">
+                                                                                    <input className="form-check-input" type="checkbox" value="" checked={selectedUserAccess[x]} onChange={() => { setSelectedUserAccess({ ...selectedUserAccess, [x]: !selectedUserAccess[x] }) }} />
+                                                                                    <label className="form-check-label text-capitalize">{x.replaceAll("_", " ")}</label>
+                                                                                </div>
+                                                                            )
+                                                                        })
+                                                                    })()
+                                                                }
+                                                            </div>
+                                                            <div className="text-center"><button className="btn btn-primary" disabled={accessApiState} onClick={() => {
+                                                                let data = {
+                                                                    user_id: selectedUser.id,
+                                                                    user_access: selectedUserAccess,
+
+                                                                    current_user_uid: currentUserInfo.uid,
+                                                                    current_user_name: currentUserInfo.displayName
+                                                                }
+
+                                                                setAccessApiState(true)
+                                                                axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/update-user-access`, data, { headers: { 'Content-Type': 'application/json' } })
+                                                                    .then((res) => {
+                                                                        setAccessApiState(false)
+                                                                        console.log(res.data)
+
+                                                                        getUserList(currentUserInfo, setUserList)
+                                                                        if (res.data.operation === "success") {
+                                                                            Swal.fire('Success!', res.data.message, 'success').then(() => { window.location.reload() });
+                                                                        }
+                                                                        else {
+                                                                            Swal.fire('Oops!', res.data.message, 'error');
+                                                                        }
+                                                                    })
+                                                                    .catch((err) => {
+                                                                        console.log(err)
+                                                                        Swal.fire('Error!!', err.message, 'error');
+                                                                    })
+                                                            }}>Update</button></div>
+                                                        </>
+                                                        :
+                                                        <div className="text-center"><span className="fs-3">No User Selected</span></div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </Accordion.Body>
+                                </Accordion.Item>
+                            </Accordion>
 
                             <div className="card my-1" style={{ backgroundColor: "violet" }}>
                                 <div className="card-body">

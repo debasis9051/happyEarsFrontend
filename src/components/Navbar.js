@@ -49,7 +49,7 @@ const Navbar = () => {
                                         <div className="d-flex gap-2">
                                             <button className="btn btn-danger" onClick={() => { signOutFromApp() }}>Logout</button>
                                             <div className="">
-                                                <img src={currentUserInfo.photoURL} alt='user_image' className='rounded' width="40" />
+                                                <img src={currentUserInfo.photoURL} alt='user_image' className='rounded' width="40" referrerPolicy="no-referrer" />
                                             </div>
                                         </div>
                                         :

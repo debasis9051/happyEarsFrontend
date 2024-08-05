@@ -28,6 +28,64 @@
     margin-top: 0;
 }
 
+.accordion-button {
+    color: #ffffff;
+    background-color: #14561d;
+    box-shadow: inset 0 -1px 0 rgb(0 0 0 / 13%);
+}
+
+.accordion-button:not(.collapsed) {
+    color: #ffffff;
+    background-color: #26a036;
+    box-shadow: inset 0 -1px 0 rgb(0 0 0 / 13%);
+}
+
+.bg-hover-3a4e1e,
+.bg-hover-dark,
+.text-unauthorized {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.bg-hover-3a4e1e:hover {
+    background-color: #3a4e1e;
+}
+
+.bg-hover-dark:hover {
+    filter: brightness(85%);
+    /* transform: scale(102%, 102%); */
+}
+
+.text-unauthorized:hover span {
+    display: none;
+}
+
+.text-unauthorized:hover:after {
+    content: "Unauthorized";
+}
+
+.bg-164d9d {
+    background-color: #164d9d;
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+    width: 2px;
+}
+
+.scrollbar-custom:hover::-webkit-scrollbar {
+    width: 10px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+    border-radius: 8px;
+    background-color: #e7e7e7;
+    border: 1px solid #cacaca;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    background-color: #79a734;
+}
 
 /* ----------------vertical range slider css---------------------- */
 /* .hslider {

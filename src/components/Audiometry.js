@@ -390,7 +390,7 @@ const Audiometry = () => {
                     <span className="fs-3 px-3 pt-3">Audiometry</span>
                 </div>
 
-                <AuthWrapper>
+                <AuthWrapper page={"audiometry"}>
                     <>
                         <div className="container-fluid">
                             <Tabs className="mb-3" activeKey={currentTab}

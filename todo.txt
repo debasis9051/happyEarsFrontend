@@ -1,15 +1,17 @@
 Todo:
 
-1. user access restriction implementation, set user access restriction admin panel 
+go back animation against icon
+
+whats new popup
+
+
+
+1. feature for configuring individual user access from admin panel
 2. audiometry - generate invoice against audiometry report
-
-
-
-
-
-
-
 3. vercel frontend and backend deployments cleanup
+
+
+
 
 4. all tables major update - implement pagination logic 
 5. product individual edit feature and export feature in inventory

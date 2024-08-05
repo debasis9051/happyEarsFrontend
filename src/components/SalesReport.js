@@ -229,7 +229,7 @@ const SalesReport = () => {
                     <span className="fs-3 px-3 pt-3">Sales Report</span>
                 </div>
 
-                <AuthWrapper>
+                <AuthWrapper page={"sales_report"}>
                     <>
                         <div className="d-flex align-items-end px-3 py-2">
                             <label className="form-label m-0 me-2 fs-5">Filters: </label>

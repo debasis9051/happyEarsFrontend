@@ -17,54 +17,84 @@ export const useFirebase = () => useContext(FirebaseContext)
 export const FirebaseProvider = ({ children }) => {
 
     const [user, setUser] = useState(null)
-    const [authUserList, setAuthUserList] = useState([])
+    const [userAccess, setUserAccess] = useState({
+        audiometry: false,
+        inventory: false,
+        generate_invoice: false,
+        sales_report: false,
+        admin_panel: false,
+    })
     const [loading, setLoading] = useState(false)
 
-    const getAuthenticatedUserList = async () => {
-        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-authenticated-user-list`, {}, { headers: { 'Content-Type': 'application/json' } })
-            .then((res) => {
-                if (res.data.operation === "success") {
-                    setAuthUserList(res.data.info)
-                }
-                else {
-                    Swal.fire('Oops!', res.data.message, 'error');
-                }
-            })
-            .catch((err) => {
-                console.log(err)
-                Swal.fire('Error!!', err.message, 'error');
-            })
+    const getUserDetails = (user_uid) => {
+        return axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-user-details`, { user_uid }, { headers: { 'Content-Type': 'application/json' } })
     }
 
     useEffect(() => {
-        setLoading(true)
         onAuthStateChanged(auth, (user) => {
+            setLoading(true)
             if (user) {
                 setUser(user)
-                getAuthenticatedUserList()
+
+                getUserDetails(user.uid)
+                    .then((res) => {
+                        if (res.data.operation !== "success") {
+                            axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/create-user`, { user_uid: user.uid, user_name: user.displayName, user_email: user.email, user_photo: user.photoURL }, { headers: { 'Content-Type': 'application/json' } })
+                                .then((res) => {
+                                    console.log("new user created");
+                                })
+                                .catch((err) => {
+                                    console.log(err)
+                                })
+                        }
+                        else {
+                            res.data.info?.auth_access && setUserAccess(res.data.info.auth_access)
+                        }
+                        setLoading(false)
+                    })
+                    .catch((err) => {
+                        console.log(err)
+                        Swal.fire('Error!!', err.message, 'error');
+                    })
             }
             else {
                 setUser(null)
+                setUserAccess({
+                    audiometry: false,
+                    inventory: false,
+                    generate_invoice: false,
+                    sales_report: false,
+                    admin_panel: false,
+                })
+                setLoading(false)
             }
-            setLoading(false)
         })
     }, [])
 
     const signInWithGoogleAccountPopup = () => {
         return signInWithPopup(auth, googleProvider)
             .then((result) => {
-                getAuthenticatedUserList()
-
                 const user = result.user;
                 setUser(user)
-                // console.log(user)
 
-                return axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/create-user`, { user_uid: user.uid, user_name: user.displayName, user_email: user.email, user_photo: user.photoURL }, { headers: { 'Content-Type': 'application/json' } })
+                getUserDetails(user.uid)
                     .then((res) => {
-                        // console.log(res.data);
+                        if (res.data.operation !== "success") {
+                            axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/create-user`, { user_uid: user.uid, user_name: user.displayName, user_email: user.email, user_photo: user.photoURL }, { headers: { 'Content-Type': 'application/json' } })
+                                .then((res) => {
+                                    console.log("new user created");
+                                })
+                                .catch((err) => {
+                                    console.log(err)
+                                })
+                        }
+                        else {
+                            res.data.info?.auth_access && setUserAccess(res.data.info.auth_access)
+                        }
                     })
                     .catch((err) => {
                         console.log(err)
+                        Swal.fire('Error!!', err.message, 'error');
                     })
             })
             .catch((error) => {
@@ -85,7 +115,7 @@ export const FirebaseProvider = ({ children }) => {
     }
 
     return (
-        <FirebaseContext.Provider value={{ signInWithGoogleAccountPopup, signOutFromApp, currentUserInfo: user, isLoggedIn: user ? true : false, isLoading: loading, isAuthenticated: user ? authUserList.find(x => x.id === user.uid) ? true : false : false }}>
+        <FirebaseContext.Provider value={{ signInWithGoogleAccountPopup, signOutFromApp, currentUserInfo: user, isLoggedIn: user ? true : false, isLoading: loading, userAccess: userAccess }}>
             {children}
         </FirebaseContext.Provider>
     )
