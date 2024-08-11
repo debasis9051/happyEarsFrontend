@@ -1,6 +1,7 @@
 import React from "react"
 import { useState } from "react";
 import Modal from 'react-bootstrap/Modal';
+import { Link } from 'react-router-dom';
 
 const NewFeatureModal = () => {
 
@@ -62,6 +63,7 @@ const NewFeatureModal = () => {
                     </div>
                     <div className="flex-grow-1 fs-3">
                         We've released a new Audiometry feature. Check it out!!
+                        <Link to="/audiometry" className="btn rounded-pill fs-5 mx-5 text-white" style={{ background: "linear-gradient(#9900ff, #073763)" }}>Open Audiometry</Link>
                     </div>
                 </div>
             </Modal.Body>
