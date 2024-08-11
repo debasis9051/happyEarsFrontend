@@ -14,7 +14,7 @@ const Home = () => {
 
                         <div className="d-flex flex-wrap gap-2">
                             <div className="my-1" style={{ flex: "2" }}>
-                                <PageButton permission={userAccess["audiometry"]} link={"/audiometry"} color="bg-primary" label="Audiometry" />
+                                <PageButton permission={userAccess["audiometry"]} link={"/audiometry"} color="bg-primary" label="Audiometry" isNew />
                             </div>
                             <div className="my-1" style={{ flex: "3" }}>
                                 <PageButton permission={userAccess["inventory"]} link={"/inventory"} color="bg-info" label="Inventory Management" />
@@ -46,11 +46,11 @@ const Home = () => {
     )
 }
 
-const PageButton = ({permission, link, color, label}) =>{
+const PageButton = ({permission, link, color, label, isNew=false}) =>{
     if (permission) {
         return (
             <Link to={link} className="text-decoration-none">
-                <div className={`${color} bg-gradient bg-hover-dark text-white rounded fs-3 text-center`} style={{ padding: "70px 10px" }}>{label}</div>
+                <div className={`${color} bg-gradient bg-hover-dark text-white rounded fs-3 text-center ${isNew?"new-stamp":""}`} style={{ padding: "70px 10px" }}>{label}</div>
             </Link>
         )
     } else {

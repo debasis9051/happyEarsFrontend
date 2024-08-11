@@ -7,7 +7,7 @@ const Navbar = () => {
 
     return (
         <>
-            <nav className="navbar navbar-expand-lg bg-warning" data-bs-theme="dark">
+            <nav className="navbar navbar-expand-lg" style={{background: "linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(9,9,121,1) 40%)"}} data-bs-theme="dark">
                 <div className="container-fluid">
                     <div className="navbar-brand">
                         <Link to="/"><img id='logo' src="/happy_ears_logo.png" alt="company_logo" width="110" /></Link>

@@ -6,13 +6,17 @@ import Swal from "sweetalert2"
 import Dropzone from 'react-dropzone'
 import moment from "moment"
 import { saveAs } from "file-saver";
+import { useNavigate } from "react-router-dom";
 
 import { useFirebase } from "../contexts/firebase-context";
 import { getProductList, getBranchList } from "../utils/getApis"
 import AuthWrapper from "./AuthWrapper";
+import NewFeatureModal from "./NewFeatureModal";
 
 const Inventory = () => {
     const { currentUserInfo } = useFirebase()
+
+    const navigate = useNavigate()
 
     const [branchList, setBranchList] = useState([])
     const [productList, setProductList] = useState([])
@@ -80,7 +84,7 @@ const Inventory = () => {
             getBranchList(currentUserInfo, setBranchList)
             getProductList(currentUserInfo, setProductList)
         }
-    }, [currentUserInfo])
+    }, [currentUserInfo, navigate])
 
     useEffect(() => {
         if (branchList.length > 0) {
@@ -184,12 +188,11 @@ const Inventory = () => {
                 if (res.data.operation === "success") {
                     getProductList(currentUserInfo, setProductList)
                     handleImportProductModalClose()
-                
+
                     let c = `<div>
                         <span class="fw-bold">Added Serials:</span><br>
                         <div class="row gx-0">
-                        ${
-                            res.data.info.added_serials.length === 0 ?"<span>No product added</span>":
+                        ${res.data.info.added_serials.length === 0 ? "<span>No product added</span>" :
                             res.data.info.added_serials.map((x) => {
                                 return (
                                     `<span class="col-4 p-1">${x}</span>`
@@ -202,8 +205,7 @@ const Inventory = () => {
                     <div>
                         <span class="fw-bold">Rejected Serials:</span><br>
                         <div class="row gx-0">
-                        ${
-                            res.data.info.rejected_serials.length === 0 ?"<span>No product rejected</span>":
+                        ${res.data.info.rejected_serials.length === 0 ? "<span>No product rejected</span>" :
                             res.data.info.rejected_serials.map((x) => {
                                 return (
                                     `<span class="col-4 p-1">${x}</span>`
@@ -214,7 +216,7 @@ const Inventory = () => {
                     </div>
                     `
                     Swal.fire({
-                        title:'Success!',
+                        title: 'Success!',
                         icon: "success",
                         width: "40rem",
                         html: c
@@ -560,11 +562,11 @@ const Inventory = () => {
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="primary" className="me-auto" 
-                        onClick={() => { 
+                    <Button variant="primary" className="me-auto"
+                        onClick={() => {
                             fetch(`data:${excelTemplateType};base64,${excelTemplateBase64}`)
-                            .then(res => res.blob())
-                            .then(blob => saveAs(blob, "Product Import.xlsx") )
+                                .then(res => res.blob())
+                                .then(blob => saveAs(blob, "Product Import.xlsx"))
                         }}
                     >Get Template</Button>
                     <Button variant="success" disabled={isImportApiLoading} onClick={() => { !isImportApiLoading && importProducts() }}> {isImportApiLoading ? <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> : 'Submit'} </Button>
@@ -604,7 +606,9 @@ const Inventory = () => {
                     <Button variant="success" disabled={isTransferApiLoading} onClick={() => { !isTransferApiLoading && transferProduct() }}> {isImportApiLoading ? <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> : 'Submit'} </Button>
                     <Button onClick={() => { handleTransferProductModalClose() }}>Close</Button>
                 </Modal.Footer>
-            </Modal >
+            </Modal>
+
+            <NewFeatureModal/>
         </>
     )
 }

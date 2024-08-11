@@ -10,6 +10,7 @@ import { useFirebase } from "../contexts/firebase-context";
 import { getInvoiceList, getBranchList, getSalespersonList } from "../utils/getApis"
 import { printInvoice } from "../utils/printInvoice"
 import AuthWrapper from "./AuthWrapper";
+import NewFeatureModal from "./NewFeatureModal"
 
 const SalesReport = () => {
     const { currentUserInfo } = useFirebase()
@@ -666,6 +667,8 @@ const SalesReport = () => {
                     <Button onClick={() => { handleEditInvoiceModalClose() }}>Close</Button>
                 </Modal.Footer>
             </Modal>
+
+            <NewFeatureModal/>
         </>
     )
 }

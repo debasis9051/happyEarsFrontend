@@ -8,6 +8,7 @@ import { useFirebase } from "../contexts/firebase-context";
 import { getProductList, getBranchList, getSalespersonList } from "../utils/getApis"
 import { printInvoice } from "../utils/printInvoice"
 import AuthWrapper from "./AuthWrapper";
+import NewFeatureModal from "./NewFeatureModal";
 
 const GenerateInvoice = () => {
     const { currentUserInfo } = useFirebase()
@@ -530,6 +531,7 @@ const GenerateInvoice = () => {
                 </>
             </AuthWrapper>
 
+            <NewFeatureModal/>
         </div>
     )
 }

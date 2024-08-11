@@ -55,11 +55,11 @@ const calculateHearingLoss = (frequencyData) => {
     let color = "#000000"
     let text = ""
 
-    if (unit <= 20) { color = "#129dd4"; text = "Normal Hearing"; }
-    else if (unit <= 40) { color = "#68c8ee"; text = "Mild Hearing loss"; }
-    else if (unit <= 70) { color = "#fab330"; text = "Moderate Hearing loss"; }
-    else if (unit <= 90) { color = "#fc8e29"; text = "Severe Hearing loss"; }
-    else { color = "#ff4255"; text = "Profound Hearing loss"; }
+    if (unit <= 20) { color = "#b8eeaa"; text = "Normal Hearing"; }
+    else if (unit <= 40) { color = "#d5eaae"; text = "Mild Hearing loss"; }
+    else if (unit <= 70) { color = "#e9d1af"; text = "Moderate Hearing loss"; }
+    else if (unit <= 90) { color = "#f5d6da"; text = "Severe Hearing loss"; }
+    else { color = "#f6a2b3"; text = "Profound Hearing loss"; }
 
     return { unit, color, text }
 }

@@ -67,7 +67,7 @@ const designParticulars = (discount_amount,line_items,accessory_items) => {
 const printInvoice = (patient_name,patient_address,contact_number,branch_name,invoice_number,date,mode_of_payment,discount_amount,line_items,accessory_items, headerVisible) => {
     let toWords = new ToWords()
     let html = `
-        <div class="container-fluid my-4 fw-bold">
+        <div class="container-fluid position-relative my-4 fw-bold" style="height:90%;">
             <div>
                 <img src="${headerVisible ? "/happy_ears_invoice_header_1.png" : "/happy_ears_invoice_header_empty.jpg"}" alt="header_image" style="width:100%;" >
             </div> 
@@ -103,9 +103,15 @@ const printInvoice = (patient_name,patient_address,contact_number,branch_name,in
                     <td>${(line_items.reduce((p, o) => p + o.product_rate, 0) - discount_amount) + accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)}</td>
                 </tr>
             </table>
+
             <div class="d-flex justify-content-between">
                 <h5 class="text-bold"><ins>Amount: ${toWords.convert((line_items.reduce((p, o) => p + o.product_rate, 0) - discount_amount) + accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)).toUpperCase()} ONLY<br></ins></h5>
                 <div>E. & O.E.<br>For Happy Ears</div>
+            </div>
+
+            <div class="position-absolute w-100" style="bottom:-80px;">
+                <hr>
+                <div class="text-center" >Copyright © 2024 Happy Ears</div>
             </div>
         </div>
     `

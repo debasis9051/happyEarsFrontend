@@ -106,11 +106,33 @@ const setupChart = (ctx) => {
     ctx.lineTo(40, 45)
     ctx.stroke();
 
+    //drawing colored sections in chart
+    let temp = [
+        { range: 20, color: "#b8eeaa" },
+        { range: 40, color: "#d5eaae" },
+        { range: 70, color: "#e9d1af" },
+        { range: 90, color: "#f5d6da" },
+        { range: 120, color: "#f6a2b3" }
+    ];
+
+    let y1 = 60
+    let y2
+
+    ctx.beginPath();
+    temp.forEach((obj, i, arr) => {
+        y2 = 60 + (420 - 10) / (((120 + 10) / 10 + 1) - 1) * ((obj.range - (-10)) / 10)
+        ctx.fillStyle = obj.color
+        ctx.fillRect(60, y1, 420, y2 - y1 + (i === arr.length - 1 ? 10 : 0))
+        y1 = y2
+    })
+    ctx.stroke();
+
+    //drawing lines
     let x_labels = [250, 500, 1000, 2000, 4000, 6000, 8000]
     ctx.beginPath();
     x_labels.forEach((elem, i, arr) => {
         let x = 60 + 420 / (arr.length - 1) * i
-        let y = 50 + 0
+        let y = 60 - 10 + 0
 
         ctx.strokeText(elem, x, y - 5);
 
@@ -122,7 +144,7 @@ const setupChart = (ctx) => {
     let y_labels = Array.from({ length: (120 + 10) / 10 + 1 }, (_, index) => index * 10 - 10);
     ctx.beginPath();
     y_labels.forEach((elem, i, arr) => {
-        let x = 50 + 0
+        let x = 60 - 10 + 0
         let y = 60 + (420 - 10) / (arr.length - 1) * i
 
         ctx.strokeText(elem, x - 15, y + 5);
@@ -178,7 +200,7 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
     let ac_rhl_data = calculateHearingLoss(reportData.ac_right_ear_pta.data)
 
     let html = `
-        <div class="container-fluid my-4 fw-bold">
+        <div class="container-fluid position-relative my-4 fw-bold" style="height:90%;">
 
             <div>
                 <img src="${headerVisible ? "/happy_ears_invoice_header_1.png" : "/happy_ears_invoice_header_empty.jpg"}" alt="header_image" style="width:100%;" >
@@ -191,9 +213,8 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                 <span class="mx-2 fs-5 " >Age/Sex :</span>
                 <span class="mx-2 border-bottom border-dark fs-5" style="flex:2;" >${reportData.age}/${reportData.sex[0].toUpperCase()}</span>
             </div>
-            ${
-                reportData.trial_mode ?
-                `<div class="row gx-0 my-2">
+            ${reportData.trial_mode ?
+            `<div class="row gx-0 my-2">
                     <div class="col-6 d-flex align-items-center">
                         <span class="mx-2 fs-5 ">Recommended Machine: </span>
                         <span class="mx-2 border-bottom border-dark fs-5 flex-grow-1">${reportData.recommended_machine}</span>
@@ -203,8 +224,8 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                         <span class="mx-2 border-bottom border-dark fs-5 flex-grow-1">${reportData.client_chosen_machine}</span>
                     </div>
                 </div>`
-                :
-                `<div class="row gx-0 my-2">
+            :
+            `<div class="row gx-0 my-2">
                     <div class="col-6 d-flex align-items-center">
                         <span class="mx-2 fs-5">Referred By: </span>
                         <span class="mx-2 border-bottom border-dark fs-5 flex-grow-1">${reportData.referred_by}</span>
@@ -214,18 +235,17 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                         <span class="mx-2 border-bottom border-dark fs-5 flex-grow-1">${reportData.audiometer}</span>
                     </div>
                 </div>`
-            }
+        }
             <div class="d-flex my-2 align-items-center">
                 <span class="mx-2 fs-5">Date: </span>
                 <span class="mx-2 flex-grow-1 border-bottom border-dark fs-5">${moment.unix(reportData.date._seconds).format("DD-MM-YYYY")}</span>
             </div>
-            ${
-                !reportData.trial_mode ?
-                `<div class="my-2">
+            ${!reportData.trial_mode ?
+            `<div class="my-2">
                     <span class="mx-2 fs-5">Complaint: </span>
                     <span class="mx-2 flex-grow-1 border-bottom border-dark fs-5">${reportData.complaint}</span>
                 </div>` : ""
-            }
+        }
 
             <div class="d-flex text-center" style="gap:10px;">
                 <div class="flex-grow-1">
@@ -270,9 +290,8 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                 </div>
             </div>
 
-            ${
-                !reportData.trial_mode ?
-                `<div class="d-flex align-items-center gap-3">
+            ${!reportData.trial_mode ?
+            `<div class="d-flex align-items-center gap-3">
                     <div class="d-flex flex-wrap mb-1 align-items-center">
                         <span class="mx-2 fs-5">Tuning Fork: </span>
                         <span class="mx-2 border-bottom border-dark fs-5">${reportData.tuning_fork}</span>
@@ -306,27 +325,27 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                 </div>
                 <div class="my-3">
                     <span class="mx-2 fs-5">Recommendations: </span>
-                    <span class="mx-2 flex-grow-1 border-bottom border-dark fs-5">${reportData.recommendations.map((x,i)=> `<span style="color:blue;">${i+1}.</span> ${x}`).join(", ")}</span>
+                    <span class="mx-2 flex-grow-1 border-bottom border-dark fs-5">${reportData.recommendations.map((x, i) => `<span style="color:blue;">${i + 1}.</span> ${x}`).join(", ")}</span>
                 </div>` : ""
-            }
+        }
 
-            ${
-                !reportData.trial_mode ?
-                `<div class="my-2 ms-auto d-flex flex-column" style="width:max-content; margin-right: 6rem" >
+            ${!reportData.trial_mode ?
+            `<div class="my-2 ms-auto d-flex flex-column" style="width:max-content; margin-right: 6rem" >
                     <diV class="text-center"><img src=${signature} alt="doctor_signature" height="40"></div>
                     <span>Clinical Audiologist <br> & Speech Therapist </span>
                 </div>` : ""
-            }
-            ${
-                reportData.trial_mode ?
-                `<div class="my-5">
+        }
+            ${reportData.trial_mode ?
+            `<div class="my-5">
                     <span>Disclaimer :: </span>
                     <span class="text-danger">This is just a trial report based on patient response. This cannot be or should not be treated as medical audiogram report(PTA)</span>
                 </div>` : ""
-            }
+        }
 
-            <hr>
-            <div class="text-center" >${window.location.href}</div>
+            <div class="position-absolute w-100" style="bottom:-110px;">
+                <hr>
+                <div class="text-center" >Copyright © 2024 Happy Ears</div>
+            </div>
         </div>
     `
 
