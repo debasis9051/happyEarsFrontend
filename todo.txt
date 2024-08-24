@@ -1,29 +1,18 @@
 Todo:
 
-go back animation against icon
-
-
-
-
-1. audiometry - generate invoice against audiometry report
-2. vercel frontend and backend deployments cleanup
-
-
-
-
-4. all tables major update - implement pagination logic 
-5. product individual edit feature and export feature in inventory
+1. product individual edit feature - manufacturer, mrp, name, serial(verification)
+2. all tables major update - implement pagination logic 
 
 
 HAPPY EARS PROJECT - structure
 Frontend using React.js, Bootstrap 5
 Backend using Node.js
-Database using Firebase
+Authentication, Database(including files) using Firebase
 
 frontend routes:
 1. navbar including sign in feature
 2. "/" - Homepage with big buttons to redirect to other pages
-3. "/audiometry" - Audiometry chart page - features: chart generation --- ONGOING
+3. "/audiometry" - Audiometry chart page - features: chart generation
 4. "/inventory" - Inventory Management page
         features:-
         i. view all products
@@ -39,7 +28,7 @@ frontend routes:
         i. export all invoices data with export button --- NOT DONE
         ii. print action button
         iii. edit action button 
-7. "/admin-panel" - Admin Panel for additional apis and to execute custom scripts
+7. "/admin-panel" - Admin Panel for additional features and to execute custom scripts
 
 
 database collections:

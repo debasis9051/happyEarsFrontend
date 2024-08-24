@@ -3,6 +3,7 @@ import moment from "moment"
 import Select from "react-select"
 import Swal from "sweetalert2"
 import axios from "axios";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { useFirebase } from "../contexts/firebase-context";
 import { getProductList, getBranchList, getSalespersonList } from "../utils/getApis"
@@ -12,6 +13,9 @@ import NewFeatureModal from "./NewFeatureModal";
 
 const GenerateInvoice = () => {
     const { currentUserInfo } = useFirebase()
+
+    const navigate = useNavigate()
+    const { audiometryId } = useParams()
 
     const [branchList, setBranchList] = useState([])
     const [salespersonList, setSalespersonList] = useState([])
@@ -74,6 +78,29 @@ const GenerateInvoice = () => {
             getProductList(currentUserInfo, setProductList)
         }
     }, [currentUserInfo])
+
+    useEffect(() => {
+        if (currentUserInfo && audiometryId) {
+            axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-audiometry-report-by-id`, { audiometry_report_id: audiometryId, current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
+                .then((res) => {
+                    if (res.data.operation === "success") {
+                        // console.log(res.data);
+                        setPatientName(res.data.info.patient_name)
+                        setContactNumber(res.data.info.contact_number)
+                        setPatientAddress(res.data.info.patient_address)
+                    }
+                    else {
+                        Swal.fire('Oops!', res.data.message, 'error');
+                        navigate("/generate-invoice")
+                    }
+                })
+                .catch((err) => {
+                    console.log(err)
+                    Swal.fire('Error!!', err.message, 'error');
+                })
+        }
+    }, [currentUserInfo, audiometryId])
+
 
     const verifyInvoice = () => {
         if (patientName === "") {
@@ -238,7 +265,7 @@ const GenerateInvoice = () => {
                                                 Swal.fire('Oops!', "Enter a valid date", 'warning');
                                                 return
                                             }
-                                            
+
                                             setDate(e.target.value);
                                             if (selectedBranch) {
                                                 getInvoiceNumber(selectedBranch.value, e.target.value);
@@ -531,7 +558,7 @@ const GenerateInvoice = () => {
                 </>
             </AuthWrapper>
 
-            <NewFeatureModal/>
+            <NewFeatureModal />
         </div>
     )
 }

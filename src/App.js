@@ -35,7 +35,7 @@ function App() {
                         <Route path="/admin-panel" element={<AdminPanel />} />
                         <Route path="/audiometry" element={<Audiometry />} />
                         <Route path="/inventory" element={<Inventory />} />
-                        <Route path="/generate-invoice" element={<GenerateInvoice />} />
+                        <Route path="/generate-invoice/:audiometryId?" element={<GenerateInvoice />} />
                         <Route path="/sales-report" element={<SalesReport />} />
                     </Routes>
                 </BrowserRouter>

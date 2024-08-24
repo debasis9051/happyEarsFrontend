@@ -452,6 +452,7 @@ const Audiometry = () => {
 
                                                                         <Dropdown.Menu>
                                                                             <Dropdown.Item onClick={() => { updateAudiometryReportInit(x) }} >Edit Report </Dropdown.Item>
+                                                                            <Dropdown.Item href={`/generate-invoice/${x.id}`} >Generate Invoice </Dropdown.Item>
                                                                             <Dropdown.Item
                                                                                 onClick={() => {
                                                                                     Swal.fire({
