@@ -363,7 +363,7 @@ const SalesReport = () => {
                             }
                         </table>
 
-                        <div className="container my-5 p-3 rounded text-white" >
+                        <div className="my-5 p-3 rounded text-white" >
                             <div className="row g-0">
                                 <div className="col-md-2 mx-2 text-end">
                                     <label className="form-label my-1 text-white" style={{ fontSize: "larger" }} htmlFor="reportMonthYear">Select Month</label>
