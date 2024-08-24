@@ -11,7 +11,6 @@ const Home = () => {
             {
                 isLoading ? <div className="d-flex justify-content-center"><div className="spinner-border" style={{ width: "5rem", height: "5rem", margin: "20rem" }}></div></div> :
                     <div className="container py-5">
-
                         <div className="d-flex flex-wrap gap-2">
                             <div className="my-1" style={{ flex: "2" }}>
                                 <PageButton permission={userAccess["audiometry"]} link={"/audiometry"} color="bg-primary" label="Audiometry" isNew />
