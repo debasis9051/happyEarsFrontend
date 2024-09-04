@@ -99,7 +99,7 @@ const GenerateInvoice = () => {
                     Swal.fire('Error!!', err.message, 'error');
                 })
         }
-    }, [currentUserInfo, audiometryId])
+    }, [currentUserInfo, audiometryId, navigate])
 
 
     const verifyInvoice = () => {

@@ -40,14 +40,18 @@ const Inventory = () => {
     const [selectedFile, setSelectedFile] = useState(null)
     const [isImportApiLoading, setIsImportApiLoading] = useState(false)
 
-    const [transferProductModalShow, setTransferProductModalShow] = useState(false)
     const [selectedProductId, setSelectedProductId] = useState(null)
     const [selectedProductName, setSelectedProductName] = useState(null)
     const [selectedProductSerialNumber, setSelectedProductSerialNumber] = useState(null)
+
+    const [transferProductModalShow, setTransferProductModalShow] = useState(false)
     const [selectedProductCurrentBranch, setSelectedProductCurrentBranch] = useState(null)
     const [selectedTransferToBranch, setSelectedTransferToBranch] = useState(null)
     const [isTransferApiLoading, setIsTransferApiLoading] = useState(false)
 
+    const [productLogHistoryModalShow, setProductLogHistoryModalShow] = useState(false)
+    const [productLogHistoryData, setProductLogHistoryData] = useState([])
+    const [isProductLogHistoryApiLoading, setIsProductLogHistoryApiLoading] = useState(false)
 
     const filteredProductList = branchFilter ? productList.filter(x => x.branch_id === branchFilter.value).filter(x => {
         if (searchBarState && searchValue !== "") {
@@ -92,6 +96,24 @@ const Inventory = () => {
             setBranchFilter({ label: b.branch_name, value: b.id })
         }
     }, [branchList])
+
+    const getProductLogHistory = async (product_id) => {
+        setIsProductLogHistoryApiLoading(true)
+        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-product-log-history`, { product_id, current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
+            .then((res) => {
+                if (res.data.operation === "success") {
+                    setIsProductLogHistoryApiLoading(false)
+                    setProductLogHistoryData(res.data.info)
+                }
+                else {
+                    Swal.fire('Error!!', res.data.message, 'error');
+                }
+            })
+            .catch((err) => {
+                console.log(err)
+                Swal.fire('Error!!', err.message, 'error');
+            })
+    }
 
 
     const addProduct = () => {
@@ -278,6 +300,14 @@ const Inventory = () => {
         setSelectedTransferToBranch(null)
     }
 
+    const handleProductLogHistoryModalClose = () => {
+        setProductLogHistoryModalShow(false)
+
+        setSelectedProductId(null)
+        setSelectedProductName(null)
+        setSelectedProductSerialNumber(null)
+    }
+
     let tp = Math.ceil(filteredProductList.length / 10)
     let c = currentPage + 1
     let s = (c - 2) - (c + 2 > tp ? (c + 2) - tp : 0)
@@ -362,48 +392,49 @@ const Inventory = () => {
 
                                                             <Dropdown.Menu>
                                                                 {
-                                                                    !x.instock ? <Dropdown.Item className="text-secondary" >No Options</Dropdown.Item> :
-                                                                        <>
-                                                                            <Dropdown.Item onClick={() => { Swal.fire('Oops!!', 'This feature id not ready yet', 'warning'); }} >Edit </Dropdown.Item>
-                                                                            <Dropdown.Item onClick={() => { setTransferProductModalShow(true); setSelectedProductId(x.id); setSelectedProductName(x.product_name); setSelectedProductSerialNumber(x.serial_number); setSelectedProductCurrentBranch(x.branch_id); }} >Transfer</Dropdown.Item>
-                                                                            <Dropdown.Item
-                                                                                onClick={() => {
-                                                                                    Swal.fire({
-                                                                                        title: "Are you sure? Enter a reason",
-                                                                                        input: "text",
-                                                                                        inputAttributes: { autocapitalize: "off" },
-                                                                                        showCancelButton: true,
-                                                                                        confirmButtonText: "Submit",
-                                                                                        showLoaderOnConfirm: true,
-                                                                                        preConfirm: async (reason) => {
-                                                                                            let data = {
-                                                                                                product_id: x.id,
-                                                                                                reason: reason,
-                                                                                                current_user_uid: currentUserInfo.uid,
-                                                                                                current_user_name: currentUserInfo.displayName
-                                                                                            }
+                                                                    x.instock &&
+                                                                    <>
+                                                                        <Dropdown.Item onClick={() => { Swal.fire('Oops!!', 'This feature id not ready yet', 'warning'); }} >Edit </Dropdown.Item>
+                                                                        <Dropdown.Item onClick={() => { setTransferProductModalShow(true); setSelectedProductId(x.id); setSelectedProductName(x.product_name); setSelectedProductSerialNumber(x.serial_number); setSelectedProductCurrentBranch(x.branch_id); }} >Transfer</Dropdown.Item>
+                                                                        <Dropdown.Item
+                                                                            onClick={() => {
+                                                                                Swal.fire({
+                                                                                    title: "Are you sure? Enter a reason",
+                                                                                    input: "text",
+                                                                                    inputAttributes: { autocapitalize: "off" },
+                                                                                    showCancelButton: true,
+                                                                                    confirmButtonText: "Submit",
+                                                                                    showLoaderOnConfirm: true,
+                                                                                    preConfirm: async (reason) => {
+                                                                                        let data = {
+                                                                                            product_id: x.id,
+                                                                                            reason: reason,
+                                                                                            current_user_uid: currentUserInfo.uid,
+                                                                                            current_user_name: currentUserInfo.displayName
+                                                                                        }
 
-                                                                                            axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/return-product`, data, { headers: { 'Content-Type': 'application/json' } })
-                                                                                                .then((res) => {
-                                                                                                    if (res.data.operation === "success") {
-                                                                                                        getProductList(currentUserInfo, setProductList)
-                                                                                                        Swal.fire('Success!', res.data.message, 'success');
-                                                                                                    }
-                                                                                                    else {
-                                                                                                        Swal.fire('Oops!', res.data.message, 'error');
-                                                                                                    }
-                                                                                                })
-                                                                                                .catch((err) => {
-                                                                                                    console.log(err)
-                                                                                                    Swal.fire('Error!!', err.message, 'error');
-                                                                                                })
-                                                                                        },
-                                                                                        allowOutsideClick: () => !Swal.isLoading()
-                                                                                    })
-                                                                                }}
-                                                                            >Return Product</Dropdown.Item>
-                                                                        </>
+                                                                                        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/return-product`, data, { headers: { 'Content-Type': 'application/json' } })
+                                                                                            .then((res) => {
+                                                                                                if (res.data.operation === "success") {
+                                                                                                    getProductList(currentUserInfo, setProductList)
+                                                                                                    Swal.fire('Success!', res.data.message, 'success');
+                                                                                                }
+                                                                                                else {
+                                                                                                    Swal.fire('Oops!', res.data.message, 'error');
+                                                                                                }
+                                                                                            })
+                                                                                            .catch((err) => {
+                                                                                                console.log(err)
+                                                                                                Swal.fire('Error!!', err.message, 'error');
+                                                                                            })
+                                                                                    },
+                                                                                    allowOutsideClick: () => !Swal.isLoading()
+                                                                                })
+                                                                            }}
+                                                                        >Return Product</Dropdown.Item>
+                                                                    </>
                                                                 }
+                                                                <Dropdown.Item onClick={() => { setProductLogHistoryModalShow(true); setSelectedProductId(x.id); setSelectedProductName(x.product_name); setSelectedProductSerialNumber(x.serial_number); getProductLogHistory(x.id); }} >View Log History</Dropdown.Item>
                                                             </Dropdown.Menu>
                                                         </Dropdown>
                                                     </td>
@@ -608,7 +639,42 @@ const Inventory = () => {
                 </Modal.Footer>
             </Modal>
 
-            <NewFeatureModal/>
+            <Modal show={productLogHistoryModalShow} onHide={() => { handleProductLogHistoryModalClose() }} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Product History - {selectedProductName} {selectedProductSerialNumber}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="container">
+                        {
+                            isProductLogHistoryApiLoading ?
+                                <div className="text-center"><div className="spinner-border text-success" style={{ width: "3rem", height: "3rem" }}></div></div> :
+                                <div className="vertical-timeline vertical-timeline--animate vertical-timeline--one-column">
+                                    {
+                                        productLogHistoryData.map((x, i) => {
+                                            return (
+                                                <div key={i} className="vertical-timeline-item vertical-timeline-element">
+                                                    <div>
+                                                        <span className="vertical-timeline-element-icon bounce-in"><i className="badge badge-dot badge-dot-xl badge-success"></i></span>
+                                                        <div className="vertical-timeline-element-content bounce-in">
+                                                            <h4 className="timeline-title">{x.operation} --- {branchList.find(y=>y.id===x.branch_id).branch_name}</h4>
+                                                            <p>{x.reason}</p>
+                                                            <span className="vertical-timeline-element-date">{moment.unix(x.created_at._seconds).format("YYYY-MM-DD")}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })
+                                    }
+                                </div>
+                        }
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button onClick={() => { handleProductLogHistoryModalClose() }}>Close</Button>
+                </Modal.Footer>
+            </Modal>
+
+            <NewFeatureModal />
         </>
     )
 }
