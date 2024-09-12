@@ -656,8 +656,11 @@ const Inventory = () => {
                                                     <div>
                                                         <span className="vertical-timeline-element-icon bounce-in"><i className="badge badge-dot badge-dot-xl badge-success"></i></span>
                                                         <div className="vertical-timeline-element-content bounce-in">
-                                                            <h4 className="timeline-title">{x.operation} --- {branchList.find(y=>y.id===x.branch_id).branch_name}</h4>
-                                                            <p>{x.reason}</p>
+                                                            <h4 className="timeline-title">{x.operation} <span className="badge bg-success ms-3 text-black" style={{fontSize:"13px"}}>{branchList.find(y=>y.id===x.branch_id).branch_name}</span></h4>
+                                                            <p>
+                                                                {x.reason}<br/>
+                                                                by: <span className="fw-bold">{x.added_by_user_name}</span>
+                                                            </p>
                                                             <span className="vertical-timeline-element-date">{moment.unix(x.created_at._seconds).format("YYYY-MM-DD")}</span>
                                                         </div>
                                                     </div>
