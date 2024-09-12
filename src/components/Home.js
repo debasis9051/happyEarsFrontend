@@ -13,29 +13,30 @@ const Home = () => {
                     <div className="container py-5">
                         <div className="d-flex flex-wrap gap-2">
                             <div className="my-1" style={{ flex: "2" }}>
-                                <PageButton permission={userAccess["audiometry"]} link={"/audiometry"} color="bg-primary" label="Audiometry" isNew />
+                                <PageButton permission={userAccess["audiometry"]} link={"/audiometry"} color="#3288bd" label="Audiometry" isNew />
                             </div>
                             <div className="my-1" style={{ flex: "3" }}>
-                                <PageButton permission={userAccess["inventory"]} link={"/inventory"} color="bg-info" label="Inventory Management" />
+                                <PageButton permission={userAccess["inventory"]} link={"/inventory"} color="#5e4fa2" label="Inventory Management" />
                             </div>
                         </div>
 
                         <div className="d-flex flex-wrap gap-2">
                             <div className="my-1" style={{ flex: "3" }}>
-                                <PageButton permission={userAccess["generate_invoice"]} link={"/generate-invoice"} color="bg-success" label="Generate Invoice" />
+                                <PageButton permission={userAccess["generate_invoice"]} link={"/generate-invoice"} color="#66c2a5" label="Generate Invoice" />
                             </div>
                             <div className="my-1" style={{ flex: "2" }}>
-                                <PageButton permission={userAccess["sales_report"]} link={"/sales-report"} color="bg-danger" label="Sales Report" />
+                                <PageButton permission={userAccess["sales_report"]} link={"/sales-report"} color="#9e0142" label="Sales Report" />
                             </div>
                         </div>
 
                         <div className="d-flex flex-wrap gap-2">
+                            <div className="my-1" style={{ flex: "2" }}>
+                                <PageButton permission={userAccess["patients"]} link={"/patients"} color="#f46d43" label="Patients" />
+                            </div>
                             {
                                 userAccess["admin_panel"] &&
-                                <div className="my-1" style={{ flex: "1" }}>
-                                    <Link to="/admin-panel" className="text-decoration-none">
-                                        <div className="bg-gradient bg-hover-dark text-white rounded fs-3 text-center" style={{ padding: "70px 10px", backgroundColor: "midnightblue" }}>Admin Panel</div>
-                                    </Link>
+                                <div className="my-1" style={{ flex: "4" }}>
+                                    <PageButton permission={userAccess["admin_panel"]} link={"/admin-panel"} color="#fee08b" label="Admin Panel" />
                                 </div>
                             }
                         </div>
@@ -45,16 +46,16 @@ const Home = () => {
     )
 }
 
-const PageButton = ({permission, link, color, label, isNew=false}) =>{
+const PageButton = ({ permission, link, color, label, isNew = false }) => {
     if (permission) {
         return (
             <Link to={link} className="text-decoration-none">
-                <div className={`${color} bg-gradient bg-hover-dark text-white rounded fs-3 text-center ${isNew?"new-stamp":""}`} style={{ padding: "70px 10px" }}>{label}</div>
+                <div className={`bg-gradient bg-hover-dark text-black rounded fs-3 text-center ${isNew ? "new-stamp" : ""}`} style={{ padding: "70px 10px", backgroundColor: color }}>{label}</div>
             </Link>
         )
     } else {
         return (
-            <div className={`${color} bg-gradient bg-hover-dark text-white rounded fs-3 text-center text-unauthorized`} style={{ padding: "70px 10px" }}><span>{label}</span></div>
+            <div className="bg-gradient bg-hover-dark text-black rounded fs-3 text-center text-unauthorized" style={{ padding: "70px 10px", backgroundColor: color }}><span>{label}</span></div>
         )
     }
 }

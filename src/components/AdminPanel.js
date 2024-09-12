@@ -14,6 +14,7 @@ const defaultAccess = {
     generate_invoice: false,
     inventory: false,
     sales_report: false,
+    patients: false,
 }
 
 const AdminPanel = () => {
@@ -258,7 +259,7 @@ const AdminPanel = () => {
                                                 userList.length === 0 ? <span className="fs-4 text-center text-secondary">No users added</span> :
                                                     userList.map((x) => {
                                                         return (
-                                                            <div key={x.id} className={`d-flex gap-2 p-2 bg-hover-3a4e1e rounded ${selectedUser && selectedUser.id === x.id ? "bg-164d9d" : ""}`} onClick={() => { setSelectedUser(x); setSelectedUserAccess(x?.auth_access ? { ...x.auth_access } : { ...defaultAccess }); }}>
+                                                            <div key={x.id} className={`d-flex gap-2 p-2 bg-hover-3a4e1e rounded ${selectedUser && selectedUser.id === x.id ? "bg-164d9d" : ""}`} onClick={() => { setSelectedUser(x); setSelectedUserAccess({ ...defaultAccess, ...(x?.auth_access || {}) }); }}>
                                                                 <div>
                                                                     <img src={x.user_photo} alt='user_image' className='rounded' width="40" referrerPolicy="no-referrer" />
                                                                 </div>

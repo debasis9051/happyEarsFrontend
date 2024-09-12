@@ -20,6 +20,7 @@ import Audiometry from "./components/Audiometry.js"
 import Inventory from "./components/Inventory.js"
 import GenerateInvoice from "./components/GenerateInvoice.js"
 import SalesReport from "./components/SalesReport.js"
+import Patients from "./components/Patients.js"
 
 function App() {
     return (
@@ -37,6 +38,7 @@ function App() {
                         <Route path="/inventory" element={<Inventory />} />
                         <Route path="/generate-invoice/:audiometryId?" element={<GenerateInvoice />} />
                         <Route path="/sales-report" element={<SalesReport />} />
+                        <Route path="/patients" element={<Patients />} />
                     </Routes>
                 </BrowserRouter>
             </div>
