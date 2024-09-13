@@ -1,7 +1,5 @@
 Todo:
 
-log - action performed by
-
 1. product individual edit feature - manufacturer, mrp, name, serial(verification)
 2. all tables major update - implement pagination logic 
 

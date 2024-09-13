@@ -6,7 +6,6 @@ import axios from "axios";
 import { useFirebase } from "../contexts/firebase-context";
 import { getPatientList } from "../utils/getApis"
 import AuthWrapper from "./AuthWrapper";
-import NewFeatureModal from "./NewFeatureModal"
 
 const Patients = () => {
     const { currentUserInfo } = useFirebase()
@@ -305,8 +304,6 @@ const Patients = () => {
                     <Button onClick={() => { handleConfigurePatientModalClose() }}>Close</Button>
                 </Modal.Footer>
             </Modal>
-
-            <NewFeatureModal />
         </>
     )
 }
