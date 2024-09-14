@@ -26,19 +26,22 @@ const Inventory = () => {
     const [searchValue, setSearchValue] = useState("")
     const [branchFilter, setBranchFilter] = useState(null)
 
-    const [addProductModalShow, setAddProductModalShow] = useState(false)
+    const [configureProductModalShow, setConfigureProductModalShow] = useState(false)
+    const [configureProductModalMode, setConfigureProductModalMode] = useState("ADD")
+    const [productId, setProductId] = useState(null)
     const [productName, setProductName] = useState("")
     const [serialNumber, setSerialNumber] = useState("")
     const [manufacturer, setManufacturer] = useState("")
     const [mrp, setMrp] = useState(0)
     const [selectedBranch, setSelectedBranch] = useState(null)
-    const [isAddProductApiLoading, setIsAddProductApiLoading] = useState(false)
+    const [isConfigureProductApiLoading, setIsConfigureProductApiLoading] = useState(false)
 
     const [importProductModalShow, setImportProductModalShow] = useState(false)
     const [startingRow, setStartingRow] = useState(1)
     const [endingRow, setEndingRow] = useState(1)
     const [selectedFile, setSelectedFile] = useState(null)
     const [isImportApiLoading, setIsImportApiLoading] = useState(false)
+
 
     const [selectedProductId, setSelectedProductId] = useState(null)
     const [selectedProductName, setSelectedProductName] = useState(null)
@@ -115,8 +118,16 @@ const Inventory = () => {
             })
     }
 
+    const configureProductModalInit = (x) => {
+        setProductId(x.id)
+        setProductName(x.product_name)
+        setSerialNumber(x.serial_number)
+        setManufacturer(x.manufacturer_name)
+        setMrp(x.mrp)
+        setSelectedBranch({ label: branchList.find(y => x.branch_id === y.id).branch_name, value: x.branch_id })
+    }
 
-    const addProduct = () => {
+    const configureProduct = () => {
         if (productName === "") {
             Swal.fire('Oops!!', 'Enter a valid Product Name', 'warning');
             return
@@ -139,6 +150,7 @@ const Inventory = () => {
         }
 
         let data = {
+            ...(configureProductModalMode === "EDIT" ? { product_id: productId } : {}),
             product_name: productName,
             serial_number: serialNumber,
             manufacturer: manufacturer,
@@ -149,13 +161,14 @@ const Inventory = () => {
             current_user_name: currentUserInfo.displayName
         }
 
-        setIsAddProductApiLoading(true)
-        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/add-product`, data, { headers: { 'Content-Type': 'application/json' } })
+        let url = configureProductModalMode === "ADD" ? "add-product" : "update-product"
+        setIsConfigureProductApiLoading(true)
+        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/${url}`, data, { headers: { 'Content-Type': 'application/json' } })
             .then((res) => {
-                setIsAddProductApiLoading(false)
+                setIsConfigureProductApiLoading(false)
                 if (res.data.operation === "success") {
                     getProductList(currentUserInfo, setProductList)
-                    handleAddProductModalClose()
+                    handleConfigureProductModalClose()
                     Swal.fire('Success!', res.data.message, 'success');
                 }
                 else {
@@ -168,9 +181,11 @@ const Inventory = () => {
             })
     }
 
-    const handleAddProductModalClose = () => {
-        setAddProductModalShow(false)
+    const handleConfigureProductModalClose = () => {
+        setConfigureProductModalShow(false)
+        setConfigureProductModalMode("ADD")
 
+        setProductId(null)
         setProductName("")
         setSerialNumber("")
         setManufacturer("")
@@ -345,7 +360,7 @@ const Inventory = () => {
                                 <input type="text" className="form-control" style={searchBarState ? { transition: "all 1s" } : { transition: "all 1s", width: "0", padding: "0", opacity: "0", visibility: "hidden" }} placeholder="Search..." onChange={(e) => { setSearchValue(e.target.value); setCurrentPage(0); }} />
                             </div>
 
-                            <button className="btn btn-success ms-auto me-2" onClick={() => { setAddProductModalShow(true) }}>+ Add</button>
+                            <button className="btn btn-success ms-auto me-2" onClick={() => { setConfigureProductModalShow(true); setConfigureProductModalMode("ADD"); }}>+ Add</button>
                             <button className="btn btn-info mx-2" onClick={() => { setImportProductModalShow(true) }}>Import</button>
                             <button className="btn btn-info mx-2" onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); console.log("exporting products"); }}>Export</button>
                         </div>
@@ -394,7 +409,7 @@ const Inventory = () => {
                                                                 {
                                                                     x.instock &&
                                                                     <>
-                                                                        <Dropdown.Item onClick={() => { Swal.fire('Oops!!', 'This feature id not ready yet', 'warning'); }} >Edit </Dropdown.Item>
+                                                                        <Dropdown.Item onClick={() => { setConfigureProductModalShow(true); setConfigureProductModalMode("EDIT"); configureProductModalInit(x); }} >Edit </Dropdown.Item>
                                                                         <Dropdown.Item onClick={() => { setTransferProductModalShow(true); setSelectedProductId(x.id); setSelectedProductName(x.product_name); setSelectedProductSerialNumber(x.serial_number); setSelectedProductCurrentBranch(x.branch_id); }} >Transfer</Dropdown.Item>
                                                                         <Dropdown.Item
                                                                             onClick={() => {
@@ -482,9 +497,9 @@ const Inventory = () => {
                 </AuthWrapper>
             </div>
 
-            <Modal show={addProductModalShow} onHide={() => { handleAddProductModalClose() }} size="lg" centered >
+            <Modal show={configureProductModalShow} onHide={() => { handleConfigureProductModalClose() }} size="lg" centered >
                 <Modal.Header closeButton>
-                    <Modal.Title>Add a Product</Modal.Title>
+                    <Modal.Title>{configureProductModalMode === "ADD" ? "Add" : "Update"} a Product</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <div className="container">
@@ -526,6 +541,7 @@ const Inventory = () => {
                                         options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
                                         value={selectedBranch}
                                         onChange={(val) => { setSelectedBranch(val); }}
+                                        isDisabled={configureProductModalMode === "EDIT"}
                                         styles={dropDownStyle}
                                         placeholder="Select a Branch..."
                                     />
@@ -535,8 +551,8 @@ const Inventory = () => {
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="success" disabled={isAddProductApiLoading} onClick={() => { !isAddProductApiLoading && addProduct() }}> {isAddProductApiLoading ? <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> : 'Submit'} </Button>
-                    <Button onClick={() => { handleAddProductModalClose() }}>Close</Button>
+                    <Button variant="success" disabled={isConfigureProductApiLoading} onClick={() => { !isConfigureProductApiLoading && configureProduct() }}> {isConfigureProductApiLoading ? <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> : 'Submit'} </Button>
+                    <Button onClick={() => { handleConfigureProductModalClose() }}>Close</Button>
                 </Modal.Footer>
             </Modal>
 
@@ -656,9 +672,9 @@ const Inventory = () => {
                                                     <div>
                                                         <span className="vertical-timeline-element-icon bounce-in"><i className="badge badge-dot badge-dot-xl badge-success"></i></span>
                                                         <div className="vertical-timeline-element-content bounce-in">
-                                                            <h4 className="timeline-title">{x.operation} <span className="badge bg-success ms-3 text-black" style={{fontSize:"13px"}}>{branchList.find(y=>y.id===x.branch_id).branch_name}</span></h4>
+                                                            <h4 className="timeline-title">{x.operation} <span className="badge bg-success ms-3 text-black" style={{ fontSize: "13px" }}>{branchList.find(y => y.id === x.branch_id).branch_name}</span></h4>
                                                             <p>
-                                                                {x.reason}<br/>
+                                                                {x.reason}<br />
                                                                 by: <span className="fw-bold">{x.added_by_user_name}</span>
                                                             </p>
                                                             <span className="vertical-timeline-element-date">{moment.unix(x.created_at._seconds).format("YYYY-MM-DD")}</span>
