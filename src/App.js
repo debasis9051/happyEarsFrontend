@@ -6,7 +6,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 import "./bootstrap.css";
-
 import "./App.css";
 
 import { FirebaseProvider } from './contexts/firebase-context';
