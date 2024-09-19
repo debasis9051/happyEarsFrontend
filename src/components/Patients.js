@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react"
 import { Modal, Button, Dropdown } from "react-bootstrap"
 import Swal from "sweetalert2"
 import axios from "axios";
+import { Helmet } from "react-helmet";
 
 import { useFirebase } from "../contexts/firebase-context";
 import { getPatientList } from "../utils/getApis"
@@ -141,6 +142,11 @@ const Patients = () => {
 
     return (
         <>
+            <Helmet>
+                <meta name="description" content="Happy Ears Kolkata is a React-powered app for efficient hearing care management, offering seamless invoice creation, inventory control, and secure patient data storage with integrated location tracking, created by Hritwick De. Patients page where patients, their respective visit location and consultation details are recorded" />
+                <title>Patients | Happy Ears Kolkata Invoicing</title>
+            </Helmet>
+
             <div>
                 <div className="d-flex align-items-center">
                     <span className="fs-3 px-3 pt-3">Patients</span>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Helmet } from "react-helmet";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -26,8 +27,13 @@ function App() {
     return (
         <FirebaseProvider>
             <div className="App">
+                <Helmet>
+                    <meta name="description" content="Happy Ears Kolkata is a React-powered app for efficient hearing care management, offering seamless invoice creation, inventory control, and secure patient data storage with integrated location tracking, created by Hritwick De" />
+                    <title>Happy Ears Kolkata Invoicing</title>
+                </Helmet>
+
                 <BrowserRouter basename="/">
-                    <Navbar/>
+                    <Navbar />
 
                     <Routes>
                         <Route path="*" element={<NotFound />} />

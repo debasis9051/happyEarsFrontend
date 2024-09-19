@@ -4,6 +4,7 @@ import axios from "axios";
 import Swal from "sweetalert2"
 import moment from "moment"
 import Select from "react-select"
+import { Helmet } from "react-helmet";
 
 import { useFirebase } from "../contexts/firebase-context";
 import { getAudiometryList, getDoctorList } from "../utils/getApis"
@@ -385,6 +386,11 @@ const Audiometry = () => {
 
     return (
         <>
+            <Helmet>
+                <meta name="description" content="Happy Ears Kolkata is a React-powered app for efficient hearing care management, offering seamless invoice creation, inventory control, and secure patient data storage with integrated location tracking, created by Hritwick De. Audiometry Page used to record and calibrate hearing audiograms of patients" />
+                <title>Audiometry | Happy Ears Kolkata Invoicing</title>
+            </Helmet>
+
             <div>
                 <div className="d-flex align-items-center">
                     <span className="fs-3 px-3 pt-3">Audiometry</span>

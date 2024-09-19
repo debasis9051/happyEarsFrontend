@@ -7,6 +7,7 @@ import Dropzone from 'react-dropzone'
 import moment from "moment"
 import { saveAs } from "file-saver";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet";
 
 import { useFirebase } from "../contexts/firebase-context";
 import { getProductList, getBranchList } from "../utils/getApis"
@@ -332,6 +333,11 @@ const Inventory = () => {
 
     return (
         <>
+            <Helmet>
+                <meta name="description" content="Happy Ears Kolkata is a React-powered app for efficient hearing care management, offering seamless invoice creation, inventory control, and secure patient data storage with integrated location tracking, created by Hritwick De. Inventory Page for stocks management and logging history of products" />
+                <title>Inventory | Happy Ears Kolkata Invoicing</title>
+            </Helmet>
+
             <div>
                 <div className="d-flex align-items-center">
                     <span className="fs-3 px-3 pt-3">Inventory List</span>

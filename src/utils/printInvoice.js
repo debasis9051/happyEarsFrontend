@@ -106,12 +106,12 @@ const printInvoice = (patient_name,patient_address,contact_number,branch_name,in
 
             <div class="d-flex justify-content-between">
                 <h5 class="text-bold"><ins>Amount: ${toWords.convert((line_items.reduce((p, o) => p + o.product_rate, 0) - discount_amount) + accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)).toUpperCase()} ONLY<br></ins></h5>
-                <div>E. & O.E.<br>For Happy Ears</div>
+                <div>E. & O.E.<br>For Happy Ears Kolkata</div>
             </div>
 
             <div class="position-absolute w-100" style="bottom:-80px;">
                 <hr>
-                <div class="text-center" >Copyright © 2024 Happy Ears</div>
+                <div class="text-center" >Copyright © 2024 Happy Ears Kolkata</div>
             </div>
         </div>
     `

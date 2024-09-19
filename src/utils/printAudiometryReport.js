@@ -344,7 +344,7 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
 
             <div class="position-absolute w-100" style="bottom:-110px;">
                 <hr>
-                <div class="text-center" >Copyright © 2024 Happy Ears</div>
+                <div class="text-center" >Copyright © 2024 Happy Ears Kolkata</div>
             </div>
         </div>
     `

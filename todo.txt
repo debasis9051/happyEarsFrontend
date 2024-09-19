@@ -20,7 +20,7 @@ frontend routes:
         iv. export all products data with export button --- NOT DONE
         v. transfer product button to transfer to a different branch
         vi. return product button to mark product as returned
-        vii. edit action button to modify details --- NOT DONE
+        vii. edit action button to modify details
 5. "/generate-invoice" - Invoice generation page with form - features: save and print
 6. "/sales-report" - List of all invoice records
         features:-

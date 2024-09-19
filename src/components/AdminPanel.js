@@ -3,6 +3,7 @@ import axios from "axios";
 import Swal from "sweetalert2"
 import Dropzone from 'react-dropzone'
 import { Accordion } from 'react-bootstrap';
+import { Helmet } from "react-helmet";
 
 import { useFirebase } from "../contexts/firebase-context";
 import AuthWrapper from "./AuthWrapper";
@@ -48,6 +49,11 @@ const AdminPanel = () => {
 
     return (
         <>
+            <Helmet>
+                <meta name="description" content="Happy Ears Kolkata is a React-powered app for efficient hearing care management, offering seamless invoice creation, inventory control, and secure patient data storage with integrated location tracking, created by Hritwick De. Administrator Page to be accessed by authorized personnel only for aditional features" />
+                <title>Admin Panel | Happy Ears Kolkata Invoicing </title>
+            </Helmet>
+
             <div>
                 <div className="d-flex align-items-center">
                     <span className="fs-3 px-3 pt-3">Admin Panel</span>

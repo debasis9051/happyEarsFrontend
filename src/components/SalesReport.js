@@ -5,6 +5,7 @@ import moment from "moment"
 import Swal from "sweetalert2"
 import axios from "axios";
 import { ResponsivePie } from '@nivo/pie'
+import { Helmet } from "react-helmet";
 
 import { useFirebase } from "../contexts/firebase-context";
 import { getInvoiceList, getBranchList, getSalespersonList } from "../utils/getApis"
@@ -225,6 +226,11 @@ const SalesReport = () => {
 
     return (
         <>
+            <Helmet>
+                <meta name="description" content="Happy Ears Kolkata is a React-powered app for efficient hearing care management, offering seamless invoice creation, inventory control, and secure patient data storage with integrated location tracking, created by Hritwick De. Report Page to manage the recorded invoices of the business and check out monthly profits" />
+                <title>Sales Report | Happy Ears Kolkata Invoicing</title>
+            </Helmet>
+
             <div>
                 <div className="d-flex align-items-center">
                     <span className="fs-3 px-3 pt-3">Sales Report</span>
@@ -668,7 +674,7 @@ const SalesReport = () => {
                 </Modal.Footer>
             </Modal>
 
-            <NewFeatureModal/>
+            <NewFeatureModal />
         </>
     )
 }
