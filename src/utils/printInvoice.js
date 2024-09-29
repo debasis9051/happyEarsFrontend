@@ -105,16 +105,16 @@ const printInvoice = (patient_name,patient_address,contact_number,branch_name,in
             </table>
 
             <div class="d-flex justify-content-between">
-                <h5 class="text-bold text-decoration-underline" style="max-width:450px;">Amount: ${toWords.convert((line_items.reduce((p, o) => p + o.product_rate, 0) - discount_amount) + accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)).toUpperCase()} ONLY</h5>
+                <h5 class="text-decoration-underline" style="max-width:450px;">Amount: ${toWords.convert((line_items.reduce((p, o) => p + o.product_rate, 0) - discount_amount) + accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)).toUpperCase()} ONLY</h5>
                 <div>E. & O.E.<br>For Happy Ears Kolkata</div>
             </div>
 
-            <div class="">
-                Joka Branch: D-8/7, Diamond Park, Kol-104 Opp: ESIC HOSPITAL JOKA, NEAR JOKA METRO & KMC OFFICE </br>
-                Dakshineswar Branch: 11/A, A.C. Sarkar Road, Dakshineswar, Kolkata - 700 076 (Opposite: Karur Vysya Bank)
+            <div>
+                <svg width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/></svg> Joka Branch:<span class="fw-normal"> D-8/7, Diamond Park, Kol-104 Opp: ESIC HOSPITAL JOKA, NEAR JOKA METRO & KMC OFFICE</span> </br>
+                <svg width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/></svg> Dakshineswar Branch:<span class="fw-normal"> 11/A, A.C. Sarkar Road, Dakshineswar, Kolkata - 700 076 (Opposite: Karur Vysya Bank)</span>
             </div>
 
-            <div class="position-absolute w-100" style="bottom:-80px; border-top:solid 1px black;">
+            <div class="position-absolute w-100" style="bottom:-82px; border-top:solid 1px black;">
                 <div class="text-center" >Copyright © 2024 Happy Ears Kolkata</div>
             </div>
         </div>
