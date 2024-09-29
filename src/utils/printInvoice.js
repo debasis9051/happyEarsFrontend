@@ -105,12 +105,16 @@ const printInvoice = (patient_name,patient_address,contact_number,branch_name,in
             </table>
 
             <div class="d-flex justify-content-between">
-                <h5 class="text-bold"><ins>Amount: ${toWords.convert((line_items.reduce((p, o) => p + o.product_rate, 0) - discount_amount) + accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)).toUpperCase()} ONLY<br></ins></h5>
+                <h5 class="text-bold text-decoration-underline" style="max-width:450px;">Amount: ${toWords.convert((line_items.reduce((p, o) => p + o.product_rate, 0) - discount_amount) + accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)).toUpperCase()} ONLY</h5>
                 <div>E. & O.E.<br>For Happy Ears Kolkata</div>
             </div>
 
-            <div class="position-absolute w-100" style="bottom:-80px;">
-                <hr>
+            <div class="">
+                Joka Branch: D-8/7, Diamond Park, Kol-104 Opp: ESIC HOSPITAL JOKA, NEAR JOKA METRO & KMC OFFICE </br>
+                Dakshineswar Branch: 11/A, A.C. Sarkar Road, Dakshineswar, Kolkata - 700 076 (Opposite: Karur Vysya Bank)
+            </div>
+
+            <div class="position-absolute w-100" style="bottom:-80px; border-top:solid 1px black;">
                 <div class="text-center" >Copyright © 2024 Happy Ears Kolkata</div>
             </div>
         </div>
