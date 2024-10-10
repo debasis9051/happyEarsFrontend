@@ -112,11 +112,6 @@ const printInvoice = (patient_name, patient_address, contact_number, branch_name
                 <div>E. & O.E.<br>For Happy Ears Kolkata</div>
             </div>
 
-            <div>
-                <svg width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/></svg> Joka Branch:<span class="fw-normal"> D-8/7, Diamond Park, Kol-104 Opp: ESIC HOSPITAL JOKA, NEAR JOKA METRO & KMC OFFICE</span> </br>
-                <svg width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/></svg> Dakshineswar Branch:<span class="fw-normal"> 11/A, A.C. Sarkar Road, Dakshineswar, Kolkata - 700 076 (Opposite: Karur Vysya Bank)</span>
-            </div>
-
             <div class="position-absolute w-100" style="bottom:-82px; border-top:solid 1px black;">
                 <div>Branches: ${branchList.filter(x=> x.id != branch_id).map(x=>x.branch_name).join(", ")}</div>
                 <div class="text-center" >Copyright © 2024 Happy Ears Kolkata</div>
