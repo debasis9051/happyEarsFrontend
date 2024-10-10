@@ -4,7 +4,7 @@ import Select from "react-select"
 import Swal from "sweetalert2"
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 import { useFirebase } from "../contexts/firebase-context";
 import { getProductList, getBranchList, getSalespersonList } from "../utils/getApis"
@@ -547,12 +547,12 @@ const GenerateInvoice = () => {
                                                         confirmButtonText: "Print",
                                                     }).then((result) => {
                                                         if (result.isConfirmed) {
-                                                            printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, h)
+                                                            printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, selectedBranch.value, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, h, branchList)
                                                         }
                                                     });
                                                 }
                                                 else {
-                                                    printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, h)
+                                                    printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, selectedBranch.value, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, h, branchList)
                                                 }
                                             }
                                         });

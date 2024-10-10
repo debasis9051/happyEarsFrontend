@@ -7,7 +7,7 @@ import Dropzone from 'react-dropzone'
 import moment from "moment"
 import { saveAs } from "file-saver";
 import { useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 import { useFirebase } from "../contexts/firebase-context";
 import { getProductList, getBranchList } from "../utils/getApis"

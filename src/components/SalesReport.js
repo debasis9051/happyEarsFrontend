@@ -5,7 +5,7 @@ import moment from "moment"
 import Swal from "sweetalert2"
 import axios from "axios";
 import { ResponsivePie } from '@nivo/pie'
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 import { useFirebase } from "../contexts/firebase-context";
 import { getInvoiceList, getBranchList, getSalespersonList } from "../utils/getApis"
@@ -321,7 +321,7 @@ const SalesReport = () => {
                                                                         let h = result.isConfirmed ? true : result.isDenied ? false : null
 
                                                                         if (h !== null) {
-                                                                            printInvoice(x.patient_name, x.patient_address, x.contact_number, branchList.find(b => b.id === x.branch_id).branch_name, x.invoice_number, moment.unix(x.date._seconds).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items, h)
+                                                                            printInvoice(x.patient_name, x.patient_address, x.contact_number, branchList.find(b => b.id === x.branch_id).branch_name, x.branch_id, x.invoice_number, moment.unix(x.date._seconds).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items, h, branchList)
                                                                         }
                                                                     });
                                                                 }} >Print</Dropdown.Item>

@@ -64,12 +64,15 @@ const designParticulars = (discount_amount,line_items,accessory_items) => {
     }).join("")
 }
 
-const printInvoice = (patient_name,patient_address,contact_number,branch_name,invoice_number,date,mode_of_payment,discount_amount,line_items,accessory_items, headerVisible) => {
+const printInvoice = (patient_name, patient_address, contact_number, branch_name, branch_id, invoice_number, date, mode_of_payment, discount_amount, line_items, accessory_items, headerVisible, branchList) => {
+
+    let header_image = "/happy_ears_invoice_header_" + branch_name + ".png"
+
     let toWords = new ToWords()
     let html = `
         <div class="container-fluid position-relative my-4 fw-bold" style="height:90%;">
             <div>
-                <img src="${headerVisible ? "/happy_ears_invoice_header_1.png" : "/happy_ears_invoice_header_empty.jpg"}" alt="header_image" style="width:100%;" >
+                <img src="${headerVisible ? header_image : "/happy_ears_invoice_header_empty.jpg"}" alt="header_image" style="width:100%;" >
             </div> 
 
             <div class="mt-2 text-end mx-4">Branch:- ${branch_name}</div>
@@ -115,6 +118,7 @@ const printInvoice = (patient_name,patient_address,contact_number,branch_name,in
             </div>
 
             <div class="position-absolute w-100" style="bottom:-82px; border-top:solid 1px black;">
+                <div>Branches: ${branchList.filter(x=> x.id != branch_id).map(x=>x.branch_name).join(", ")}</div>
                 <div class="text-center" >Copyright © 2024 Happy Ears Kolkata</div>
             </div>
         </div>

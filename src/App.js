@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Helmet } from "react-helmet";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -24,30 +24,33 @@ import Patients from "./components/Patients.js"
 
 function App() {
     return (
-        <FirebaseProvider>
-            <div className="App">
-                <Helmet>
-                    <meta name="description" content="Happy Ears Kolkata is a React-powered app for efficient hearing care management, offering seamless invoice creation, inventory control, and secure patient data storage with integrated location tracking, created by Hritwick De" />
-                    <title>Happy Ears Kolkata Invoicing</title>
-                </Helmet>
+        <HelmetProvider>
 
-                <BrowserRouter basename="/">
-                    <Navbar />
+            <FirebaseProvider>
+                <div className="App">
+                    <Helmet>
+                        <meta name="description" content="Happy Ears Kolkata is a React-powered app for efficient hearing care management, offering seamless invoice creation, inventory control, and secure patient data storage with integrated location tracking, created by Hritwick De" />
+                        <title>Happy Ears Kolkata Invoicing</title>
+                    </Helmet>
 
-                    <Routes>
-                        <Route path="*" element={<NotFound />} />
-                        <Route path="/unauthorized" element={<Unauthorized />} />
-                        <Route path="/" element={<Home />} />
-                        <Route path="/admin-panel" element={<AdminPanel />} />
-                        <Route path="/audiometry" element={<Audiometry />} />
-                        <Route path="/inventory" element={<Inventory />} />
-                        <Route path="/generate-invoice/:audiometryId?" element={<GenerateInvoice />} />
-                        <Route path="/sales-report" element={<SalesReport />} />
-                        <Route path="/patients" element={<Patients />} />
-                    </Routes>
-                </BrowserRouter>
-            </div>
-        </FirebaseProvider>
+                    <BrowserRouter basename="/">
+                        <Navbar />
+
+                        <Routes>
+                            <Route path="*" element={<NotFound />} />
+                            <Route path="/unauthorized" element={<Unauthorized />} />
+                            <Route path="/" element={<Home />} />
+                            <Route path="/admin-panel" element={<AdminPanel />} />
+                            <Route path="/audiometry" element={<Audiometry />} />
+                            <Route path="/inventory" element={<Inventory />} />
+                            <Route path="/generate-invoice/:audiometryId?" element={<GenerateInvoice />} />
+                            <Route path="/sales-report" element={<SalesReport />} />
+                            <Route path="/patients" element={<Patients />} />
+                        </Routes>
+                    </BrowserRouter>
+                </div>
+            </FirebaseProvider>
+        </HelmetProvider>
     )
 }
 

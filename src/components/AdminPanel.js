@@ -3,7 +3,7 @@ import axios from "axios";
 import Swal from "sweetalert2"
 import Dropzone from 'react-dropzone'
 import { Accordion } from 'react-bootstrap';
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 import { useFirebase } from "../contexts/firebase-context";
 import AuthWrapper from "./AuthWrapper";
@@ -91,6 +91,8 @@ const AdminPanel = () => {
 
                                                     if (res.data.operation === "success") {
                                                         Swal.fire('Success!', res.data.message, 'success');
+
+                                                        setSalespersonName("")
                                                     }
                                                     else {
                                                         Swal.fire('Oops!', res.data.message, 'error');
@@ -146,6 +148,9 @@ const AdminPanel = () => {
 
                                                     if (res.data.operation === "success") {
                                                         Swal.fire('Success!', res.data.message, 'success');
+
+                                                        setBranchName("")
+                                                        setBranchInvoiceCode("")
                                                     }
                                                     else {
                                                         Swal.fire('Oops!', res.data.message, 'error');
@@ -234,6 +239,11 @@ const AdminPanel = () => {
 
                                                     if (res.data.operation === "success") {
                                                         Swal.fire('Success!', res.data.message, 'success');
+
+                                                        setDoctorName("")
+                                                        setDoctorRegistrationNumber("")
+                                                        setDoctorSignatureFile(null)
+                                                        setDoctorSignatureImage(null)
                                                     }
                                                     else {
                                                         Swal.fire('Oops!', res.data.message, 'error');

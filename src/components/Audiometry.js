@@ -4,10 +4,10 @@ import axios from "axios";
 import Swal from "sweetalert2"
 import moment from "moment"
 import Select from "react-select"
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 import { useFirebase } from "../contexts/firebase-context";
-import { getAudiometryList, getDoctorList } from "../utils/getApis"
+import { getAudiometryList, getBranchList, getDoctorList } from "../utils/getApis"
 import AuthWrapper from "./AuthWrapper";
 import { printAudiometryReport } from "../utils/printAudiometryReport"
 
@@ -26,7 +26,6 @@ const bcConfig = [
     { frequency: 1000, min: -10, max: 80 },
     { frequency: 2000, min: -10, max: 80 },
     { frequency: 4000, min: -10, max: 80 },
-    { frequency: 6000, min: -10, max: 65 },
 ]
 
 
@@ -70,18 +69,21 @@ const Audiometry = () => {
 
     const [currentTab, setCurrentTab] = useState("tab1")
 
+    const [branchList, setBranchList] = useState([])
     const [audiometryList, setAudiometryList] = useState([])
     const [doctorList, setDoctorList] = useState([])
 
     const [currentPage, setCurrentPage] = useState(0)
     const [searchBarState, setSearchBarState] = useState(false)
     const [searchValue, setSearchValue] = useState("")
+    const [branchFilter, setBranchFilter] = useState(null)
 
 
     const [audiometryReportMode, setAudiometryReportMode] = useState("add")
     const [audiometryReportId, setAudiometryReportId] = useState(null)
     const [trialMode, setTrialMode] = useState(true)
 
+    const [selectedBranch, setSelectedBranch] = useState(null)
     const [patientName, setPatientName] = useState("")
     const [patientAddress, setPatientAddress] = useState("")
     const [contactNumber, setContactNumber] = useState("")
@@ -110,12 +112,12 @@ const Audiometry = () => {
     const [selectedDoctor, setSelectedDoctor] = useState(null)
 
     const [provisionalDiagnosis, setProvisionalDiagnosis] = useState({ left: "", right: "" })
-    const [recommendations, setRecommendations] = useState([""])
+    const [recommendations, setRecommendations] = useState(["Aural Hygiene","Follow Up","Refer Back to Ent.","Hearing Aid Trial and Fitting"])
 
     const [isAudiometryReportApiLoading, setIsAudiometryReportApiLoading] = useState(false)
 
 
-    const filteredAudiometryList = audiometryList.filter(x => {
+    const filteredAudiometryList = branchFilter ? audiometryList.filter(x => x.branch_id === branchFilter.value).filter(x => {
         if (searchBarState && searchValue !== "") {
             if (((new RegExp(searchValue, "gi")).test(x.patient_name)) || ((new RegExp(searchValue, "gi")).test(x.contact_number))) {
                 return true
@@ -125,7 +127,7 @@ const Audiometry = () => {
         else {
             return true
         }
-    })
+    }) : []
 
     const dropDownStyle = {
         option: (styles) => {
@@ -145,10 +147,18 @@ const Audiometry = () => {
 
     useEffect(() => {
         if (currentUserInfo !== null) {
+            getBranchList(currentUserInfo, setBranchList)
             getAudiometryList(currentUserInfo, setAudiometryList)
             getDoctorList(currentUserInfo, setDoctorList)
         }
     }, [currentUserInfo])
+
+    useEffect(() => {
+        if (branchList.length > 0) {
+            let b = branchList.find(x => x.branch_invoice_code === "RANI")
+            setBranchFilter({ label: b.branch_name, value: b.id })
+        }
+    }, [branchList])
 
     const getDoctorSignature = (doctor_id) => {
         return axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-doctor-signature`, { doctor_id: doctor_id, current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
@@ -171,6 +181,7 @@ const Audiometry = () => {
         setAudiometryReportId(audiometry_report_data.id)
         setTrialMode(audiometry_report_data.trial_mode)
 
+        setSelectedBranch({ label: branchList.find(x => x.id === audiometry_report_data.branch_id).branch_name, value: audiometry_report_data.branch_id })
         setPatientName(audiometry_report_data.patient_name)
         setPatientAddress(audiometry_report_data.patient_address)
         setContactNumber(audiometry_report_data.contact_number)
@@ -198,8 +209,9 @@ const Audiometry = () => {
             setTuningFork(audiometry_report_data.tuning_fork)
             setRinne(audiometry_report_data.rinne)
             setWeber(audiometry_report_data.weber)
-            setSelectedDoctor({ label: doctorList.find(x => x.id === audiometry_report_data.doctor_id).doctor_name, value: audiometry_report_data.doctor_id })
-
+            if (audiometry_report_data.doctor_id) {
+                setSelectedDoctor({ label: doctorList.find(x => x.id === audiometry_report_data.doctor_id).doctor_name, value: audiometry_report_data.doctor_id })
+            }
             setProvisionalDiagnosis(audiometry_report_data.provisional_diagnosis)
             setRecommendations(audiometry_report_data.recommendations)
         }
@@ -208,6 +220,10 @@ const Audiometry = () => {
     }
 
     const processAudiometryReport = () => {
+        if (selectedBranch === null) {
+            Swal.fire('Oops!!', 'Select a Branch', 'warning');
+            return false
+        }
         if (patientName === "") {
             Swal.fire('Oops!!', 'Patient name cannot be empty', 'warning');
             return false
@@ -262,10 +278,6 @@ const Audiometry = () => {
                 Swal.fire('Oops!!', 'Select values for All Weber fields', 'warning');
                 return false
             }
-            if (selectedDoctor === null) {
-                Swal.fire('Oops!!', 'Select a Doctor', 'warning');
-                return false
-            }
 
             if (provisionalDiagnosis.left === "" || provisionalDiagnosis.right === "") {
                 Swal.fire('Oops!!', 'Enter a Provisional Diagnosis for both ears', 'warning');
@@ -280,6 +292,7 @@ const Audiometry = () => {
         let data = {
             trial_mode: trialMode,
 
+            branch_id: selectedBranch.value,
             patient_name: patientName,
             contact_number: contactNumber,
             date: date,
@@ -305,7 +318,7 @@ const Audiometry = () => {
             tuning_fork: trialMode ? null : tuningFork,
             rinne: trialMode ? null : rinne,
             weber: trialMode ? null : weber,
-            doctor_id: trialMode ? null : selectedDoctor.value,
+            doctor_id: !trialMode && selectedDoctor ? selectedDoctor.value : null,
 
             provisional_diagnosis: trialMode ? null : provisionalDiagnosis,
             recommendations: trialMode ? null : recommendations.filter(x => x !== ""),
@@ -346,6 +359,7 @@ const Audiometry = () => {
     }
 
     const clearAudiometryForm = () => {
+        setSelectedBranch(null)
         setPatientName("")
         setPatientAddress("")
         setContactNumber("")
@@ -374,7 +388,7 @@ const Audiometry = () => {
         setSelectedDoctor(null)
 
         setProvisionalDiagnosis({ left: "", right: "" })
-        setRecommendations([""])
+        setRecommendations(["Aural Hygiene","Follow Up","Refer Back to Ent.","Hearing Aid Trial and Fitting"])
     }
 
     let tp = Math.ceil(filteredAudiometryList.length / 10)
@@ -412,6 +426,17 @@ const Audiometry = () => {
                                 <Tab eventKey="tab1" title="Records">
 
                                     <div className="d-flex align-items-end px-3 py-2">
+                                        <label className="form-label m-0 me-2 fs-5">Filters: </label>
+                                        <div className="form-group mx-1">
+                                            <label className="form-label m-0">Branch</label>
+                                            <Select
+                                                options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
+                                                value={branchFilter}
+                                                onChange={(val) => { setBranchFilter(val); setCurrentPage(0); }}
+                                                styles={dropDownStyle}
+                                                placeholder="Select a Branch..."
+                                            />
+                                        </div>
                                         <div className="d-flex mx-2">
                                             <button className="btn btn-secondary rounded-pill me-1" onClick={() => { setSearchBarState(!searchBarState); setSearchValue("") }}>
                                                 <svg width="16" height="16" fill="currentColor" className="bi bi-search" viewBox="0 0 16 16">
@@ -471,14 +496,14 @@ const Audiometry = () => {
                                                                                         let h = result.isConfirmed ? true : result.isDenied ? false : null
 
                                                                                         if (h !== null) {
-                                                                                            if (x.trial_mode) {
-                                                                                                printAudiometryReport(x, calculateHearingLoss, h, null)
+                                                                                            if (!x.trial_mode && x.doctor_id) {
+                                                                                                getDoctorSignature(x.doctor_id)
+                                                                                                .then((signature) => {
+                                                                                                    printAudiometryReport(x, calculateHearingLoss, h, signature, branchList)
+                                                                                                })
                                                                                             }
                                                                                             else {
-                                                                                                getDoctorSignature(x.doctor_id)
-                                                                                                    .then((signature) => {
-                                                                                                        printAudiometryReport(x, calculateHearingLoss, h, signature)
-                                                                                                    })
+                                                                                                printAudiometryReport(x, calculateHearingLoss, h, null, branchList)
                                                                                             }
                                                                                         }
                                                                                     });
@@ -542,13 +567,26 @@ const Audiometry = () => {
                                         </div>
                                         <div className="card-body">
                                             <div className="row">
-                                                <div className="col-6">
+                                                <div className="col-4">
+                                                    <div className="form-group">
+                                                        <label className="form-label my-1 required">Branch</label>
+                                                        <Select
+                                                            options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
+                                                            value={selectedBranch}
+                                                            onChange={(val) => { setSelectedBranch(val); }}
+                                                            isDisabled={audiometryReportMode === "update"}
+                                                            styles={dropDownStyle}
+                                                            placeholder="Select a Branch..."
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="col-4">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required" htmlFor="patientName">Patient Name</label>
                                                         <input type="text" id="patientName" className="form-control" value={patientName} onChange={(e) => { setPatientName(e.target.value) }} />
                                                     </div>
                                                 </div>
-                                                <div className="col-6">
+                                                <div className="col-4">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required" htmlFor="contactNumber">Contact Number</label>
                                                         <input type="text" id="contactNumber" className="form-control" value={contactNumber} onChange={(e) => { setContactNumber(e.target.value) }} />
@@ -608,8 +646,14 @@ const Audiometry = () => {
                                                             </div>
                                                             <div className="col-6">
                                                                 <div className="form-group">
-                                                                    <label className="form-label my-1 required" htmlFor="audiometer">Audiometer</label>
-                                                                    <input type="text" id="audiometer" className="form-control" value={audiometer} onChange={(e) => { setAudiometer(e.target.value) }} />
+                                                                    <label className="form-label my-1 required">Audiometer</label>
+                                                                    <Select
+                                                                        options={["Proton DX5", "Proton DX3"].map(x => ({ label: x, value: x }))}
+                                                                        value={audiometer ? { label: audiometer, value: audiometer } : null}
+                                                                        onChange={(val) => { setAudiometer(val.value); }}
+                                                                        styles={dropDownStyle}
+                                                                        placeholder="Select an Audiometer..."
+                                                                    />
                                                                 </div>
                                                             </div>
                                                         </>
@@ -721,11 +765,12 @@ const Audiometry = () => {
                                                     <div className="row">
                                                         <div className="col-4">
                                                             <div className="form-group">
-                                                                <label className="form-label my-1 required">Doctor</label>
+                                                                <label className="form-label my-1">Doctor</label>
                                                                 <Select
                                                                     options={doctorList.map(x => ({ label: x.doctor_name, value: x.id }))}
                                                                     value={selectedDoctor}
                                                                     onChange={(val) => { setSelectedDoctor(val); }}
+                                                                    isClearable
                                                                     isDisabled={audiometryReportMode === "update"}
                                                                     styles={dropDownStyle}
                                                                     placeholder="Select a Doctor..."
@@ -764,13 +809,13 @@ const Audiometry = () => {
                                                         <div className="col-6">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required" htmlFor="provisionalDiagnosisLeft">Provisional Diagnosis (Left)</label>
-                                                                <textarea id="provisionalDiagnosisLeft" rows={3} maxLength={55} className="form-control" value={provisionalDiagnosis.left} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, left: e.target.value }) }} />
+                                                                <textarea id="provisionalDiagnosisLeft" rows={3} maxLength={80} className="form-control" value={provisionalDiagnosis.left} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, left: e.target.value }) }} />
                                                             </div>
                                                         </div>
                                                         <div className="col-6">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required" htmlFor="provisionalDiagnosisRight">Provisional Diagnosis (Right)</label>
-                                                                <textarea id="provisionalDiagnosisRight" rows={3} maxLength={55} className="form-control" value={provisionalDiagnosis.right} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, right: e.target.value }) }} />
+                                                                <textarea id="provisionalDiagnosisRight" rows={3} maxLength={80} className="form-control" value={provisionalDiagnosis.right} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, right: e.target.value }) }} />
                                                             </div>
                                                         </div>
                                                     </div>

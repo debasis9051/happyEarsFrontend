@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react"
 import { Modal, Button, Dropdown } from "react-bootstrap"
 import Swal from "sweetalert2"
 import axios from "axios";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 import { useFirebase } from "../contexts/firebase-context";
 import { getPatientList } from "../utils/getApis"

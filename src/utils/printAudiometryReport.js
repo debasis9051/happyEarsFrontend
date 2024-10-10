@@ -64,7 +64,7 @@ const drawMarker = (ctx, x, y, marker, markerColor, arrowFlag) => {
         ctx.lineTo(x, y + 9)
         ctx.lineTo(x + 9, y + 9)
         ctx.strokeStyle = markerColor;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.stroke();
     }
     else if (marker === "right_bracket") {
@@ -74,7 +74,7 @@ const drawMarker = (ctx, x, y, marker, markerColor, arrowFlag) => {
         ctx.lineTo(x, y + 9)
         ctx.lineTo(x - 9, y + 9)
         ctx.strokeStyle = markerColor;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.stroke();
     }
 
@@ -168,14 +168,12 @@ const drawChartData = (ctx, ptaData, lineType, lineColor, marker) => {
     ctx.strokeStyle = lineColor
 
     ctx.beginPath()
-
-
-    ptaData.data.forEach((elem, i) => {
-        let max = ptaData.config.find(a => a.frequency === elem.frequency).max
+    ptaData.data.forEach((elem, i, arr) => {
+        let pos = (elem.decibal === null ? ptaData.config.find(a => a.frequency === elem.frequency).max : elem.decibal)
         let x = 60 + 420 / 6 * i
-        let y = 60 + (420 - 10) / (120 + 10) * ((elem.decibal === null ? max : elem.decibal) + 10)
+        let y = 60 + (420 - 10) / (120 + 10) * (pos + 10)
 
-        if (i === 0) {
+        if (i === 0 || elem.decibal === null || arr[i - 1].decibal === null) {
             ctx.moveTo(x, y);
         }
         else {
@@ -186,15 +184,17 @@ const drawChartData = (ctx, ptaData, lineType, lineColor, marker) => {
     ctx.setLineDash([]);
 
     ptaData.data.forEach((elem, i) => {
-        let max = ptaData.config.find(a => a.frequency === elem.frequency).max
+        let pos = (elem.decibal === null ? ptaData.config.find(a => a.frequency === elem.frequency).max : elem.decibal)
         let x = 60 + 420 / 6 * i
-        let y = 60 + (420 - 10) / (120 + 10) * ((elem.decibal === null ? max : elem.decibal) + 10)
+        let y = 60 + (420 - 10) / (120 + 10) * (pos + 10)
 
         drawMarker(ctx, x, y, marker, lineColor, (elem.decibal === null ? true : false))
     })
 }
 
-const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, signature) => {
+const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, signature, branchList) => {
+
+    let header_image = "/happy_ears_invoice_header_" + branchList.find(x=>x.id===reportData.branch_id).branch_name.toLowerCase() + ".png"
 
     let ac_lhl_data = calculateHearingLoss(reportData.ac_left_ear_pta.data)
     let ac_rhl_data = calculateHearingLoss(reportData.ac_right_ear_pta.data)
@@ -203,49 +203,45 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
         <div class="container-fluid position-relative my-4 fw-bold" style="height:90%;">
 
             <div>
-                <img src="${headerVisible ? "/happy_ears_invoice_header_1.png" : "/happy_ears_invoice_header_empty.jpg"}" alt="header_image" style="width:100%;" >
+                <img src="${headerVisible ? header_image : "/happy_ears_invoice_header_empty.jpg"}" alt="header_image" style="width:100%;" >
             </div> 
 
             <h2 class="text-center text-decoration-underline text-uppercase m-2" style="color:navy;">${reportData.trial_mode ? "Audiogram Hearing Aid Trial" : "Pure Tone Audiogram"} </h2>
             <div class="d-flex my-2 align-items-center">
-                <span class="mx-2 fs-5 " >Patient Name : </span>
-                <span class="mx-2 border-bottom border-dark fs-5" style="flex:7;" >${reportData.patient_name}</span>
-                <span class="mx-2 fs-5 " >Age/Sex :</span>
-                <span class="mx-2 border-bottom border-dark fs-5" style="flex:2;" >${reportData.age}/${reportData.sex[0].toUpperCase()}</span>
+                <span class="mx-2 text-nowrap fs-5" style="flex:2;">Patient Name : </span>
+                <span class="mx-2 text-nowrap border-bottom border-dark fs-5" style="flex:7;" >${reportData.patient_name}</span>
+                <span class="mx-2 text-nowrap fs-5" style="flex:1;">Age/Sex :</span>
+                <span class="mx-2 text-nowrap border-bottom border-dark fs-5" style="flex:1;" >${reportData.age}/${reportData.sex[0].toUpperCase()}</span>
             </div>
+
             ${reportData.trial_mode ?
-            `<div class="row gx-0 my-2">
-                    <div class="col-6 d-flex align-items-center">
-                        <span class="mx-2 fs-5 ">Recommended Machine: </span>
-                        <span class="mx-2 border-bottom border-dark fs-5 flex-grow-1">${reportData.recommended_machine}</span>
-                    </div>
-                    <div class="col-6 d-flex align-items-center">
-                        <span class="mx-2 fs-5 ">Client Chosen Machine: </span>
-                        <span class="mx-2 border-bottom border-dark fs-5 flex-grow-1">${reportData.client_chosen_machine}</span>
-                    </div>
+                `<div class="d-flex my-2 align-items-center">
+                    <span class="mx-2 text-nowrap fs-5 ">Recommended Machine: </span>
+                    <span class="mx-2 text-nowrap border-bottom border-dark fs-5 flex-grow-1">${reportData.recommended_machine}</span>
+                    <span class="mx-2 text-nowrap fs-5 ">Client Chosen Machine: </span>
+                    <span class="mx-2 text-nowrap border-bottom border-dark fs-5 flex-grow-1">${reportData.client_chosen_machine}</span>
                 </div>`
-            :
-            `<div class="row gx-0 my-2">
-                    <div class="col-6 d-flex align-items-center">
-                        <span class="mx-2 fs-5">Referred By: </span>
-                        <span class="mx-2 border-bottom border-dark fs-5 flex-grow-1">${reportData.referred_by}</span>
-                    </div>
-                    <div class="col-6 d-flex align-items-center">
-                        <span class="mx-2 fs-5">Audiometer: </span>
-                        <span class="mx-2 border-bottom border-dark fs-5 flex-grow-1">${reportData.audiometer}</span>
-                    </div>
+                :
+                `
+                <div class="d-flex my-2 align-items-center">
+                    <span class="mx-2 text-nowrap fs-5">Referred By: </span>
+                    <span class="mx-2 text-nowrap border-bottom border-dark fs-5 flex-grow-1">${reportData.referred_by}</span>
+                    <span class="mx-2 text-nowrap fs-5">Audiometer: </span>
+                    <span class="mx-2 text-nowrap border-bottom border-dark fs-5 flex-grow-1">${reportData.audiometer}</span>
                 </div>`
-        }
+            }
+
             <div class="d-flex my-2 align-items-center">
-                <span class="mx-2 fs-5">Date: </span>
-                <span class="mx-2 flex-grow-1 border-bottom border-dark fs-5">${moment.unix(reportData.date._seconds).format("DD-MM-YYYY")}</span>
+                <span class="mx-2 text-nowrap fs-5">Date: </span>
+                <span class="mx-2 text-nowrap flex-grow-1 border-bottom border-dark fs-5">${moment.unix(reportData.date._seconds).format("DD-MM-YYYY")}</span>
             </div>
+
             ${!reportData.trial_mode ?
-            `<div class="my-2">
-                    <span class="mx-2 fs-5">Complaint: </span>
-                    <span class="mx-2 flex-grow-1 border-bottom border-dark fs-5">${reportData.complaint}</span>
+                `<div class="d-flex my-2">
+                    <span class="mx-2 text-nowrap fs-5">Complaint: </span>
+                    <span class="mx-2 text-nowrap flex-grow-1 border-bottom border-dark fs-5">${reportData.complaint}</span>
                 </div>` : ""
-        }
+            }
 
             <div class="d-flex text-center" style="gap:10px;">
                 <div class="flex-grow-1">
@@ -255,10 +251,6 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                         <span style="color:blue;">PTA (LT EAR) </span> =
                         <span class="border-bottom border-dark">${ac_lhl_data.unit} db</span>
                     </div>
-                    <div style="margin:15px 0;">
-                        <span>Degree of Hearing Loss: </span>
-                        <span class="p-2 rounded" style="background-color:${ac_lhl_data.color}">${ac_lhl_data.text}</span>
-                    </div>
                 </div>
                 <div class="flex-grow-1">
                     <h2 style="color:red; margin:0;">Right</h2>
@@ -266,10 +258,6 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                     <div>
                         <span style="color:red;">PTA (RT EAR) </span> =
                         <span class="border-bottom border-dark">${ac_rhl_data.unit} db</span>
-                    </div>
-                    <div style="margin:15px 0;">
-                        <span>Degree of Hearing Loss: </span>
-                        <span class="p-2 rounded" style="background-color:${ac_rhl_data.color}">${ac_rhl_data.text}</span>
                     </div>
                 </div>
                 <div>
@@ -291,9 +279,9 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
             </div>
 
             ${!reportData.trial_mode ?
-            `<div class="d-flex align-items-center gap-3">
+            `<div class="d-flex align-items-center gap-3 my-2">
                     <div class="d-flex flex-wrap mb-1 align-items-center">
-                        <span class="mx-2 fs-5">Tuning Fork: </span>
+                        <span class="fs-5">Tuning Fork: </span>
                         <span class="mx-2 border-bottom border-dark fs-5">${reportData.tuning_fork}</span>
                     </div>
                     <div class="flex-grow-1">
@@ -319,22 +307,23 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                 <div class="my-3 d-flex align-items-center">
                     <span class="fs-5">Provisional Diagnosis: </span>
                     <div class="">
-                        <div class="mx-2 border-bottom border-dark fs-5"><span class="fst-italic" style="color:blue;">Lt.</span> ${reportData.provisional_diagnosis.left}</div>
-                        <div class="mx-2 border-bottom border-dark fs-5"><span class="fst-italic" style="color:red;">Rt.</span> ${reportData.provisional_diagnosis.right}</div>
+                        <div class="mx-2 border-bottom border-dark fs-5 text-nowrap"><span class="fst-italic" style="color:blue;">Lt.</span> ${reportData.provisional_diagnosis.left}</div>
+                        <div class="mx-2 border-bottom border-dark fs-5 text-nowrap"><span class="fst-italic" style="color:red;">Rt.</span> ${reportData.provisional_diagnosis.right}</div>
                     </div>
                 </div>
                 <div class="my-3">
-                    <span class="mx-2 fs-5">Recommendations: </span>
+                    <span class="fs-5">Recommendations: </span>
                     <span class="mx-2 flex-grow-1 border-bottom border-dark fs-5">${reportData.recommendations.map((x, i) => `<span style="color:blue;">${i + 1}.</span> ${x}`).join(", ")}</span>
                 </div>` : ""
         }
 
             ${!reportData.trial_mode ?
             `<div class="my-2 ms-auto d-flex flex-column" style="width:max-content; margin-right: 6rem" >
-                    <diV class="text-center"><img src=${signature} alt="doctor_signature" height="40"></div>
+                    ${signature ? `<div class="text-center"><img src=${signature} alt="doctor_signature" height="40"></div>` : ""}
                     <span>Clinical Audiologist <br> & Speech Therapist </span>
                 </div>` : ""
         }
+
             ${reportData.trial_mode ?
             `<div class="my-5">
                     <span>Disclaimer :: </span>
@@ -342,8 +331,8 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                 </div>` : ""
         }
 
-            <div class="position-absolute w-100" style="bottom:-110px;">
-                <hr>
+            <div class="position-absolute w-100" style="bottom:-110px; border-top:solid 1px black;">
+                <div>Branches: ${branchList.filter(x=> x.id != reportData.branch_id).map(x=>x.branch_name).join(", ")}</div>
                 <div class="text-center" >Copyright © 2024 Happy Ears Kolkata</div>
             </div>
         </div>
