@@ -66,7 +66,7 @@ const designParticulars = (discount_amount,line_items,accessory_items) => {
 
 const printInvoice = (patient_name, patient_address, contact_number, branch_name, branch_id, invoice_number, date, mode_of_payment, discount_amount, line_items, accessory_items, headerVisible, branchList) => {
 
-    let header_image = "/happy_ears_invoice_header_" + branch_name + ".png"
+    let header_image = "/happy_ears_invoice_header_" + branch_name.toLowerCase() + ".png"
 
     let toWords = new ToWords()
     let html = `
