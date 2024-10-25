@@ -108,7 +108,7 @@ const Audiometry = () => {
 
     const [tuningFork, setTuningFork] = useState(null)
     const [rinne, setRinne] = useState({ left: null, right: null })
-    const [weber, setWeber] = useState({ left: null, right: null })
+    const [weber, setWeber] = useState(null)
     const [selectedDoctor, setSelectedDoctor] = useState(null)
 
     const [provisionalDiagnosis, setProvisionalDiagnosis] = useState({ left: "", right: "" })
@@ -240,10 +240,6 @@ const Audiometry = () => {
             Swal.fire('Oops!!', 'Age cannot be empty', 'warning');
             return false
         }
-        if (patientAddress === "") {
-            Swal.fire('Oops!!', 'Patient address cannot be empty', 'warning');
-            return false
-        }
 
         if (trialMode) {
             if (recommendedMachine === "") {
@@ -274,8 +270,8 @@ const Audiometry = () => {
                 Swal.fire('Oops!!', 'Select values for All Rinne fields', 'warning');
                 return false
             }
-            if ((weber.left === null) || (weber.right === null)) {
-                Swal.fire('Oops!!', 'Select values for All Weber fields', 'warning');
+            if (weber === null) {
+                Swal.fire('Oops!!', 'Weber cannot be empty', 'warning');
                 return false
             }
 
@@ -384,7 +380,7 @@ const Audiometry = () => {
 
         setTuningFork(null)
         setRinne({ left: null, right: null })
-        setWeber({ left: null, right: null })
+        setWeber(null)
         setSelectedDoctor(null)
 
         setProvisionalDiagnosis({ left: "", right: "" })
@@ -663,7 +659,7 @@ const Audiometry = () => {
                                             <div className="row">
                                                 <div className="col-6">
                                                     <div className="form-group">
-                                                        <label className="form-label my-1 required" htmlFor="patientAddress">Patient Address</label>
+                                                        <label className="form-label my-1" htmlFor="patientAddress">Patient Address</label>
                                                         <textarea id="patientAddress" rows={3} className="form-control" value={patientAddress} onChange={(e) => { setPatientAddress(e.target.value) }} />
                                                     </div>
                                                 </div>
@@ -729,7 +725,6 @@ const Audiometry = () => {
                                                                     value={tuningFork === null ? null : { label: tuningFork, value: tuningFork }}
                                                                     onChange={(val) => { setTuningFork(val.value) }}
                                                                     styles={dropDownStyle}
-                                                                    className="flex-grow-1"
                                                                     placeholder="Select Tuning Fork..."
                                                                 />
                                                             </div>
@@ -742,7 +737,6 @@ const Audiometry = () => {
                                                                     value={rinne.left === null ? null : { label: rinne.left, value: rinne.left }}
                                                                     onChange={(val) => { setRinne({ ...rinne, left: val.value }) }}
                                                                     styles={dropDownStyle}
-                                                                    className="flex-grow-1"
                                                                     placeholder="Select..."
                                                                 />
                                                             </div>
@@ -755,7 +749,6 @@ const Audiometry = () => {
                                                                     value={rinne.right === null ? null : { label: rinne.right, value: rinne.right }}
                                                                     onChange={(val) => { setRinne({ ...rinne, right: val.value }) }}
                                                                     styles={dropDownStyle}
-                                                                    className="flex-grow-1"
                                                                     placeholder="Select..."
                                                                 />
                                                             </div>
@@ -763,7 +756,7 @@ const Audiometry = () => {
                                                     </div>
 
                                                     <div className="row">
-                                                        <div className="col-4">
+                                                        <div className="col-6">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1">Doctor</label>
                                                                 <Select
@@ -777,28 +770,14 @@ const Audiometry = () => {
                                                                 />
                                                             </div>
                                                         </div>
-                                                        <div className="col-4">
+                                                        <div className="col-6">
                                                             <div className="form-group">
-                                                                <label className="form-label my-1 required">Weber (Left)</label>
+                                                                <label className="form-label my-1 required">Weber</label>
                                                                 <Select
                                                                     options={["Left", "Center", "Right"].map(x => ({ label: x, value: x }))}
-                                                                    value={weber.left === null ? null : { label: weber.left, value: weber.left }}
-                                                                    onChange={(val) => { setWeber({ ...weber, left: val.value }) }}
+                                                                    value={weber === null ? null : { label: weber, value: weber }}
+                                                                    onChange={(val) => { setWeber(val.value) }}
                                                                     styles={dropDownStyle}
-                                                                    className="flex-grow-1"
-                                                                    placeholder="Select..."
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        <div className="col-4">
-                                                            <div className="form-group">
-                                                                <label className="form-label my-1 required">Weber (Right)</label>
-                                                                <Select
-                                                                    options={["Left", "Center", "Right"].map(x => ({ label: x, value: x }))}
-                                                                    value={weber.right === null ? null : { label: weber.right, value: weber.right }}
-                                                                    onChange={(val) => { setWeber({ ...weber, right: val.value }) }}
-                                                                    styles={dropDownStyle}
-                                                                    className="flex-grow-1"
                                                                     placeholder="Select..."
                                                                 />
                                                             </div>

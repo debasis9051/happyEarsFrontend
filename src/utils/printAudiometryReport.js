@@ -107,12 +107,20 @@ const setupChart = (ctx) => {
     ctx.stroke();
 
     //drawing colored sections in chart
+    // let temp = [
+    //     { range: 20, color: "#b8eeaa" },
+    //     { range: 40, color: "#d5eaae" },
+    //     { range: 70, color: "#e9d1af" },
+    //     { range: 90, color: "#f5d6da" },
+    //     { range: 120, color: "#f6a2b3" }
+    // ];
+
     let temp = [
-        { range: 20, color: "#b8eeaa" },
-        { range: 40, color: "#d5eaae" },
-        { range: 70, color: "#e9d1af" },
-        { range: 90, color: "#f5d6da" },
-        { range: 120, color: "#f6a2b3" }
+        { range: 20, color: "#d3f4c7" },
+        { range: 40, color: "#e4f3b7" },
+        { range: 70, color: "#f0e2b8" },
+        { range: 90, color: "#f8d7db" },
+        { range: 120, color: "#f8b7c1" } 
     ];
 
     let y1 = 60
@@ -298,28 +306,27 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                             </tr>
                             <tr>
                                 <td><span class="fw-bold">Weber</span></td>
-                                <td>${reportData.weber.left}</td>
-                                <td>${reportData.weber.right}</td>
+                                <td colspan="2">${reportData.weber}</td>
                             </tr>
                         </table>
                     </div>
                 </div>
                 <div class="my-3 d-flex align-items-center">
                     <span class="fs-5">Provisional Diagnosis: </span>
-                    <div class="">
-                        <div class="mx-2 border-bottom border-dark fs-5 text-nowrap"><span class="fst-italic" style="color:blue;">Lt.</span> ${reportData.provisional_diagnosis.left}</div>
-                        <div class="mx-2 border-bottom border-dark fs-5 text-nowrap"><span class="fst-italic" style="color:red;">Rt.</span> ${reportData.provisional_diagnosis.right}</div>
+                    <div class="w-100">
+                        <div class="mx-2 border-bottom border-dark fs-5 text-nowrap" style="color:red;"><span class="fst-italic">Rt.</span> ${reportData.provisional_diagnosis.right}</div>
+                        <div class="mx-2 border-bottom border-dark fs-5 text-nowrap" style="color:blue;"><span class="fst-italic">Lt.</span> ${reportData.provisional_diagnosis.left}</div>
                     </div>
                 </div>
                 <div class="my-3">
                     <span class="fs-5">Recommendations: </span>
-                    <span class="mx-2 flex-grow-1 border-bottom border-dark fs-5">${reportData.recommendations.map((x, i) => `<span style="color:blue;">${i + 1}.</span> ${x}`).join(", ")}</span>
+                    <span class="mx-2 fs-5">${reportData.recommendations.map((x, i) => `<div class="border-bottom border-dark"><span style="color:blue;">${i + 1}. </span>${x}</div>`).join("")}</span>
                 </div>` : ""
         }
 
             ${!reportData.trial_mode ?
             `<div class="my-2 ms-auto d-flex flex-column" style="width:max-content; margin-right: 6rem" >
-                    ${signature ? `<div class="text-center"><img src=${signature} alt="doctor_signature" height="40"></div>` : ""}
+                    ${signature ? `<div class="text-center"><img src=${signature} alt="doctor_signature" height="40"></div>` : `<div style="height:40px;"></div>`}
                     <span>Clinical Audiologist <br> & Speech Therapist </span>
                 </div>` : ""
         }
@@ -334,7 +341,7 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
             <div class="position-absolute w-100" style="bottom:-110px; border-top:solid 1px black;">
                 <div class="d-flex">Branches:
                     <div class="d-flex justify-content-around flex-grow-1">
-                        ${branchList.filter(x=> x.id !== reportData.branch_id).map(x=>`<span>
+                        ${branchList.filter(x=> x.id !== reportData.branch_id && x.branch_name !== "Ranikuthi").map(x=>`<span>
                             <svg width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/></svg>
                             ${x.branch_name}
                         </span>`).join("")}
