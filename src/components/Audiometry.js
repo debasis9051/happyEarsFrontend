@@ -55,9 +55,10 @@ const calculateHearingLoss = (frequencyData) => {
     let color = "#000000"
     let text = ""
 
-    if (unit <= 20) { color = "#b8eeaa"; text = "Normal Hearing"; }
-    else if (unit <= 40) { color = "#d5eaae"; text = "Mild Hearing loss"; }
-    else if (unit <= 70) { color = "#e9d1af"; text = "Moderate Hearing loss"; }
+    if (unit <= 25) { color = "#b8eeaa"; text = "Normal Hearing"; }
+    else if (unit <= 45) { color = "#d5eaae"; text = "Mild Hearing loss"; }
+    else if (unit <= 55) { color = "#e9d1af"; text = "Moderate Hearing loss"; }
+    else if (unit <= 70) { color = "#f3b2a1"; text = "Moderately-severe Hearing loss"; }
     else if (unit <= 90) { color = "#f5d6da"; text = "Severe Hearing loss"; }
     else { color = "#f6a2b3"; text = "Profound Hearing loss"; }
 
@@ -160,8 +161,8 @@ const Audiometry = () => {
         }
     }, [branchList])
 
-    const getDoctorSignature = (doctor_id) => {
-        return axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-doctor-signature`, { doctor_id: doctor_id, current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
+    const getDoctorDetails = (doctor_id) => {
+        return axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-doctor-details`, { doctor_id: doctor_id, current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
             .then((res) => {
                 if (res.data.operation === "success") {
                     return res.data.info
@@ -493,9 +494,9 @@ const Audiometry = () => {
 
                                                                                         if (h !== null) {
                                                                                             if (!x.trial_mode && x.doctor_id) {
-                                                                                                getDoctorSignature(x.doctor_id)
-                                                                                                .then((signature) => {
-                                                                                                    printAudiometryReport(x, calculateHearingLoss, h, signature, branchList)
+                                                                                                getDoctorDetails(x.doctor_id)
+                                                                                                .then((doctor_details) => {
+                                                                                                    printAudiometryReport(x, calculateHearingLoss, h, doctor_details, branchList)
                                                                                                 })
                                                                                             }
                                                                                             else {
@@ -851,7 +852,7 @@ const Audiometry = () => {
 
 const AudiogramInput = ({ ptaData, setPtaData, hearingLossRatingPanel = true }) => {
     return (
-        <div className="border border-5 border-primary rounded-5 px-5 d-inline-block">
+        <div className="border border-5 border-primary rounded-5 px-4 d-inline-block">
             <div className="d-flex justify-content-center">
                 <div className="px-1" style={{ fontSize: "smaller", writingMode: "tb", textOrientation: "upright" }}>frequency</div>
                 <div className="py-3">
@@ -915,7 +916,7 @@ const AudiogramInput = ({ ptaData, setPtaData, hearingLossRatingPanel = true }) 
                         return (
                             <div>
                                 <span className="mx-3 fw-bold">LHL - {Math.round(unit * 1000) / 1000}</span>
-                                <span className="fw-bold p-2 rounded text-black" style={{ backgroundColor: color }}>{text}</span>
+                                <span className="fw-bold p-2 rounded text-black text-nowrap" style={{ backgroundColor: color }}>{text}</span>
                             </div>
                         )
                     })()

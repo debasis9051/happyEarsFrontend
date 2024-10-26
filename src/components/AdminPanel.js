@@ -4,6 +4,7 @@ import Swal from "sweetalert2"
 import Dropzone from 'react-dropzone'
 import { Accordion } from 'react-bootstrap';
 import { Helmet } from "react-helmet-async";
+import Select from "react-select"
 
 import { useFirebase } from "../contexts/firebase-context";
 import AuthWrapper from "./AuthWrapper";
@@ -29,6 +30,7 @@ const AdminPanel = () => {
     const [branchApiState, setBranchApiState] = useState(false)
 
     const [doctorName, setDoctorName] = useState("")
+    const [selectedDoctorQualification, setSelectedDoctorQualification] = useState(null)
     const [doctorRegistrationNumber, setDoctorRegistrationNumber] = useState("")
     const [doctorSignatureFile, setDoctorSignatureFile] = useState(null)
     const [doctorSignatureImage, setDoctorSignatureImage] = useState(null)
@@ -40,6 +42,21 @@ const AdminPanel = () => {
     const [selectedUser, setSelectedUser] = useState(null)
     const [selectedUserAccess, setSelectedUserAccess] = useState(defaultAccess)
     const [accessApiState, setAccessApiState] = useState(false)
+
+    const dropDownStyle = {
+        option: (styles) => {
+            return {
+                ...styles,
+                color: 'black'
+            };
+        },
+        menu: (styles) => {
+            return {
+                ...styles,
+                minWidth: "max-content"
+            };
+        }
+    }
 
     useEffect(() => {
         if (currentUserInfo !== null) {
@@ -175,11 +192,21 @@ const AdminPanel = () => {
                         <div className="card my-1" style={{ backgroundColor: "tomato" }}>
                             <div className="card-body">
                                 <div className="row g-0 align-items-end">
-                                    <div className="col-md-6 p-1">
+                                    <div className="col-md-4 p-1">
                                         <label className="required form-label my-1 text-black" htmlFor="doctorName">Enter Doctor Name</label>
                                         <input type="text" id="doctorName" className="form-control" value={doctorName} onChange={(e) => { setDoctorName(e.target.value) }} />
                                     </div>
-                                    <div className="col-md-6 p-1">
+                                    <div className="col-md-4 p-1">
+                                        <label className="required form-label my-1 text-black">Enter Doctor Qualification</label>
+                                        <Select
+                                            options={["MASLP","BASLP"].map(x => ({ label: x, value: x }))}
+                                            value={selectedDoctorQualification? {label: selectedDoctorQualification, value: selectedDoctorQualification}: null}
+                                            onChange={(val) => { setSelectedDoctorQualification(val.value); }}
+                                            styles={dropDownStyle}
+                                            placeholder="Select a Qualification..."
+                                        />
+                                    </div>
+                                    <div className="col-md-4 p-1">
                                         <label className="required form-label my-1 text-black" htmlFor="doctorRegistrationNumber">Enter Doctor Registration Number</label>
                                         <input type="text" id="doctorRegistrationNumber" className="form-control" value={doctorRegistrationNumber} onChange={(e) => { setDoctorRegistrationNumber(e.target.value.trim()) }} />
                                     </div>
@@ -219,13 +246,14 @@ const AdminPanel = () => {
                                     </div>
                                     <div className="col-md-2 p-1">
                                         <button className="btn mx-2 text-white" style={{ backgroundColor: "brown" }} disabled={doctorApiState} onClick={() => {
-                                            if (!doctorName || !doctorRegistrationNumber || !doctorSignatureFile) {
+                                            if (!doctorName || !selectedDoctorQualification || !doctorRegistrationNumber || !doctorSignatureFile) {
                                                 Swal.fire("Oops", "Enter all Doctor details", "warning")
                                                 return
                                             }
 
                                             let data = new FormData()
                                             data.append("doctor_name", doctorName.trim())
+                                            data.append("doctor_qualification", selectedDoctorQualification)
                                             data.append("doctor_registration_number", doctorRegistrationNumber)
                                             data.append("doctor_signature_file", doctorSignatureFile)
                                             data.append("current_user_uid", currentUserInfo.uid)
@@ -241,6 +269,7 @@ const AdminPanel = () => {
                                                         Swal.fire('Success!', res.data.message, 'success');
 
                                                         setDoctorName("")
+                                                        setSelectedDoctorQualification(null)
                                                         setDoctorRegistrationNumber("")
                                                         setDoctorSignatureFile(null)
                                                         setDoctorSignatureImage(null)

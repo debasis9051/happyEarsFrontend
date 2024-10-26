@@ -200,7 +200,7 @@ const drawChartData = (ctx, ptaData, lineType, lineColor, marker) => {
     })
 }
 
-const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, signature, branchList) => {
+const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, doctor_details, branchList) => {
 
     let header_image = "/happy_ears_invoice_header_" + branchList.find(x=>x.id===reportData.branch_id).branch_name.toLowerCase() + ".png"
 
@@ -311,23 +311,25 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
                         </table>
                     </div>
                 </div>
-                <div class="my-3 d-flex align-items-center">
+                <div class="my-1 d-flex align-items-center">
                     <span class="fs-5">Provisional Diagnosis: </span>
                     <div class="w-100">
                         <div class="mx-2 border-bottom border-dark fs-5 text-nowrap" style="color:red;"><span class="fst-italic">Rt.</span> ${reportData.provisional_diagnosis.right}</div>
                         <div class="mx-2 border-bottom border-dark fs-5 text-nowrap" style="color:blue;"><span class="fst-italic">Lt.</span> ${reportData.provisional_diagnosis.left}</div>
                     </div>
                 </div>
-                <div class="my-3">
+                <div class="my-1">
                     <span class="fs-5">Recommendations: </span>
                     <span class="mx-2 fs-5">${reportData.recommendations.map((x, i) => `<div class="border-bottom border-dark"><span style="color:blue;">${i + 1}. </span>${x}</div>`).join("")}</span>
                 </div>` : ""
         }
 
             ${!reportData.trial_mode ?
-            `<div class="my-2 ms-auto d-flex flex-column" style="width:max-content; margin-right: 6rem" >
-                    ${signature ? `<div class="text-center"><img src=${signature} alt="doctor_signature" height="40"></div>` : `<div style="height:40px;"></div>`}
-                    <span>Clinical Audiologist <br> & Speech Therapist </span>
+            `<div class="ms-auto d-flex flex-column align-items-center" style="width:max-content; margin-right: 6rem" >
+                    ${doctor_details? `<div class="text-center"><img src=${doctor_details.doctor_signature} alt="doctor_signature" height="60"></div>` : `<div style="height:60px;"></div>`}
+                    <span style="font-size:smaller;">Clinical Audiologist & Speech Therapist </span>
+                    ${doctor_details? `<span style="font-size:smaller;">${doctor_details.doctor_qualification}</span>`: ""} 
+                    ${doctor_details? `<span style="font-size:smaller;">RCI Reg No.: ${doctor_details.doctor_registration_number}</span>`: ""} 
                 </div>` : ""
         }
 
