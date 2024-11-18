@@ -203,6 +203,22 @@ const ConfigurePatientsModal = ({ configurePatientModalShow, setConfigurePatient
             Swal.fire('Oops!!', 'Patient name cannot be empty', 'warning');
             return false
         }
+        if (!contactNumber) {
+            Swal.fire('Oops!!', 'Patient name cannot be empty', 'warning');
+            return false
+        }
+        if (!patientAddress) {
+            Swal.fire('Oops!!', 'Patient name cannot be empty', 'warning');
+            return false
+        }
+        if (!age) {
+            Swal.fire('Oops!!', 'Patient name cannot be empty', 'warning');
+            return false
+        }
+        if (!sex) {
+            Swal.fire('Oops!!', 'Patient name cannot be empty', 'warning');
+            return false
+        }
         if (!mapCoordinates.latitude || !mapCoordinates.longitude) {
             Swal.fire('Oops!!', 'Patient address location cannot be empty', 'warning');
             return false
