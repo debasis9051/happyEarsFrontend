@@ -1,8 +1,6 @@
 import axios from "axios";
 import Swal from "sweetalert2"
 
-//make common get api structure
-
 const getProductList = async (currentUserInfo, svRef) => {
     axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-product-list`, { current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
         .then((res) => {

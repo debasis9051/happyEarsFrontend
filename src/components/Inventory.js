@@ -368,7 +368,7 @@ const Inventory = () => {
 
                             <button className="btn btn-success ms-auto me-2" onClick={() => { setConfigureProductModalShow(true); setConfigureProductModalMode("ADD"); }}>+ Add</button>
                             <button className="btn btn-info mx-2" onClick={() => { setImportProductModalShow(true) }}>Import</button>
-                            <button className="btn btn-info mx-2" onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); console.log("exporting products"); }}>Export</button>
+                            {/* <button className="btn btn-info mx-2" onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); console.log("exporting products"); }}>Export</button> */}
                         </div>
 
                         <table className="table table-hover m-auto align-middle" style={{ width: "97%" }}>

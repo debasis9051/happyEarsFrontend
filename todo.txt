@@ -1,37 +1,64 @@
 Todo:
 
-1. all tables major update - implement pagination logic 
+make proper patient entity with verifications
+test a previous patient
+modify audiometry add/edit form
+link all previous audiometry reports to their newly created patient entities
+modify invoice add/edit form
+link all previous invoice reports to their newly created patient entities
+
+sales report update for incentives calculation
 
 
 
 
-
-
-HAPPY EARS PROJECT - structure
+HAPPY EARS PROJECT
 Frontend using React.js, Bootstrap 5
 Backend using Node.js
 Authentication, Database(including files) using Firebase
 
+
 frontend routes:
-1. navbar including sign in feature
+1. navbar including sign in/sign out feature
+
 2. "/" - Homepage with big buttons to redirect to other pages
+
 3. "/audiometry" - Audiometry chart page - features: chart generation
+        features:
+        i. add audiometry report - trial or not
+
+        options per report:
+        i. edit report - not all fields are editable
+        ii. generate invoice against audiometry
+        iii. print report
+
 4. "/inventory" - Inventory Management page
-        features:-
-        i. view all products
-        ii. add new single product with add button
-        iii. add new products with import button
-        iv. export all products data with export button --- NOT DONE
-        v. transfer product button to transfer to a different branch
-        vi. return product button to mark product as returned
-        vii. edit action button to modify details
-5. "/generate-invoice" - Invoice generation page with form - features: save and print
+        features:
+        i. add new product(s) with add/import button
+
+        options per product:
+        i. edit action button to modify details
+        ii. transfer product button to transfer to a different branch
+        iii. return product button to mark product as returned
+        iv. view product logs
+        
+5. "/generate-invoice" - Invoice generation page with form
+        features: 
+        i. save and print
+        
 6. "/sales-report" - List of all invoice records
         features:-
         i. export all invoices data with export button --- NOT DONE
-        ii. print action button
-        iii. edit action button 
+        ii. edit invoice button - not all fields are editable 
+        iii. print action button
+        
 7. "/admin-panel" - Admin Panel for additional features and to execute custom scripts
+        features:-
+        i. add salesperson
+        ii. add branch
+        iii. add doctor
+        iv. modify page access permissions of all users
+        v. run custom script
 
 
 database collections:
@@ -42,6 +69,8 @@ database collections:
 5. branches - each document representing one branch with basic information
 6. audiometry - each document representing one audiomtry report against a patient with patient information and remarks
 7. doctor - each document representing a doctor entity with their respective details and signature file
+8. patients - each document representing a patient entity with their name and location
+9. salesperson - each document representing a salesperson entity with their name only
 
 
 
