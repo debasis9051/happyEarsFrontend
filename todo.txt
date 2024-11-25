@@ -1,10 +1,5 @@
 Todo:
 
-add patient modal
-
-modify invoice add/edit form
-link all previous invoice reports to their newly created patient entities
-
 sales report update for incentives calculation
 
 

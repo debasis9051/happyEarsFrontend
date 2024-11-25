@@ -239,10 +239,10 @@ const ConfigurePatientsModal = ({ configurePatientModalShow, currentUserInfo, ap
             Swal.fire('Oops!!', 'Patient number cannot be empty', 'warning');
             return false
         }
-        // if (!age) {
-        //     Swal.fire('Oops!!', 'Age cannot be empty', 'warning');
-        //     return false
-        // }
+        if (!age) {
+            Swal.fire('Oops!!', 'Age cannot be empty', 'warning');
+            return false
+        }
         if (!sex) {
             Swal.fire('Oops!!', 'Sex cannot be empty', 'warning');
             return false
