@@ -200,7 +200,7 @@ const drawChartData = (ctx, ptaData, lineType, lineColor, marker) => {
     })
 }
 
-const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, doctor_details, branchList) => {
+const printAudiometryReport = (reportData, patientDetails, calculateHearingLoss, headerVisible, doctor_details, branchList) => {
 
     let header_image = "/happy_ears_invoice_header_" + branchList.find(x=>x.id===reportData.branch_id).branch_name.toLowerCase() + ".png"
 
@@ -217,9 +217,9 @@ const printAudiometryReport = (reportData, calculateHearingLoss, headerVisible, 
             <h2 class="text-center text-decoration-underline text-uppercase m-2" style="color:navy;">${reportData.trial_mode ? "Audiogram Hearing Aid Trial" : "Pure Tone Audiogram"} </h2>
             <div class="d-flex my-2 align-items-center">
                 <span class="mx-2 text-nowrap fs-5" style="flex:2;">Patient Name : </span>
-                <span class="mx-2 text-nowrap border-bottom border-dark fs-5" style="flex:7;" >${reportData.patient_name}</span>
+                <span class="mx-2 text-nowrap border-bottom border-dark fs-5" style="flex:7;" >${patientDetails.patient_name}</span>
                 <span class="mx-2 text-nowrap fs-5" style="flex:1;">Age/Sex :</span>
-                <span class="mx-2 text-nowrap border-bottom border-dark fs-5" style="flex:1;" >${reportData.age}/${reportData.sex[0].toUpperCase()}</span>
+                <span class="mx-2 text-nowrap border-bottom border-dark fs-5" style="flex:1;" >${patientDetails.age}/${patientDetails.sex[0].toUpperCase()}</span>
             </div>
 
             ${reportData.trial_mode ?

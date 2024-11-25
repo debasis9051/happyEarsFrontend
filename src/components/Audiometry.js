@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import { Dropdown, Tab, Tabs, FormCheck } from "react-bootstrap"
 import axios from "axios";
 import Swal from "sweetalert2"
 import moment from "moment"
-import Select from "react-select"
+import Select, { components } from "react-select"
 import { Helmet } from "react-helmet-async";
 
 import { useFirebase } from "../contexts/firebase-context";
-import { getAudiometryList, getBranchList, getDoctorList } from "../utils/getApis"
+import { getAudiometryList, getBranchList, getDoctorList, getPatientList } from "../utils/getApis"
 import AuthWrapper from "./AuthWrapper";
 import { printAudiometryReport } from "../utils/printAudiometryReport"
+import { ConfigurePatientsModal } from "./Patients";
 
 const acConfig = [
     { frequency: 250, min: -10, max: 120 },
@@ -73,6 +74,7 @@ const Audiometry = () => {
     const [branchList, setBranchList] = useState([])
     const [audiometryList, setAudiometryList] = useState([])
     const [doctorList, setDoctorList] = useState([])
+    const [patientList, setPatientList] = useState([])
 
     const [currentPage, setCurrentPage] = useState(0)
     const [searchBarState, setSearchBarState] = useState(false)
@@ -85,12 +87,9 @@ const Audiometry = () => {
     const [trialMode, setTrialMode] = useState(true)
 
     const [selectedBranch, setSelectedBranch] = useState(null)
-    const [patientName, setPatientName] = useState("")
-    const [patientAddress, setPatientAddress] = useState("")
-    const [contactNumber, setContactNumber] = useState("")
     const [date, setDate] = useState(moment().format("YYYY-MM-DD"))
-    const [age, setAge] = useState("")
-    const [sex, setSex] = useState("male")
+
+    const [selectedPatient, setSelectedPatient] = useState(null)
 
     const [recommendedMachine, setRecommendedMachine] = useState("")
     const [clientChosenMachine, setClientChosenMachine] = useState("")
@@ -113,22 +112,27 @@ const Audiometry = () => {
     const [selectedDoctor, setSelectedDoctor] = useState(null)
 
     const [provisionalDiagnosis, setProvisionalDiagnosis] = useState({ left: "", right: "" })
-    const [recommendations, setRecommendations] = useState(["Aural Hygiene","Follow Up","Refer Back to Ent.","Hearing Aid Trial and Fitting"])
+    const [recommendations, setRecommendations] = useState(["Aural Hygiene", "Follow Up", "Refer Back to Ent.", "Hearing Aid Trial and Fitting"])
 
     const [isAudiometryReportApiLoading, setIsAudiometryReportApiLoading] = useState(false)
 
+    const [configurePatientModalShow, setConfigurePatientModalShow] = useState(false)
 
-    const filteredAudiometryList = branchFilter ? audiometryList.filter(x => x.branch_id === branchFilter.value).filter(x => {
-        if (searchBarState && searchValue !== "") {
-            if (((new RegExp(searchValue, "gi")).test(x.patient_name)) || ((new RegExp(searchValue, "gi")).test(x.contact_number))) {
+
+    const filteredAudiometryList = useMemo(() => {
+        return branchFilter ? audiometryList.filter(x => x.branch_id === branchFilter.value).filter(x => {
+            let pd = patientList.find(p => p.id === x.patient_id)
+            if (searchBarState && searchValue !== "") {
+                if (((new RegExp(searchValue, "gi")).test(pd.patient_name)) || ((new RegExp(searchValue, "gi")).test(pd.contact_number))) {
+                    return true
+                }
+                return false
+            }
+            else {
                 return true
             }
-            return false
-        }
-        else {
-            return true
-        }
-    }) : []
+        }) : []
+    }, [branchFilter, searchBarState, searchValue, audiometryList, patientList])
 
     const dropDownStyle = {
         option: (styles) => {
@@ -151,6 +155,7 @@ const Audiometry = () => {
             getBranchList(currentUserInfo, setBranchList)
             getAudiometryList(currentUserInfo, setAudiometryList)
             getDoctorList(currentUserInfo, setDoctorList)
+            getPatientList(currentUserInfo, setPatientList)
         }
     }, [currentUserInfo])
 
@@ -183,12 +188,9 @@ const Audiometry = () => {
         setTrialMode(audiometry_report_data.trial_mode)
 
         setSelectedBranch({ label: branchList.find(x => x.id === audiometry_report_data.branch_id).branch_name, value: audiometry_report_data.branch_id })
-        setPatientName(audiometry_report_data.patient_name)
-        setPatientAddress(audiometry_report_data.patient_address)
-        setContactNumber(audiometry_report_data.contact_number)
         setDate(moment.unix(audiometry_report_data.date._seconds).format("YYYY-MM-DD"))
-        setAge(audiometry_report_data.age)
-        setSex(audiometry_report_data.sex)
+
+        setSelectedPatient({ label: patientList.find(x => x.id === audiometry_report_data.patient_id).patient_name, value: audiometry_report_data.patient_id })
 
         setAcLeftEarPta(audiometry_report_data.ac_left_ear_pta)
         setAcRightEarPta(audiometry_report_data.ac_right_ear_pta)
@@ -225,20 +227,12 @@ const Audiometry = () => {
             Swal.fire('Oops!!', 'Select a Branch', 'warning');
             return false
         }
-        if (patientName === "") {
-            Swal.fire('Oops!!', 'Patient name cannot be empty', 'warning');
-            return false
-        }
-        if (contactNumber === "") {
-            Swal.fire('Oops!!', 'Contact Number cannot be empty', 'warning');
-            return false
-        }
         if (date === "") {
             Swal.fire('Oops!!', 'Date cannot be empty', 'warning');
             return false
         }
-        if (age === "") {
-            Swal.fire('Oops!!', 'Age cannot be empty', 'warning');
+        if (selectedPatient === null) {
+            Swal.fire('Oops!!', 'Select a Patient', 'warning');
             return false
         }
 
@@ -290,12 +284,9 @@ const Audiometry = () => {
             trial_mode: trialMode,
 
             branch_id: selectedBranch.value,
-            patient_name: patientName,
-            contact_number: contactNumber,
             date: date,
-            age: age,
-            sex: sex,
-            patient_address: patientAddress,
+
+            patient_id: selectedPatient.value,
 
             recommended_machine: trialMode ? recommendedMachine : null,
             client_chosen_machine: trialMode ? clientChosenMachine : null,
@@ -357,12 +348,9 @@ const Audiometry = () => {
 
     const clearAudiometryForm = () => {
         setSelectedBranch(null)
-        setPatientName("")
-        setPatientAddress("")
-        setContactNumber("")
         setDate(moment().format("YYYY-MM-DD"))
-        setAge("")
-        setSex("male")
+
+        setSelectedPatient(null)
 
         setRecommendedMachine("")
         setClientChosenMachine("")
@@ -385,7 +373,7 @@ const Audiometry = () => {
         setSelectedDoctor(null)
 
         setProvisionalDiagnosis({ left: "", right: "" })
-        setRecommendations(["Aural Hygiene","Follow Up","Refer Back to Ent.","Hearing Aid Trial and Fitting"])
+        setRecommendations(["Aural Hygiene", "Follow Up", "Refer Back to Ent.", "Hearing Aid Trial and Fitting"])
     }
 
     let tp = Math.ceil(filteredAudiometryList.length / 10)
@@ -460,13 +448,15 @@ const Audiometry = () => {
                                         </thead>
                                         <tbody>
                                             {
-                                                filteredAudiometryList.length === 0 ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No audiometry reports added</td></tr> :
+                                                !patientList.length || !filteredAudiometryList.length ? <tr><td colSpan={7} className="fs-4 text-center text-secondary">No audiometry reports added</td></tr> :
                                                     filteredAudiometryList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
+                                                        let patientDetails = patientList.find(p => p.id === x.patient_id)
+
                                                         return (
                                                             <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>
                                                                 <td>{(currentPage * 10) + i + 1}</td>
-                                                                <td>{x.patient_name}</td>
-                                                                <td>{x.contact_number}</td>
+                                                                <td>{patientDetails.patient_name}</td>
+                                                                <td>{patientDetails.contact_number}</td>
                                                                 <td>{calculateHearingLoss(x.ac_left_ear_pta.data).unit}</td>
                                                                 <td>{calculateHearingLoss(x.ac_right_ear_pta.data).unit}</td>
                                                                 <td>{moment.unix(x.created_at._seconds).format("lll")}</td>
@@ -495,12 +485,12 @@ const Audiometry = () => {
                                                                                         if (h !== null) {
                                                                                             if (!x.trial_mode && x.doctor_id) {
                                                                                                 getDoctorDetails(x.doctor_id)
-                                                                                                .then((doctor_details) => {
-                                                                                                    printAudiometryReport(x, calculateHearingLoss, h, doctor_details, branchList)
-                                                                                                })
+                                                                                                    .then((doctor_details) => {
+                                                                                                        printAudiometryReport(x, patientDetails, calculateHearingLoss, h, doctor_details, branchList)
+                                                                                                    })
                                                                                             }
                                                                                             else {
-                                                                                                printAudiometryReport(x, calculateHearingLoss, h, null, branchList)
+                                                                                                printAudiometryReport(x, patientDetails, calculateHearingLoss, h, null, branchList)
                                                                                             }
                                                                                         }
                                                                                     });
@@ -579,39 +569,31 @@ const Audiometry = () => {
                                                 </div>
                                                 <div className="col-4">
                                                     <div className="form-group">
-                                                        <label className="form-label my-1 required" htmlFor="patientName">Patient Name</label>
-                                                        <input type="text" id="patientName" className="form-control" value={patientName} onChange={(e) => { setPatientName(e.target.value) }} />
-                                                    </div>
-                                                </div>
-                                                <div className="col-4">
-                                                    <div className="form-group">
-                                                        <label className="form-label my-1 required" htmlFor="contactNumber">Contact Number</label>
-                                                        <input type="text" id="contactNumber" className="form-control" value={contactNumber} onChange={(e) => { setContactNumber(e.target.value) }} />
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="row">
-                                                <div className="col-4">
-                                                    <div className="form-group">
                                                         <label className="form-label my-1 required" htmlFor="date">Date</label>
                                                         <input type="date" id="date" className="form-control" value={date} onChange={(e) => { setDate(e.target.value) }} />
                                                     </div>
                                                 </div>
                                                 <div className="col-4">
                                                     <div className="form-group">
-                                                        <label className="form-label my-1 required" htmlFor="age">Age</label>
-                                                        <input type="text" id="age" className="form-control" value={age} onChange={(e) => { setAge(e.target.value) }} />
-                                                    </div>
-                                                </div>
-                                                <div className="col-4">
-                                                    <div className="form-group">
-                                                        <label className="form-label my-1 required">Sex</label>
-                                                        <div className="d-flex gap-2 text-white">
-                                                            <div className={`p-2 flex-grow-1 text-center rounded ${sex === "male" ? "bg-primary" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setSex("male") }}>Male</div>
-                                                            <div className={`p-2 flex-grow-1 text-center rounded ${sex === "female" ? "bg-primary" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setSex("female") }}>Female</div>
-                                                            <div className={`p-2 flex-grow-1 text-center rounded ${sex === "others" ? "bg-primary" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setSex("others") }}>Others</div>
-                                                        </div>
+                                                        <label className="form-label my-1 required">Patient</label>
+                                                        <Select
+                                                            options={patientList.map(x => ({ label: x.patient_name, value: x.id }))}
+                                                            value={selectedPatient}
+                                                            onChange={(val) => { setSelectedPatient(val); }}
+                                                            isDisabled={audiometryReportMode === "update"}
+                                                            styles={dropDownStyle}
+                                                            placeholder="Select a Patient..."
+                                                            components={{
+                                                                Menu: ({ children, ...props }) => (
+                                                                    <components.Menu {...props}>
+                                                                        {children}
+                                                                        <div className="text-center p-2">
+                                                                            <button className="btn btn-success" onClick={() => { setConfigurePatientModalShow(true) }}>+ Add Patient</button>
+                                                                        </div>
+                                                                    </components.Menu>
+                                                                )
+                                                            }}
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
@@ -658,22 +640,16 @@ const Audiometry = () => {
                                             </div>
 
                                             <div className="row">
-                                                <div className="col-6">
-                                                    <div className="form-group">
-                                                        <label className="form-label my-1" htmlFor="patientAddress">Patient Address</label>
-                                                        <textarea id="patientAddress" rows={3} className="form-control" value={patientAddress} onChange={(e) => { setPatientAddress(e.target.value) }} />
-                                                    </div>
-                                                </div>
                                                 {
                                                     trialMode ?
-                                                        <div className="col-6">
+                                                        <div className="col-12">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1" htmlFor="remarks">Remarks</label>
                                                                 <textarea id="remarks" rows={3} className="form-control" value={remarks} onChange={(e) => { setRemarks(e.target.value) }} />
                                                             </div>
                                                         </div>
                                                         :
-                                                        <div className="col-6">
+                                                        <div className="col-12">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required" htmlFor="complaint">Complaint</label>
                                                                 <textarea id="complaint" rows={3} maxLength={150} className="form-control" value={complaint} onChange={(e) => { setComplaint(e.target.value) }} />
@@ -846,6 +822,14 @@ const Audiometry = () => {
                     </>
                 </AuthWrapper>
             </div>
+
+            <ConfigurePatientsModal
+                configurePatientModalShow={configurePatientModalShow}
+                currentUserInfo={currentUserInfo}
+                apiEndCallback={(responseData) => { getPatientList(currentUserInfo, setPatientList); setSelectedPatient({label: responseData.patient_name, value: responseData.patient_id}); }}
+                modalCloseCallback={() => { setConfigurePatientModalShow(false); }}
+                patientData={null}
+            />
         </>
     )
 }

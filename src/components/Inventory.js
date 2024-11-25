@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import { Modal, Button, Dropdown } from "react-bootstrap"
 import Select from "react-select"
 import axios from "axios";
@@ -56,18 +56,21 @@ const Inventory = () => {
     const [productLogHistoryModalShow, setProductLogHistoryModalShow] = useState(false)
     const [productLogHistoryData, setProductLogHistoryData] = useState([])
     const [isProductLogHistoryApiLoading, setIsProductLogHistoryApiLoading] = useState(false)
+    
 
-    const filteredProductList = branchFilter ? productList.filter(x => x.branch_id === branchFilter.value).filter(x => {
-        if (searchBarState && searchValue !== "") {
-            if (((new RegExp(searchValue, "gi")).test(x.manufacturer_name)) || ((new RegExp(searchValue, "gi")).test(x.product_name)) || ((new RegExp(searchValue, "gi")).test(x.serial_number))) {
+    const filteredProductList = useMemo(() => {
+        return branchFilter ? productList.filter(x => x.branch_id === branchFilter.value).filter(x => {
+            if (searchBarState && searchValue !== "") {
+                if (((new RegExp(searchValue, "gi")).test(x.manufacturer_name)) || ((new RegExp(searchValue, "gi")).test(x.product_name)) || ((new RegExp(searchValue, "gi")).test(x.serial_number))) {
+                    return true
+                }
+                return false
+            }
+            else {
                 return true
             }
-            return false
-        }
-        else {
-            return true
-        }
-    }) : []
+        }) : []
+    }, [branchFilter, searchBarState, searchValue, productList]) 
 
     const dropDownStyle = {
         option: (styles) => {
@@ -386,7 +389,7 @@ const Inventory = () => {
                             </thead>
                             <tbody>
                                 {
-                                    filteredProductList.length === 0 ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No products added</td></tr> :
+                                    !filteredProductList.length ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No products added</td></tr> :
                                         filteredProductList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
                                             return (
                                                 <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>

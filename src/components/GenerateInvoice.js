@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react"
 import moment from "moment"
-import Select from "react-select"
+import Select, { components } from "react-select"
 import Swal from "sweetalert2"
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 
 import { useFirebase } from "../contexts/firebase-context";
-import { getProductList, getBranchList, getSalespersonList } from "../utils/getApis"
+import { getProductList, getBranchList, getSalespersonList, getPatientList } from "../utils/getApis"
 import { printInvoice } from "../utils/printInvoice"
 import AuthWrapper from "./AuthWrapper";
 import NewFeatureModal from "./NewFeatureModal";
+import { ConfigurePatientsModal } from "./Patients";
 
 
 const GenerateInvoice = () => {
@@ -22,13 +23,12 @@ const GenerateInvoice = () => {
     const [branchList, setBranchList] = useState([])
     const [salespersonList, setSalespersonList] = useState([])
     const [productList, setProductList] = useState([])
+    const [patientList, setPatientList] = useState([])
 
-    const [patientName, setPatientName] = useState("")
-    const [patientAddress, setPatientAddress] = useState("")
-    const [contactNumber, setContactNumber] = useState("")
     const [selectedBranch, setSelectedBranch] = useState(null)
-    const [invoiceNumber, setInvoiceNumber] = useState("")
     const [date, setDate] = useState(moment().format("YYYY-MM-DD"))
+    const [selectedPatient, setSelectedPatient] = useState(null)
+    const [invoiceNumber, setInvoiceNumber] = useState("")
     const [selectedModeOfPayment, setSelectedModeOfPayment] = useState({ label: "Cash", value: "Cash" })
     const [selectedSalesperson, setSelectedSalesperson] = useState(null)
     const [discountAmount, setDiscountAmount] = useState(0)
@@ -38,6 +38,8 @@ const GenerateInvoice = () => {
 
     const [isSaveApiLoading, setIsSaveApiLoading] = useState(false)
     const [isInvoiceSaved, setIsInvoiceSaved] = useState(false)
+
+    const [configurePatientModalShow, setConfigurePatientModalShow] = useState(false)
 
 
     const filteredProductList = selectedBranch ? productList.filter(x => x.instock).filter(x => x.branch_id === selectedBranch.value) : []
@@ -78,55 +80,60 @@ const GenerateInvoice = () => {
             getBranchList(currentUserInfo, setBranchList)
             getSalespersonList(currentUserInfo, setSalespersonList)
             getProductList(currentUserInfo, setProductList)
+            getPatientList(currentUserInfo, setPatientList)
         }
     }, [currentUserInfo])
 
     useEffect(() => {
-        if (currentUserInfo && audiometryId) {
-            axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-audiometry-report-by-id`, { audiometry_report_id: audiometryId, current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
-                .then((res) => {
-                    if (res.data.operation === "success") {
-                        // console.log(res.data);
-                        setPatientName(res.data.info.patient_name)
-                        setContactNumber(res.data.info.contact_number)
-                        setPatientAddress(res.data.info.patient_address)
+        if (!currentUserInfo || !audiometryId || !patientList.length) return;
+
+        const fetchData = async () => {
+            try {
+                // Fetch audiometry report
+                const audiometryResponse = await axios.post(
+                    `${process.env.REACT_APP_BACKEND_ORIGIN}/get-audiometry-report-by-id`,
+                    {
+                        audiometry_report_id: audiometryId,
+                        current_user_uid: currentUserInfo.uid,
+                        current_user_name: currentUserInfo.displayName,
+                    },
+                    {
+                        headers: { 'Content-Type': 'application/json' },
                     }
-                    else {
-                        Swal.fire('Oops!', res.data.message, 'error');
-                        navigate("/generate-invoice")
-                    }
-                })
-                .catch((err) => {
-                    console.log(err)
-                    Swal.fire('Error!!', err.message, 'error');
-                })
-        }
-    }, [currentUserInfo, audiometryId, navigate])
+                );
+
+                if (audiometryResponse.data.operation === "success") {
+                    setSelectedPatient({ label: patientList.find(p => p.id === audiometryResponse.data.info.patient_id).patient_name, value: audiometryResponse.data.info.patient_id })
+                } else {
+                    Swal.fire('Oops!', audiometryResponse.data.message, 'error');
+                    navigate("/generate-invoice");
+                    return;
+                }
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Error!!', error.message, 'error');
+            }
+        };
+
+        fetchData();
+    }, [currentUserInfo, audiometryId, patientList, navigate])
 
 
     const verifyInvoice = () => {
-        if (patientName === "") {
-            Swal.fire('Oops!!', 'Patient name cannot be empty', 'warning');
-            return false
-        }
-        if (patientAddress === "") {
-            Swal.fire('Oops!!', 'Patient address cannot be empty', 'warning');
-            return false
-        }
-        if (contactNumber === "") {
-            Swal.fire('Oops!!', 'Contact Number cannot be empty', 'warning');
-            return false
-        }
         if (selectedBranch === null) {
             Swal.fire('Oops!!', 'Select a Branch', 'warning');
             return false
         }
-        if (invoiceNumber === "") {
-            Swal.fire('Oops!!', 'Invoice Number cannot be empty', 'warning');
-            return false
-        }
         if (date === "") {
             Swal.fire('Oops!!', 'Date cannot be empty', 'warning');
+            return false
+        }
+        if (selectedPatient === null) {
+            Swal.fire('Oops!!', 'Select a Patient', 'warning');
+            return false
+        }
+        if (invoiceNumber === "") {
+            Swal.fire('Oops!!', 'Invoice Number cannot be empty', 'warning');
             return false
         }
         if (selectedSalesperson === null) {
@@ -162,12 +169,10 @@ const GenerateInvoice = () => {
     const saveInvoice = () => {
 
         let data = {
-            patient_name: patientName,
-            patient_address: patientAddress,
-            contact_number: contactNumber,
             branch_id: selectedBranch.value,
-            invoice_number: invoiceNumber,
             date: date,
+            patient_id: selectedPatient.value,
+            invoice_number: invoiceNumber,
             mode_of_payment: selectedModeOfPayment.value,
             salesperson_id: selectedSalesperson.value,
             discount_amount: discountAmount,
@@ -220,29 +225,7 @@ const GenerateInvoice = () => {
                 <AuthWrapper page={"generate_invoice"}>
                     <div className="mx-5">
                         <div className="row">
-                            <div className="col-md-6">
-                                <div className="form-group">
-                                    <label className="form-label my-1 required" htmlFor="patientName">Patient Name</label>
-                                    <input type="text" id="patientName" className="form-control" value={patientName} onChange={(e) => { setPatientName(e.target.value) }} />
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div className="form-group">
-                                    <label className="form-label my-1 required" htmlFor="contactNumber">Contact Number</label>
-                                    <input type="text" id="contactNumber" className="form-control" value={contactNumber} onChange={(e) => { setContactNumber(e.target.value) }} />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="row">
-                            <div className="col-md-12">
-                                <div className="form-group">
-                                    <label className="form-label my-1 required" htmlFor="patientAddress">Patient Address</label>
-                                    <textarea id="patientAddress" rows={3} className="form-control" value={patientAddress} onChange={(e) => { setPatientAddress(e.target.value) }} />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="row">
-                            <div className="col-md-6">
+                            <div className="col-md-4">
                                 <div className="form-group">
                                     <label className="form-label my-1 required">Branch</label>
                                     <Select
@@ -254,14 +237,6 @@ const GenerateInvoice = () => {
                                     />
                                 </div>
                             </div>
-                            <div className="col-md-6">
-                                <div className="form-group">
-                                    <label className="form-label my-1 required" htmlFor="invoiceNumber">Invoice Number</label>
-                                    <input type="text" id="invoiceNumber" className="form-control" value={invoiceNumber} onChange={(e) => { setInvoiceNumber(e.target.value) }} />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="row">
                             <div className="col-md-4">
                                 <div className="form-group">
                                     <label className="form-label my-1 required" htmlFor="date">Date</label>
@@ -278,6 +253,36 @@ const GenerateInvoice = () => {
                                             }
                                         }}
                                     />
+                                </div>
+                            </div>
+                            <div className="col-md-4">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required">Patient</label>
+                                    <Select
+                                        options={patientList.map(x => ({ label: x.patient_name, value: x.id }))}
+                                        value={selectedPatient}
+                                        onChange={(val) => { setSelectedPatient(val); }}
+                                        styles={dropDownStyle}
+                                        placeholder="Select a Patient..."
+                                        components={{
+                                            Menu: ({ children, ...props }) => (
+                                                <components.Menu {...props}>
+                                                    {children}
+                                                    <div className="text-center p-2">
+                                                        <button className="btn btn-success" onClick={() => { setConfigurePatientModalShow(true) }}>+ Add Patient</button>
+                                                    </div>
+                                                </components.Menu>
+                                            )
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="row">
+                            <div className="col-md-4">
+                                <div className="form-group">
+                                    <label className="form-label my-1 required" htmlFor="invoiceNumber">Invoice Number</label>
+                                    <input type="text" id="invoiceNumber" className="form-control" value={invoiceNumber} onChange={(e) => { setInvoiceNumber(e.target.value) }} />
                                 </div>
                             </div>
                             <div className="col-md-4">
@@ -540,6 +545,8 @@ const GenerateInvoice = () => {
                                             let h = result.isConfirmed ? true : result.isDenied ? false : null
 
                                             if (h !== null) {
+                                                let patientDetails = patientList.find(p => p.id === selectedPatient.value)
+
                                                 if (!isInvoiceSaved) {
                                                     Swal.fire({
                                                         title: "This Invoice is not saved yet. Are you sure?",
@@ -547,12 +554,12 @@ const GenerateInvoice = () => {
                                                         confirmButtonText: "Print",
                                                     }).then((result) => {
                                                         if (result.isConfirmed) {
-                                                            printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, selectedBranch.value, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, h, branchList)
+                                                            printInvoice(patientDetails, selectedBranch.label, selectedBranch.value, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, h, branchList)
                                                         }
                                                     });
                                                 }
                                                 else {
-                                                    printInvoice(patientName, patientAddress, contactNumber, selectedBranch.label, selectedBranch.value, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, h, branchList)
+                                                    printInvoice(patientDetails, selectedBranch.label, selectedBranch.value, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, h, branchList)
                                                 }
                                             }
                                         });
@@ -563,8 +570,17 @@ const GenerateInvoice = () => {
                     </div>
                 </AuthWrapper>
 
-                <NewFeatureModal />
             </div>
+
+            <ConfigurePatientsModal
+                configurePatientModalShow={configurePatientModalShow}
+                currentUserInfo={currentUserInfo}
+                apiEndCallback={(responseData) => { getPatientList(currentUserInfo, setPatientList); setSelectedPatient({ label: responseData.patient_name, value: responseData.patient_id }); }}
+                modalCloseCallback={() => { setConfigurePatientModalShow(false); }}
+                patientData={null}
+            />
+
+            <NewFeatureModal />
         </>
     )
 }

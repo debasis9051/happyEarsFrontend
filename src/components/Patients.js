@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import { Modal, Button, Dropdown } from "react-bootstrap"
 import Swal from "sweetalert2"
 import axios from "axios";
@@ -25,17 +25,19 @@ const Patients = () => {
     const [patientData, setPatientData] = useState(null)
 
 
-    const filteredPatientList = patientList.filter(x => {
-        if (searchBarState && searchValue !== "") {
-            if (((new RegExp(searchValue, "gi")).test(x.patient_name))) {
+    const filteredPatientList = useMemo(() => {
+        return patientList.filter(x => {
+            if (searchBarState && searchValue !== "") {
+                if (((new RegExp(searchValue, "gi")).test(x.patient_name))) {
+                    return true
+                }
+                return false
+            }
+            else {
                 return true
             }
-            return false
-        }
-        else {
-            return true
-        }
-    })
+        })
+    }, [searchBarState, searchValue, patientList])
 
     useEffect(() => {
         if (currentUserInfo !== null) {
@@ -81,19 +83,27 @@ const Patients = () => {
                             <thead>
                                 <tr className="table-dark">
                                     <th scope="col">Sl. No.</th>
+                                    <th scope="col">Patient Number</th>
                                     <th scope="col">Patient Name</th>
+                                    <th scope="col">Contact Number</th>
+                                    <th scope="col">Age</th>
+                                    <th scope="col">Sex</th>
                                     <th scope="col">Notes</th>
                                     <th scope="col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {
-                                    filteredPatientList.length === 0 ? <tr><td colSpan={4} className="fs-4 text-center text-secondary">No patients added</td></tr> :
+                                    !filteredPatientList.length ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No patients added</td></tr> :
                                         filteredPatientList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
                                             return (
                                                 <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>
                                                     <td>{(currentPage * 10) + i + 1}</td>
+                                                    <td>{x.patient_number}</td>
                                                     <td>{x.patient_name}</td>
+                                                    <td>{x.contact_number}</td>
+                                                    <td>{x.age}</td>
+                                                    <td>{x.sex}</td>
                                                     <td>
                                                         <button className="btn btn-info" onClick={() => { Swal.fire("Notes", x.notes || "N/A", "info") }}>
                                                             <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
@@ -162,40 +172,58 @@ const Patients = () => {
 
             <ConfigurePatientsModal
                 configurePatientModalShow={configurePatientModalShow}
-                setConfigurePatientModalShow={setConfigurePatientModalShow}
                 currentUserInfo={currentUserInfo}
-                apiEndCallback={() => { getPatientList(currentUserInfo, setPatientList) }}
+                apiEndCallback={() => { getPatientList(currentUserInfo, setPatientList); }}
+                modalCloseCallback={() => { setConfigurePatientModalShow(false); setPatientData(null); }}
                 patientData={patientData}
             />
         </>
     )
 }
 
-const ConfigurePatientsModal = ({ configurePatientModalShow, setConfigurePatientModalShow, currentUserInfo, apiEndCallback, patientData }) => {
+const ConfigurePatientsModal = ({ configurePatientModalShow, currentUserInfo, apiEndCallback, modalCloseCallback, patientData }) => {
     const [patientId, setPatientId] = useState(null)
     const [patientName, setPatientName] = useState("")
     const [contactNumber, setContactNumber] = useState("")
-    const [patientAddress, setPatientAddress] = useState("")
+    const [patientNumber, setPatientNumber] = useState("")
     const [age, setAge] = useState("")
     const [sex, setSex] = useState("male")
+    const [patientAddress, setPatientAddress] = useState("")
     const [notes, setNotes] = useState("")
     const [mapCoordinates, setMapCoordinates] = useState({ latitude: "", longitude: "" })
     const [isGeolocationLoading, setIsGeolocationLoading] = useState(false)
     const [isSaveApiLoading, setIsSaveApiLoading] = useState(false)
 
     useEffect(() => {
-        if(patientData){
+        if (patientData) {
             setPatientId(patientData.id)
             setPatientName(patientData.patient_name)
             setContactNumber(patientData.contact_number)
-            setPatientAddress(patientData.patient_address)
+            setPatientNumber(patientData.patient_number)
             setAge(patientData.age)
             setSex(patientData.sex)
+            setPatientAddress(patientData.patient_address)
             setNotes(patientData.notes)
             setMapCoordinates(patientData.map_coordinates)
         }
-    }, [patientData])
-    
+
+        if (currentUserInfo && configurePatientModalShow && !patientData) {
+            axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-patient-number`, { current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
+                .then((res) => {
+                    if (res.data.operation === "success") {
+                        setPatientNumber(res.data.info)
+                    }
+                    else {
+                        Swal.fire('Oops!', res.data.message, 'error');
+                    }
+                })
+                .catch((err) => {
+                    console.log(err)
+                    Swal.fire('Error!!', err.message, 'error');
+                })
+        }
+    }, [patientData, currentUserInfo, configurePatientModalShow])
+
 
     const configurePatient = () => {
 
@@ -204,31 +232,37 @@ const ConfigurePatientsModal = ({ configurePatientModalShow, setConfigurePatient
             return false
         }
         if (!contactNumber) {
-            Swal.fire('Oops!!', 'Patient name cannot be empty', 'warning');
+            Swal.fire('Oops!!', 'Contact number cannot be empty', 'warning');
+            return false
+        }
+        if (!patientNumber) {
+            Swal.fire('Oops!!', 'Patient number cannot be empty', 'warning');
+            return false
+        }
+        // if (!age) {
+        //     Swal.fire('Oops!!', 'Age cannot be empty', 'warning');
+        //     return false
+        // }
+        if (!sex) {
+            Swal.fire('Oops!!', 'Sex cannot be empty', 'warning');
             return false
         }
         if (!patientAddress) {
-            Swal.fire('Oops!!', 'Patient name cannot be empty', 'warning');
-            return false
-        }
-        if (!age) {
-            Swal.fire('Oops!!', 'Patient name cannot be empty', 'warning');
-            return false
-        }
-        if (!sex) {
-            Swal.fire('Oops!!', 'Patient name cannot be empty', 'warning');
-            return false
-        }
-        if (!mapCoordinates.latitude || !mapCoordinates.longitude) {
-            Swal.fire('Oops!!', 'Patient address location cannot be empty', 'warning');
+            Swal.fire('Oops!!', 'Patient address cannot be empty', 'warning');
             return false
         }
 
         let data = {
             patient_id: patientId,
+
             patient_name: patientName,
-            map_coordinates: mapCoordinates,
+            contact_number: contactNumber,
+            patient_number: patientNumber,
+            age: age,
+            sex: sex,
+            patient_address: patientAddress,
             notes: notes,
+            map_coordinates: mapCoordinates,
 
             current_user_uid: currentUserInfo.uid,
             current_user_name: currentUserInfo.displayName
@@ -243,7 +277,7 @@ const ConfigurePatientsModal = ({ configurePatientModalShow, setConfigurePatient
                     Swal.fire('Success!', res.data.message, 'success');
                     handleConfigurePatientModalClose()
 
-                    apiEndCallback()
+                    apiEndCallback(res.data.info)
                 }
                 else {
                     Swal.fire('Oops!', res.data.message, 'error');
@@ -281,16 +315,17 @@ const ConfigurePatientsModal = ({ configurePatientModalShow, setConfigurePatient
     }
 
     const handleConfigurePatientModalClose = () => {
-        setConfigurePatientModalShow(false)
-
         setPatientId(null)
         setPatientName("")
         setContactNumber("")
-        setPatientAddress("")
+        setPatientNumber("")
         setAge("")
         setSex("male")
+        setPatientAddress("")
         setNotes("")
         setMapCoordinates({ latitude: "", longitude: "" })
+
+        modalCloseCallback()
     }
 
     return (
@@ -315,7 +350,13 @@ const ConfigurePatientsModal = ({ configurePatientModalShow, setConfigurePatient
                         </div>
                     </div>
                     <div className="row">
-                        <div className="col-md-6">
+                        <div className="col-md-3">
+                            <div className="form-group">
+                                <label className="form-label my-1 required" htmlFor="patientNumber">Patient No.</label>
+                                <input type="text" id="patientNumber" className="form-control" value={patientNumber} onChange={(e) => { setPatientNumber(e.target.value) }} placeholder="Enter PAT No." />
+                            </div>
+                        </div>
+                        <div className="col-md-3">
                             <div className="form-group">
                                 <label className="form-label my-1 required" htmlFor="age">Age</label>
                                 <input type="text" id="age" className="form-control" value={age} onChange={(e) => { setAge(e.target.value) }} placeholder="Enter age" />

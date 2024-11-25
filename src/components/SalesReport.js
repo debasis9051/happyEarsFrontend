@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import { Modal, Button, Dropdown } from "react-bootstrap"
 import Select from "react-select"
 import moment from "moment"
@@ -8,7 +8,7 @@ import { ResponsivePie } from '@nivo/pie'
 import { Helmet } from "react-helmet-async";
 
 import { useFirebase } from "../contexts/firebase-context";
-import { getInvoiceList, getBranchList, getSalespersonList } from "../utils/getApis"
+import { getInvoiceList, getBranchList, getSalespersonList, getPatientList } from "../utils/getApis"
 import { printInvoice } from "../utils/printInvoice"
 import AuthWrapper from "./AuthWrapper";
 import NewFeatureModal from "./NewFeatureModal"
@@ -19,6 +19,7 @@ const SalesReport = () => {
     const [branchList, setBranchList] = useState([])
     const [salespersonList, setSalespersonList] = useState([])
     const [invoiceList, setInvoiceList] = useState([])
+    const [patientList, setPatientList] = useState([])
 
     const [currentPage, setCurrentPage] = useState(0)
     const [searchBarState, setSearchBarState] = useState(false)
@@ -31,9 +32,6 @@ const SalesReport = () => {
 
     const [editInvoiceModalShow, setEditInvoiceModalShow] = useState(false)
     const [invoiceData, setInvoiceData] = useState(null)
-    const [patientName, setPatientName] = useState("")
-    const [patientAddress, setPatientAddress] = useState("")
-    const [contactNumber, setContactNumber] = useState("")
     const [date, setDate] = useState(moment().format("YYYY-MM-DD"))
     const [selectedModeOfPayment, setSelectedModeOfPayment] = useState({ label: "Cash", value: "Cash" })
     const [selectedSalesperson, setSelectedSalesperson] = useState(null)
@@ -42,17 +40,20 @@ const SalesReport = () => {
     const [isSaveApiLoading, setIsSaveApiLoading] = useState(false)
 
 
-    const filteredInvoiceList = branchFilter ? invoiceList.filter(x => x.branch_id === branchFilter.value).filter(x => salespersonFilter.value === "All" ? true : x.salesperson_id === salespersonFilter.value).filter(x => {
-        if (searchBarState && searchValue !== "") {
-            if (((new RegExp(searchValue, "gi")).test(x.patient_name)) || ((new RegExp(searchValue, "gi")).test(x.contact_number)) || ((new RegExp(searchValue, "gi")).test(x.invoice_number)) || ((new RegExp(searchValue, "gi")).test(x.mode_of_payment))) {
+    const filteredInvoiceList = useMemo(() => {
+        return branchFilter ? invoiceList.filter(x => x.branch_id === branchFilter.value).filter(x => salespersonFilter.value === "All" ? true : x.salesperson_id === salespersonFilter.value).filter(x => {
+            let pd = patientList.find(p => p.id === x.patient_id)
+            if (searchBarState && searchValue !== "") {
+                if (((new RegExp(searchValue, "gi")).test(pd.patient_name)) || ((new RegExp(searchValue, "gi")).test(pd.contact_number)) || ((new RegExp(searchValue, "gi")).test(x.invoice_number)) || ((new RegExp(searchValue, "gi")).test(x.mode_of_payment))) {
+                    return true
+                }
+                return false
+            }
+            else {
                 return true
             }
-            return false
-        }
-        else {
-            return true
-        }
-    }) : []
+        }) : []
+    }, [branchFilter, salespersonFilter, searchBarState, searchValue, invoiceList, patientList]) 
 
 
     const reportData = []
@@ -108,6 +109,7 @@ const SalesReport = () => {
             getBranchList(currentUserInfo, setBranchList)
             getSalespersonList(currentUserInfo, setSalespersonList)
             getInvoiceList(currentUserInfo, setInvoiceList)
+            getPatientList(currentUserInfo, setPatientList)
         }
     }, [currentUserInfo])
 
@@ -129,9 +131,6 @@ const SalesReport = () => {
         setEditInvoiceModalShow(true)
 
         setInvoiceData(invoice_data)
-        setPatientName(invoice_data.patient_name)
-        setPatientAddress(invoice_data.patient_address)
-        setContactNumber(invoice_data.contact_number)
         setDate(moment.unix(invoice_data.date._seconds).format("YYYY-MM-DD"))
         setSelectedModeOfPayment({ label: invoice_data.mode_of_payment, value: invoice_data.mode_of_payment })
         if (invoice_data.salesperson_id) {
@@ -144,18 +143,6 @@ const SalesReport = () => {
 
     const updateInvoice = () => {
 
-        if (patientName === "") {
-            Swal.fire('Oops!!', 'Patient name cannot be empty', 'warning');
-            return false
-        }
-        if (patientAddress === "") {
-            Swal.fire('Oops!!', 'Patient address cannot be empty', 'warning');
-            return false
-        }
-        if (contactNumber === "") {
-            Swal.fire('Oops!!', 'Contact Number cannot be empty', 'warning');
-            return false
-        }
         if (date === "") {
             Swal.fire('Oops!!', 'Date cannot be empty', 'warning');
             return false
@@ -177,9 +164,6 @@ const SalesReport = () => {
         }
 
         let data = {
-            patient_name: patientName,
-            patient_address: patientAddress,
-            contact_number: contactNumber,
             date: date,
             mode_of_payment: selectedModeOfPayment.value,
             salesperson_id: selectedSalesperson.value,
@@ -214,9 +198,6 @@ const SalesReport = () => {
         setEditInvoiceModalShow(false)
 
         setInvoiceData(null)
-        setPatientName("")
-        setPatientAddress("")
-        setContactNumber("")
         setDate(moment().format("YYYY-MM-DD"))
         setSelectedModeOfPayment({ label: "Cash", value: "Cash" })
         setSelectedSalesperson(null)
@@ -288,13 +269,15 @@ const SalesReport = () => {
                             </thead>
                             <tbody>
                                 {
-                                    filteredInvoiceList.length === 0 ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No invoices added</td></tr> :
+                                    !patientList.length || !filteredInvoiceList.length ? <tr><td colSpan={9} className="fs-4 text-center text-secondary">No invoices added</td></tr> :
                                         filteredInvoiceList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
+                                            let patientDetails = patientList.find(p => p.id === x.patient_id)
+
                                             return (
                                                 <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>
                                                     <td>{(currentPage * 10) + i + 1}</td>
-                                                    <td>{x.patient_name}</td>
-                                                    <td>{x.contact_number}</td>
+                                                    <td>{patientDetails.patient_name}</td>
+                                                    <td>{patientDetails.contact_number}</td>
                                                     <td>{x.invoice_number}</td>
                                                     <td>{(x.line_items.reduce((p, o) => p + o.product_rate, 0) - x.discount_amount) + x.accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)}</td>
                                                     <td>{x.mode_of_payment}</td>
@@ -321,7 +304,7 @@ const SalesReport = () => {
                                                                         let h = result.isConfirmed ? true : result.isDenied ? false : null
 
                                                                         if (h !== null) {
-                                                                            printInvoice(x.patient_name, x.patient_address, x.contact_number, branchList.find(b => b.id === x.branch_id).branch_name, x.branch_id, x.invoice_number, moment.unix(x.date._seconds).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items, h, branchList)
+                                                                            printInvoice(patientDetails, branchList.find(b => b.id === x.branch_id).branch_name, x.branch_id, x.invoice_number, moment.unix(x.date._seconds).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items, h, branchList)
                                                                         }
                                                                     });
                                                                 }} >Print</Dropdown.Item>
@@ -498,28 +481,6 @@ const SalesReport = () => {
                 </Modal.Header>
                 <Modal.Body>
                     <div className="container">
-                        <div className="row">
-                            <div className="col-md-6">
-                                <div className="form-group">
-                                    <label className="form-label my-1 required" htmlFor="patientName">Patient Name</label>
-                                    <input type="text" id="patientName" className="form-control" value={patientName} onChange={(e) => { setPatientName(e.target.value) }} />
-                                </div>
-                            </div>
-                            <div className="col-md-6">
-                                <div className="form-group">
-                                    <label className="form-label my-1 required" htmlFor="contactNumber">Contact Number</label>
-                                    <input type="text" id="contactNumber" className="form-control" value={contactNumber} onChange={(e) => { setContactNumber(e.target.value) }} />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="row">
-                            <div className="col-md-12">
-                                <div className="form-group">
-                                    <label className="form-label my-1 required" htmlFor="patientAddress">Patient Address</label>
-                                    <textarea id="patientAddress" rows={3} className="form-control" value={patientAddress} onChange={(e) => { setPatientAddress(e.target.value) }} />
-                                </div>
-                            </div>
-                        </div>
                         <div className="row">
                             <div className="col-md-6">
                                 <div className="form-group">

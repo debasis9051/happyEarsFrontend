@@ -1,9 +1,7 @@
 Todo:
 
-make proper patient entity with verifications
-test a previous patient
-modify audiometry add/edit form
-link all previous audiometry reports to their newly created patient entities
+add patient modal
+
 modify invoice add/edit form
 link all previous invoice reports to their newly created patient entities
 

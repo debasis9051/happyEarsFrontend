@@ -395,7 +395,7 @@ const AdminPanel = () => {
                                                 .then((res) => {
                                                     setScriptApiState(false)
                                                     console.log(res.data)
-
+                                                    
                                                     if (res.data.operation === "success") {
                                                         Swal.fire('Success!', res.data.message, 'success');
                                                     }
@@ -404,6 +404,7 @@ const AdminPanel = () => {
                                                     }
                                                 })
                                                 .catch((err) => {
+                                                    setScriptApiState(false)
                                                     console.log(err)
                                                     Swal.fire('Error!!', err.message, 'error');
                                                 })
