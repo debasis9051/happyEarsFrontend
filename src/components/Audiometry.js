@@ -811,7 +811,28 @@ const Audiometry = () => {
                                             }
                                         </div>
                                         <div className="card-footer rounded text-end">
-                                            <button className="btn btn-success mx-2" disabled={isAudiometryReportApiLoading} onClick={() => { !isAudiometryReportApiLoading && processAudiometryReport() }}> {isAudiometryReportApiLoading ? <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> : (audiometryReportMode === "add" ? "Submit" : "Update")} </button>
+                                            <button className="btn btn-success mx-2" disabled={isAudiometryReportApiLoading}
+                                                onClick={() => {
+                                                    if (isAudiometryReportApiLoading) return;
+
+                                                    Swal.fire({
+                                                        title: "Final Confirmation",
+                                                        text: `Are you sure? ${audiometryReportMode === "add" && !trialMode && !selectedDoctor ? "The Doctor has not been Selected" : ""}`,
+                                                        showCancelButton: true,
+                                                        confirmButtonText: "Print",
+                                                    }).then((result) => {
+                                                        if (result.isConfirmed) {
+                                                            processAudiometryReport()
+                                                        }
+                                                    });
+                                                }}
+                                            >
+                                                {
+                                                    isAudiometryReportApiLoading ?
+                                                        <div>Loading...<span className="spinner-border spinner-border-sm"></span></div> :
+                                                        (audiometryReportMode === "add" ? "Submit" : "Update")
+                                                }
+                                            </button>
                                             <button className="btn btn-danger mx-2" onClick={() => { handleAudiometryReportClose() }}>Close</button>
                                         </div>
                                     </div>
@@ -826,7 +847,7 @@ const Audiometry = () => {
             <ConfigurePatientsModal
                 configurePatientModalShow={configurePatientModalShow}
                 currentUserInfo={currentUserInfo}
-                apiEndCallback={(responseData) => { getPatientList(currentUserInfo, setPatientList); setSelectedPatient({label: responseData.patient_name, value: responseData.patient_id}); }}
+                apiEndCallback={(responseData) => { getPatientList(currentUserInfo, setPatientList); setSelectedPatient({ label: responseData.patient_name, value: responseData.patient_id }); }}
                 modalCloseCallback={() => { setConfigurePatientModalShow(false); }}
                 patientData={null}
             />
