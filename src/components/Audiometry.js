@@ -3,7 +3,7 @@ import { Dropdown, Tab, Tabs, FormCheck } from "react-bootstrap"
 import axios from "axios";
 import Swal from "sweetalert2"
 import moment from "moment"
-import Select, { components } from "react-select"
+import Select from "react-select"
 import { Helmet } from "react-helmet-async";
 
 import { useFirebase } from "../contexts/firebase-context";
@@ -573,8 +573,8 @@ const Audiometry = () => {
                                                         <input type="date" id="date" className="form-control" value={date} onChange={(e) => { setDate(e.target.value) }} />
                                                     </div>
                                                 </div>
-                                                <div className="col-4">
-                                                    <div className="form-group">
+                                                <div className="col-4 d-flex gap-2">
+                                                    <div className="form-group flex-grow-1">
                                                         <label className="form-label my-1 required">Patient</label>
                                                         <Select
                                                             options={patientList.map(x => ({ label: x.patient_name, value: x.id }))}
@@ -583,17 +583,14 @@ const Audiometry = () => {
                                                             isDisabled={audiometryReportMode === "update"}
                                                             styles={dropDownStyle}
                                                             placeholder="Select a Patient..."
-                                                            components={{
-                                                                Menu: ({ children, ...props }) => (
-                                                                    <components.Menu {...props}>
-                                                                        {children}
-                                                                        <div className="text-center p-2">
-                                                                            <button className="btn btn-success" onClick={() => { setConfigurePatientModalShow(true) }}>+ Add Patient</button>
-                                                                        </div>
-                                                                    </components.Menu>
-                                                                )
-                                                            }}
                                                         />
+                                                    </div>
+                                                    <div className="align-self-end">
+                                                        <button className="btn btn-success p-1" title="Add Patient" onClick={() => { setConfigurePatientModalShow(true) }}>
+                                                            <svg width="30" height="30" fill="currentColor" viewBox="0 0 16 16">
+                                                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                                            </svg>
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
