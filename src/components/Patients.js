@@ -7,6 +7,7 @@ import { Helmet } from "react-helmet-async";
 import { useFirebase } from "../contexts/firebase-context";
 import { getPatientList } from "../utils/getApis"
 import AuthWrapper from "./AuthWrapper";
+import { escapeRegex, formatPatientNumber } from "../utils/commonUtils";
 
 const viewLocation = ({ latitude, longitude }) => {
     window.open(`https://maps.google.com/?q=${latitude},${longitude}`)
@@ -27,8 +28,10 @@ const Patients = () => {
 
     const filteredPatientList = useMemo(() => {
         return patientList.filter(x => {
+            let reg = new RegExp(escapeRegex(searchValue), "gi")
+
             if (searchBarState && searchValue !== "") {
-                if (((new RegExp(searchValue, "gi")).test(x.patient_name))) {
+                if ((reg.test(x.patient_number)) || (reg.test(x.patient_name)) || (reg.test(x.contact_number))) {
                     return true
                 }
                 return false
@@ -99,7 +102,7 @@ const Patients = () => {
                                             return (
                                                 <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>
                                                     <td>{(currentPage * 10) + i + 1}</td>
-                                                    <td>{x.patient_number}</td>
+                                                    <td>{formatPatientNumber(x.patient_number)}</td>
                                                     <td>{x.patient_name}</td>
                                                     <td>{x.contact_number}</td>
                                                     <td>{x.age}</td>
@@ -185,7 +188,7 @@ const ConfigurePatientsModal = ({ configurePatientModalShow, currentUserInfo, ap
     const [patientId, setPatientId] = useState(null)
     const [patientName, setPatientName] = useState("")
     const [contactNumber, setContactNumber] = useState("")
-    const [patientNumber, setPatientNumber] = useState("")
+    const [patientNumber, setPatientNumber] = useState(0)
     const [age, setAge] = useState("")
     const [sex, setSex] = useState("male")
     const [patientAddress, setPatientAddress] = useState("")
@@ -236,7 +239,7 @@ const ConfigurePatientsModal = ({ configurePatientModalShow, currentUserInfo, ap
             return false
         }
         if (!patientNumber) {
-            Swal.fire('Oops!!', 'Patient number cannot be empty', 'warning');
+            Swal.fire('Oops!!', 'Patient number invalid', 'warning');
             return false
         }
         if (!age) {
@@ -318,7 +321,7 @@ const ConfigurePatientsModal = ({ configurePatientModalShow, currentUserInfo, ap
         setPatientId(null)
         setPatientName("")
         setContactNumber("")
-        setPatientNumber("")
+        setPatientNumber(0)
         setAge("")
         setSex("male")
         setPatientAddress("")
@@ -353,7 +356,10 @@ const ConfigurePatientsModal = ({ configurePatientModalShow, currentUserInfo, ap
                         <div className="col-md-3">
                             <div className="form-group">
                                 <label className="form-label my-1 required" htmlFor="patientNumber">Patient No.</label>
-                                <input type="text" id="patientNumber" className="form-control" value={patientNumber} onChange={(e) => { setPatientNumber(e.target.value) }} placeholder="Enter PAT No." />
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">PAT</span>
+                                    <input type="number" id="patientNumber" className="form-control" value={patientNumber.toString()} onChange={(e) => { setPatientNumber(e.target.value === "" ? 0 : parseInt(e.target.value)) }} placeholder="Enter PAT No." />
+                                </div>
                             </div>
                         </div>
                         <div className="col-md-3">

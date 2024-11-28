@@ -10,8 +10,9 @@ import { useFirebase } from "../contexts/firebase-context";
 import { getProductList, getBranchList, getSalespersonList, getPatientList } from "../utils/getApis"
 import { printInvoice } from "../utils/printInvoice"
 import AuthWrapper from "./AuthWrapper";
-import NewFeatureModal from "./NewFeatureModal";
+// import NewFeatureModal from "./NewFeatureModal";
 import { ConfigurePatientsModal } from "./Patients";
+import { dropDownStyle } from "../utils/commonUtils";
 
 
 const GenerateInvoice = () => {
@@ -44,20 +45,6 @@ const GenerateInvoice = () => {
 
     const filteredProductList = selectedBranch ? productList.filter(x => x.instock).filter(x => x.branch_id === selectedBranch.value) : []
 
-    const dropDownStyle = {
-        option: (styles) => {
-            return {
-                ...styles,
-                color: 'black'
-            };
-        },
-        menu: (styles) => {
-            return {
-                ...styles,
-                minWidth: "max-content"
-            };
-        }
-    }
 
     const getInvoiceNumber = (branch_id, date) => {
         axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-invoice-number`, { branch_id: branch_id, date: date, current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
@@ -577,7 +564,7 @@ const GenerateInvoice = () => {
                 patientData={null}
             />
 
-            <NewFeatureModal />
+            {/* <NewFeatureModal /> */}
         </>
     )
 }

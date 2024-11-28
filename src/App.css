@@ -104,6 +104,13 @@
     color: unset;
 }
 
+.heartbeat {
+    display: block;
+    
+    -webkit-animation: heartbeat 1.5s ease-in-out infinite both;
+    animation: heartbeat 1.5s ease-in-out infinite both;
+}
+
 .my-modal .modal-content {
     background: #F7F8F2;
     color: black;

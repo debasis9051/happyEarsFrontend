@@ -1,4 +1,5 @@
 import moment from "moment"
+import { formatPatientNumber } from "./commonUtils";
 
 const drawMarker = (ctx, x, y, marker, markerColor, arrowFlag) => {
     if (marker === "circle") {
@@ -218,6 +219,8 @@ const printAudiometryReport = (reportData, patientDetails, calculateHearingLoss,
             <div class="d-flex my-2 align-items-center">
                 <span class="mx-2 text-nowrap fs-5" style="flex:2;">Patient Name : </span>
                 <span class="mx-2 text-nowrap border-bottom border-dark fs-5" style="flex:7;" >${patientDetails.patient_name}</span>
+                <span class="mx-2 text-nowrap fs-5" style="flex:1;">Patient Number : </span>
+                <span class="mx-2 text-nowrap border-bottom border-dark fs-5" style="flex:1;" >${formatPatientNumber(patientDetails.patient_number)}</span>
                 <span class="mx-2 text-nowrap fs-5" style="flex:1;">Age/Sex :</span>
                 <span class="mx-2 text-nowrap border-bottom border-dark fs-5" style="flex:1;" >${patientDetails.age}/${patientDetails.sex[0].toUpperCase()}</span>
             </div>

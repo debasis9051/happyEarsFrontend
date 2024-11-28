@@ -1,4 +1,5 @@
 import { ToWords } from 'to-words';
+import { formatPatientNumber } from './commonUtils';
 
 const designParticulars = (discount_amount,line_items,accessory_items) => {
     let f = [[], [], [], [], [], [], []]
@@ -64,7 +65,7 @@ const designParticulars = (discount_amount,line_items,accessory_items) => {
     }).join("")
 }
 
-const printInvoice = ({patient_name, patient_address, contact_number}, branch_name, branch_id, invoice_number, date, mode_of_payment, discount_amount, line_items, accessory_items, headerVisible, branchList) => {
+const printInvoice = ({patient_name, patient_number, patient_address, contact_number}, branch_name, branch_id, invoice_number, date, mode_of_payment, discount_amount, line_items, accessory_items, headerVisible, branchList) => {
 
     let header_image = "/happy_ears_invoice_header_" + branch_name.toLowerCase() + ".png"
 
@@ -79,7 +80,10 @@ const printInvoice = ({patient_name, patient_address, contact_number}, branch_na
             
             <table class="table table-bordered border-dark" style="font-weight: bold; text-align:center;">
                 <tr>
-                    <td colspan="3">Customer Name: ${patient_name}</td>
+                    <td colspan="3">
+                        Customer Name: ${patient_name}<br>
+                        Patient Number: ${formatPatientNumber(patient_number)}
+                    </td>
                     <td colspan="4">Customer Address & Contact No.: <br>${patient_address}<br>PHONE: ${contact_number}</td>
                 </tr>
                 <tr>

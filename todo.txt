@@ -1,9 +1,9 @@
 Todo:
 
+update to basic firebase pagination
 sales report update for incentives calculation
 
-
-
+gap 244 245
 
 HAPPY EARS PROJECT
 Frontend using React.js, Bootstrap 5

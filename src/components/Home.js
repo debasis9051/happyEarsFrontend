@@ -13,7 +13,7 @@ const Home = () => {
                     <div className="container py-5">
                         <div className="d-flex flex-wrap gap-2">
                             <div className="my-1" style={{ flex: "2" }}>
-                                <PageButton permission={userAccess["audiometry"]} link={"/audiometry"} color="#3288bd" label="Audiometry" isNew />
+                                <PageButton permission={userAccess["audiometry"]} link={"/audiometry"} color="#3288bd" label="Audiometry" />
                             </div>
                             <div className="my-1" style={{ flex: "3" }}>
                                 <PageButton permission={userAccess["inventory"]} link={"/inventory"} color="#5e4fa2" label="Inventory Management" />
@@ -31,7 +31,7 @@ const Home = () => {
 
                         <div className="d-flex flex-wrap gap-2">
                             <div className="my-1" style={{ flex: "2" }}>
-                                <PageButton permission={userAccess["patients"]} link={"/patients"} color="#f46d43" label="Patients" />
+                                <PageButton permission={userAccess["patients"]} link={"/patients"} color="#f46d43" label="Patients" isNew/>
                             </div>
                             {
                                 userAccess["admin_panel"] &&

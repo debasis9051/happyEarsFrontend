@@ -11,6 +11,7 @@ import { getAudiometryList, getBranchList, getDoctorList, getPatientList } from 
 import AuthWrapper from "./AuthWrapper";
 import { printAudiometryReport } from "../utils/printAudiometryReport"
 import { ConfigurePatientsModal } from "./Patients";
+import { escapeRegex, dropDownStyle, formatPatientNumber } from "../utils/commonUtils";
 
 const acConfig = [
     { frequency: 250, min: -10, max: 120 },
@@ -28,7 +29,6 @@ const bcConfig = [
     { frequency: 2000, min: -10, max: 80 },
     { frequency: 4000, min: -10, max: 80 },
 ]
-
 
 const calculateHearingLoss = (frequencyData) => {
     let readings = frequencyData.reduce((p, o) => {
@@ -122,8 +122,10 @@ const Audiometry = () => {
     const filteredAudiometryList = useMemo(() => {
         return branchFilter ? audiometryList.filter(x => x.branch_id === branchFilter.value).filter(x => {
             let pd = patientList.find(p => p.id === x.patient_id)
+            let reg = new RegExp(escapeRegex(searchValue), "gi")
+
             if (searchBarState && searchValue !== "") {
-                if (((new RegExp(searchValue, "gi")).test(pd.patient_name)) || ((new RegExp(searchValue, "gi")).test(pd.contact_number))) {
+                if ((reg.test(pd.patient_number)) || (reg.test(pd.patient_name)) || (reg.test(pd.contact_number))) {
                     return true
                 }
                 return false
@@ -133,21 +135,6 @@ const Audiometry = () => {
             }
         }) : []
     }, [branchFilter, searchBarState, searchValue, audiometryList, patientList])
-
-    const dropDownStyle = {
-        option: (styles) => {
-            return {
-                ...styles,
-                color: 'black'
-            };
-        },
-        menu: (styles) => {
-            return {
-                ...styles,
-                minWidth: "max-content"
-            };
-        }
-    }
 
 
     useEffect(() => {
@@ -438,6 +425,7 @@ const Audiometry = () => {
                                         <thead>
                                             <tr className="table-dark">
                                                 <th scope="col">Sl. No.</th>
+                                                <th scope="col">Patient Number</th>
                                                 <th scope="col">Patient Name</th>
                                                 <th scope="col">Contact Number</th>
                                                 <th scope="col">LHL(db)</th>
@@ -448,13 +436,14 @@ const Audiometry = () => {
                                         </thead>
                                         <tbody>
                                             {
-                                                !patientList.length || !filteredAudiometryList.length ? <tr><td colSpan={7} className="fs-4 text-center text-secondary">No audiometry reports added</td></tr> :
+                                                !patientList.length || !filteredAudiometryList.length ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No audiometry reports added</td></tr> :
                                                     filteredAudiometryList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
                                                         let patientDetails = patientList.find(p => p.id === x.patient_id)
 
                                                         return (
                                                             <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>
                                                                 <td>{(currentPage * 10) + i + 1}</td>
+                                                                <td>{formatPatientNumber(patientDetails.patient_number)}</td>
                                                                 <td>{patientDetails.patient_name}</td>
                                                                 <td>{patientDetails.contact_number}</td>
                                                                 <td>{calculateHearingLoss(x.ac_left_ear_pta.data).unit}</td>
@@ -813,10 +802,9 @@ const Audiometry = () => {
                                                     if (isAudiometryReportApiLoading) return;
 
                                                     Swal.fire({
-                                                        title: "Final Confirmation",
-                                                        text: `Are you sure? ${audiometryReportMode === "add" && !trialMode && !selectedDoctor ? "The Doctor has not been Selected" : ""}`,
+                                                        title: `Are you sure? ${audiometryReportMode === "add" && !trialMode && !selectedDoctor ? "<span class='text-danger heartbeat'>The Doctor has not been Selected</span>" : ""}`,
                                                         showCancelButton: true,
-                                                        confirmButtonText: "Print",
+                                                        confirmButtonText: "Submit",
                                                     }).then((result) => {
                                                         if (result.isConfirmed) {
                                                             processAudiometryReport()

@@ -11,7 +11,8 @@ import { useFirebase } from "../contexts/firebase-context";
 import { getInvoiceList, getBranchList, getSalespersonList, getPatientList } from "../utils/getApis"
 import { printInvoice } from "../utils/printInvoice"
 import AuthWrapper from "./AuthWrapper";
-import NewFeatureModal from "./NewFeatureModal"
+import { escapeRegex, dropDownStyle, formatPatientNumber } from "../utils/commonUtils"
+// import NewFeatureModal from "./NewFeatureModal"
 
 const SalesReport = () => {
     const { currentUserInfo } = useFirebase()
@@ -43,8 +44,10 @@ const SalesReport = () => {
     const filteredInvoiceList = useMemo(() => {
         return branchFilter ? invoiceList.filter(x => x.branch_id === branchFilter.value).filter(x => salespersonFilter.value === "All" ? true : x.salesperson_id === salespersonFilter.value).filter(x => {
             let pd = patientList.find(p => p.id === x.patient_id)
+            let reg = new RegExp(escapeRegex(searchValue), "gi")
+
             if (searchBarState && searchValue !== "") {
-                if (((new RegExp(searchValue, "gi")).test(pd.patient_name)) || ((new RegExp(searchValue, "gi")).test(pd.contact_number)) || ((new RegExp(searchValue, "gi")).test(x.invoice_number)) || ((new RegExp(searchValue, "gi")).test(x.mode_of_payment))) {
+                if ((reg.test(pd.patient_number)) || (reg.test(pd.patient_name)) || (reg.test(pd.contact_number)) || (reg.test(x.invoice_number)) || (reg.test(x.mode_of_payment))) {
                     return true
                 }
                 return false
@@ -53,7 +56,7 @@ const SalesReport = () => {
                 return true
             }
         }) : []
-    }, [branchFilter, salespersonFilter, searchBarState, searchValue, invoiceList, patientList]) 
+    }, [branchFilter, salespersonFilter, searchBarState, searchValue, invoiceList, patientList])
 
 
     const reportData = []
@@ -89,20 +92,6 @@ const SalesReport = () => {
         }
     }
 
-    const dropDownStyle = {
-        option: (styles) => {
-            return {
-                ...styles,
-                color: 'black'
-            };
-        },
-        menu: (styles) => {
-            return {
-                ...styles,
-                minWidth: "max-content"
-            };
-        }
-    }
 
     useEffect(() => {
         if (currentUserInfo !== null) {
@@ -257,6 +246,7 @@ const SalesReport = () => {
                             <thead>
                                 <tr className="table-dark">
                                     <th scope="col">Sl. No.</th>
+                                    <th scope="col">Patient Number</th>
                                     <th scope="col">Patient Name</th>
                                     <th scope="col">Contact Number</th>
                                     <th scope="col">Invoice Number</th>
@@ -269,13 +259,14 @@ const SalesReport = () => {
                             </thead>
                             <tbody>
                                 {
-                                    !patientList.length || !filteredInvoiceList.length ? <tr><td colSpan={9} className="fs-4 text-center text-secondary">No invoices added</td></tr> :
+                                    !patientList.length || !filteredInvoiceList.length ? <tr><td colSpan={10} className="fs-4 text-center text-secondary">No invoices added</td></tr> :
                                         filteredInvoiceList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
                                             let patientDetails = patientList.find(p => p.id === x.patient_id)
 
                                             return (
                                                 <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>
                                                     <td>{(currentPage * 10) + i + 1}</td>
+                                                    <td>{formatPatientNumber(patientDetails.patient_number)}</td>
                                                     <td>{patientDetails.patient_name}</td>
                                                     <td>{patientDetails.contact_number}</td>
                                                     <td>{x.invoice_number}</td>
@@ -635,7 +626,7 @@ const SalesReport = () => {
                 </Modal.Footer>
             </Modal>
 
-            <NewFeatureModal />
+            {/* <NewFeatureModal /> */}
         </>
     )
 }
