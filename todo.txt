@@ -3,7 +3,9 @@ Todo:
 update to basic firebase pagination
 sales report update for incentives calculation
 
-gap 244 245
+patient number gap - 244, 245
+
+
 
 HAPPY EARS PROJECT
 Frontend using React.js, Bootstrap 5
@@ -44,6 +46,11 @@ frontend routes:
         i. export all invoices data with export button --- NOT DONE
         ii. edit invoice button - not all fields are editable 
         iii. print action button
+
+6. "/patients" - List of all patient records linked with audiometry and invoices
+        features:-
+        i. edit
+        ii. view location
         
 7. "/admin-panel" - Admin Panel for additional features and to execute custom scripts
         features:-

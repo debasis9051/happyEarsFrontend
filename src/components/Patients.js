@@ -10,6 +10,11 @@ import AuthWrapper from "./AuthWrapper";
 import { escapeRegex, formatPatientNumber } from "../utils/commonUtils";
 
 const viewLocation = ({ latitude, longitude }) => {
+    if(!latitude || !longitude){
+        Swal.fire("Oops!", "Map-coordinates not available", "info")
+        return
+    }
+
     window.open(`https://maps.google.com/?q=${latitude},${longitude}`)
 }
 
