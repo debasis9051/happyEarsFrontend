@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react"
 import { Modal, Button, Dropdown } from "react-bootstrap"
 import Swal from "sweetalert2"
 import axios from "axios";
+import moment from "moment"
 import { Helmet } from "react-helmet-async";
 
 import { useFirebase } from "../contexts/firebase-context";
@@ -97,6 +98,7 @@ const Patients = () => {
                                     <th scope="col">Age</th>
                                     <th scope="col">Sex</th>
                                     <th scope="col">Notes</th>
+                                    <th scope="col">Added On</th>
                                     <th scope="col">Actions</th>
                                 </tr>
                             </thead>
@@ -120,6 +122,7 @@ const Patients = () => {
                                                             </svg>
                                                         </button>
                                                     </td>
+                                                    <td>{moment.unix(x.created_at._seconds).format("lll")}</td>
                                                     <td>
                                                         <Dropdown>
                                                             <Dropdown.Toggle variant="primary">
