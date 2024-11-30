@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react"
-import { Modal, Button, Dropdown } from "react-bootstrap"
+import { Modal, Button, Dropdown, Tab, Tabs } from "react-bootstrap"
 import Select from "react-select"
 import moment from "moment"
 import Swal from "sweetalert2"
@@ -17,6 +17,8 @@ import { escapeRegex, dropDownStyle, formatPatientNumber } from "../utils/common
 const SalesReport = () => {
     const { currentUserInfo } = useFirebase()
 
+    const [currentTab, setCurrentTab] = useState("tab1")
+
     const [branchList, setBranchList] = useState([])
     const [salespersonList, setSalespersonList] = useState([])
     const [invoiceList, setInvoiceList] = useState([])
@@ -28,7 +30,8 @@ const SalesReport = () => {
     const [branchFilter, setBranchFilter] = useState(null)
     const [salespersonFilter, setSalespersonFilter] = useState({ label: "All", value: "All" })
 
-    const [reportMonthYear, setReportMonthYear] = useState("")
+    const [reportMonthYear, setReportMonthYear] = useState(moment().format("YYYY-MM"))
+    const [selectedSalespersonReport, setSelectedSalespersonReport] = useState(null)
 
 
     const [editInvoiceModalShow, setEditInvoiceModalShow] = useState(false)
@@ -59,38 +62,152 @@ const SalesReport = () => {
     }, [branchFilter, salespersonFilter, searchBarState, searchValue, invoiceList, patientList])
 
 
-    const reportData = []
-    if (reportMonthYear) {
-        let sd = moment(reportMonthYear)
-        let ed = moment(reportMonthYear).add(1, "month")
+    // const reportData = []
+    // if (reportMonthYear) {
+    //     let sd = moment(reportMonthYear)
+    //     let ed = moment(reportMonthYear).add(1, "month")
 
-        for (let i = 0; i < invoiceList.length; i++) {
-            let invData = invoiceList[i]
-            let d = moment.unix(invData.date._seconds)
+    //     for (let i = 0; i < invoiceList.length; i++) {
+    //         let invData = invoiceList[i]
+    //         let d = moment.unix(invData.date._seconds)
 
-            let gt = (invData.line_items.reduce((p, o) => p + o.product_rate, 0) - invData.discount_amount) + invData.accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)
+    //         let gt = (invData.line_items.reduce((p, o) => p + o.product_rate, 0) - invData.discount_amount) + invData.accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)
 
-            if (d.isBetween(sd, ed)) {
+    //         if (d.isBetween(sd, ed)) {
 
-                let t = reportData.find(x => x.salesperson_id === invData?.salesperson_id)
+    //             let t = reportData.find(x => x.salesperson_id === invData?.salesperson_id)
 
-                if (t) {
-                    t.no_of_invoices += 1
-                    t.no_of_products_sold += invData.line_items.filter(x => !(x.product_name.toLowerCase().includes("charger") || x.product_name.toLowerCase().includes("chgr"))).length
-                    t.net_total += gt
-                }
-                else {
-                    reportData.push({
-                        salesperson_id: invData?.salesperson_id,
-                        salesperson_name: invData?.salesperson_id && salespersonList.find(x => x.id === invData.salesperson_id).salesperson_name,
+    //             if (t) {
+    //                 t.no_of_invoices += 1
+    //                 t.no_of_products_sold += invData.line_items.filter(x => !(x.product_name.toLowerCase().includes("charger") || x.product_name.toLowerCase().includes("chgr"))).length
+    //                 t.net_total += gt
+    //             }
+    //             else {
+    //                 reportData.push({
+    //                     salesperson_id: invData?.salesperson_id,
+    //                     salesperson_name: invData?.salesperson_id && salespersonList.find(x => x.id === invData.salesperson_id).salesperson_name,
+    //                     no_of_invoices: 1,
+    //                     no_of_products_sold: invData.line_items.length,
+    //                     net_total: gt,
+    //                 })
+    //             }
+    //         }
+    //     }
+    // }
+
+    const reportData = useMemo(() => {
+        if (!reportMonthYear || !invoiceList.length) return [];
+
+        const sd = moment(reportMonthYear);
+        const ed = moment(reportMonthYear).add(1, "month");
+
+        // Filter invoices into a temporary variable
+        const filteredInvoices = invoiceList.filter((invData) => {
+            const d = moment.unix(invData.date._seconds);
+            return d.isBetween(sd, ed);
+        });
+
+        // Helper function to calculate products sold (excluding chargers)
+        const calculateProductsSold = (lineItems) => lineItems.filter((item) => !(item.product_name.toLowerCase().includes("charger") || item.product_name.toLowerCase().includes("chgr"))).length;
+
+        const data = [];
+        const undefinedSalesperson = {
+            salesperson_id: undefined,
+            salesperson_name: "N/A",
+            no_of_invoices: 0,
+            no_of_products_sold: 0,
+            net_total: 0,
+        };
+
+        // Process filtered invoices
+        filteredInvoices.forEach((invData) => {
+            const gt =
+                invData.line_items.reduce((p, o) => p + o.product_rate, 0) -
+                invData.discount_amount +
+                invData.accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0);
+
+            if (!invData.salesperson_id) {
+                undefinedSalesperson.no_of_invoices += 1;
+                undefinedSalesperson.no_of_products_sold += calculateProductsSold(invData.line_items);
+                undefinedSalesperson.net_total += gt;
+            } else {
+                const existingSalesperson = data.find((x) => x.salesperson_id === invData.salesperson_id);
+
+                if (existingSalesperson) {
+                    existingSalesperson.no_of_invoices += 1;
+                    existingSalesperson.no_of_products_sold += calculateProductsSold(invData.line_items);
+                    existingSalesperson.net_total += gt;
+                } else {
+                    data.push({
+                        salesperson_id: invData.salesperson_id,
+                        salesperson_name: salespersonList.find((x) => x.id === invData.salesperson_id)?.salesperson_name,
                         no_of_invoices: 1,
-                        no_of_products_sold: invData.line_items.length,
+                        no_of_products_sold: calculateProductsSold(invData.line_items),
                         net_total: gt,
-                    })
+                    });
                 }
             }
-        }
-    }
+        });
+
+        // Ensure all salespersons are present in the final data
+        salespersonList.forEach((salesperson) => {
+            if (!data.some((x) => x.salesperson_id === salesperson.id)) {
+                data.push({
+                    salesperson_id: salesperson.id,
+                    salesperson_name: salesperson.salesperson_name,
+                    no_of_invoices: 0,
+                    no_of_products_sold: 0,
+                    net_total: 0,
+                });
+            }
+        });
+
+        data.push(undefinedSalesperson);
+
+        data.sort((a, b) => {
+            return a.salesperson_name.localeCompare(b.salesperson_name);
+        });
+
+        return data;
+    }, [reportMonthYear, invoiceList, salespersonList]);
+
+    const incentiveReportData = useMemo(() => {
+        if (!reportMonthYear || !invoiceList.length || !selectedSalespersonReport?.value) return [];
+
+        const sd = moment(reportMonthYear);
+        const ed = moment(reportMonthYear).add(1, "month");
+
+        // Filter invoices by month and salesperson
+        const filteredInvoices = invoiceList.filter((invData) => {
+            const d = moment.unix(invData.date._seconds);
+            return (
+                d.isBetween(sd, ed) &&
+                invData.salesperson_id === selectedSalespersonReport.value
+            );
+        });
+
+        // Calculate fields for each invoice
+        const report = filteredInvoices.map((invData) => {
+            const productMRPValue = invData.line_items.reduce((p, o) => p + o.product_rate, 0);
+            const productSellValue = productMRPValue - invData.discount_amount;
+            const invoiceAmount = productSellValue + invData.accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0);
+            const incentivePercentage = 5; // get from chart
+            const incentiveAmount = (invoiceAmount * incentivePercentage) / 100;
+
+            return {
+                patient_id: invData.patient_id,
+                patient_name: patientList.find((x) => x.id === invData.patient_id).patient_name,
+                invoice_number: invData.invoice_number,
+                invoice_amount: invoiceAmount,
+                product_mrp_value: productMRPValue,
+                product_sell_value: productSellValue,
+                incentive_percentage: incentivePercentage,
+                incentive_amount: incentiveAmount,
+            };
+        });
+
+        return report;
+    }, [reportMonthYear, invoiceList, selectedSalespersonReport, patientList]);
 
 
     useEffect(() => {
@@ -208,259 +325,311 @@ const SalesReport = () => {
 
                 <AuthWrapper page={"sales_report"}>
                     <>
-                        <div className="d-flex align-items-end px-3 py-2">
-                            <label className="form-label m-0 me-2 fs-5">Filters: </label>
-                            <div className="form-group mx-1">
-                                <label className="form-label m-0">Branch</label>
-                                <Select
-                                    options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
-                                    value={branchFilter}
-                                    onChange={(val) => { setBranchFilter(val); setCurrentPage(0); }}
-                                    styles={dropDownStyle}
-                                    placeholder="Select a Branch..."
-                                />
-                            </div>
-                            <div className="form-group mx-1">
-                                <label className="form-label m-0">Salesperson</label>
-                                <Select
-                                    options={[{ label: "All", value: "All" }, ...salespersonList.map(x => ({ label: x.salesperson_name, value: x.id }))]}
-                                    value={salespersonFilter}
-                                    onChange={(val) => { setSalespersonFilter(val); setCurrentPage(0); }}
-                                    styles={dropDownStyle}
-                                    placeholder="Select Salesperson..."
-                                />
-                            </div>
-                            <div className="d-flex mx-2">
-                                <button className="btn btn-secondary rounded-pill me-1" onClick={() => { setSearchBarState(!searchBarState); setSearchValue("") }}>
-                                    <svg width="16" height="16" fill="currentColor" className="bi bi-search" viewBox="0 0 16 16">
-                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
-                                    </svg>
-                                </button>
-                                <input type="text" className="form-control" style={searchBarState ? { transition: "all 1s" } : { transition: "all 1s", width: "0", padding: "0", opacity: "0", visibility: "hidden" }} placeholder="Search..." onChange={(e) => { setSearchValue(e.target.value); setCurrentPage(0); }} />
-                            </div>
+                        <div className="container-fluid">
+                            <Tabs className="mb-3" activeKey={currentTab} onSelect={(k) => { setCurrentTab(k); }} >
+                                <Tab eventKey="tab1" title="Records">
 
-                            <button className="btn btn-info ms-auto me-2" onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); console.log("exporting products"); }}>Export</button>
-                        </div>
+                                    <div className="d-flex align-items-end px-3 py-2">
+                                        <label className="form-label m-0 me-2 fs-5">Filters: </label>
+                                        <div className="form-group mx-1">
+                                            <label className="form-label m-0">Branch</label>
+                                            <Select
+                                                options={branchList.map(x => ({ label: x.branch_name, value: x.id }))}
+                                                value={branchFilter}
+                                                onChange={(val) => { setBranchFilter(val); setCurrentPage(0); }}
+                                                styles={dropDownStyle}
+                                                placeholder="Select a Branch..."
+                                            />
+                                        </div>
+                                        <div className="form-group mx-1">
+                                            <label className="form-label m-0">Salesperson</label>
+                                            <Select
+                                                options={[{ label: "All", value: "All" }, ...salespersonList.map(x => ({ label: x.salesperson_name, value: x.id }))]}
+                                                value={salespersonFilter}
+                                                onChange={(val) => { setSalespersonFilter(val); setCurrentPage(0); }}
+                                                styles={dropDownStyle}
+                                                placeholder="Select Salesperson..."
+                                            />
+                                        </div>
+                                        <div className="d-flex mx-2">
+                                            <button className="btn btn-secondary rounded-pill me-1" onClick={() => { setSearchBarState(!searchBarState); setSearchValue("") }}>
+                                                <svg width="16" height="16" fill="currentColor" className="bi bi-search" viewBox="0 0 16 16">
+                                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                                                </svg>
+                                            </button>
+                                            <input type="text" className="form-control" style={searchBarState ? { transition: "all 1s" } : { transition: "all 1s", width: "0", padding: "0", opacity: "0", visibility: "hidden" }} placeholder="Search..." onChange={(e) => { setSearchValue(e.target.value); setCurrentPage(0); }} />
+                                        </div>
 
-                        <table className="table table-hover m-auto align-middle" style={{ width: "97%" }}>
-                            <thead>
-                                <tr className="table-dark">
-                                    <th scope="col">Sl. No.</th>
-                                    <th scope="col">Patient Number</th>
-                                    <th scope="col">Patient Name</th>
-                                    <th scope="col">Contact Number</th>
-                                    <th scope="col">Invoice Number</th>
-                                    <th scope="col">Invoice Amount</th>
-                                    <th scope="col">Mode of Payment</th>
-                                    <th scope="col">Salesperson</th>
-                                    <th scope="col">Invoice Date</th>
-                                    <th scope="col">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {
-                                    !patientList.length || !filteredInvoiceList.length ? <tr><td colSpan={10} className="fs-4 text-center text-secondary">No invoices added</td></tr> :
-                                        filteredInvoiceList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
-                                            let patientDetails = patientList.find(p => p.id === x.patient_id)
+                                        <button className="btn btn-info ms-auto me-2" onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); console.log("exporting products"); }}>Export</button>
+                                    </div>
 
-                                            return (
-                                                <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>
-                                                    <td>{(currentPage * 10) + i + 1}</td>
-                                                    <td>{formatPatientNumber(patientDetails.patient_number)}</td>
-                                                    <td>{patientDetails.patient_name}</td>
-                                                    <td>{patientDetails.contact_number}</td>
-                                                    <td>{x.invoice_number}</td>
-                                                    <td>{(x.line_items.reduce((p, o) => p + o.product_rate, 0) - x.discount_amount) + x.accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)}</td>
-                                                    <td>{x.mode_of_payment}</td>
-                                                    <td>{x?.salesperson_id ? salespersonList.find(y => y.id === x.salesperson_id).salesperson_name : "N/A"}</td>
-                                                    <td>{moment.unix(x.date._seconds).format("DD-MM-YYYY")}</td>
-                                                    <td>
-                                                        <Dropdown>
-                                                            <Dropdown.Toggle variant="primary">
-                                                                <svg width="16" height="16" fill="currentColor" className="bi bi-list" viewBox="0 0 16 16">
-                                                                    <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
-                                                                </svg>
-                                                            </Dropdown.Toggle>
+                                    <table className="table table-hover m-auto align-middle" style={{ width: "97%" }}>
+                                        <thead>
+                                            <tr className="table-dark">
+                                                <th scope="col">Sl. No.</th>
+                                                <th scope="col">Patient Number</th>
+                                                <th scope="col">Patient Name</th>
+                                                <th scope="col">Contact Number</th>
+                                                <th scope="col">Invoice Number</th>
+                                                <th scope="col">Invoice Amount</th>
+                                                <th scope="col">Mode of Payment</th>
+                                                <th scope="col">Salesperson</th>
+                                                <th scope="col">Invoice Date</th>
+                                                <th scope="col">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {
+                                                !patientList.length || !filteredInvoiceList.length ? <tr><td colSpan={10} className="fs-4 text-center text-secondary">No invoices added</td></tr> :
+                                                    filteredInvoiceList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
+                                                        let patientDetails = patientList.find(p => p.id === x.patient_id)
 
-                                                            <Dropdown.Menu>
-                                                                <Dropdown.Item onClick={() => { editInvoiceModalInit(x) }} >Edit</Dropdown.Item>
-                                                                <Dropdown.Item onClick={() => {
-                                                                    Swal.fire({
-                                                                        title: "Print with Header On/Off?",
-                                                                        showDenyButton: true,
-                                                                        showCancelButton: true,
-                                                                        confirmButtonText: "On",
-                                                                        denyButtonText: `Off`
-                                                                    }).then((result) => {
-                                                                        let h = result.isConfirmed ? true : result.isDenied ? false : null
+                                                        return (
+                                                            <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>
+                                                                <td>{(currentPage * 10) + i + 1}</td>
+                                                                <td>{formatPatientNumber(patientDetails.patient_number)}</td>
+                                                                <td>{patientDetails.patient_name}</td>
+                                                                <td>{patientDetails.contact_number}</td>
+                                                                <td>{x.invoice_number}</td>
+                                                                <td>{(x.line_items.reduce((p, o) => p + o.product_rate, 0) - x.discount_amount) + x.accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)}</td>
+                                                                <td>{x.mode_of_payment}</td>
+                                                                <td>{x?.salesperson_id ? salespersonList.find(y => y.id === x.salesperson_id).salesperson_name : "N/A"}</td>
+                                                                <td>{moment.unix(x.date._seconds).format("DD-MM-YYYY")}</td>
+                                                                <td>
+                                                                    <Dropdown>
+                                                                        <Dropdown.Toggle variant="primary">
+                                                                            <svg width="16" height="16" fill="currentColor" className="bi bi-list" viewBox="0 0 16 16">
+                                                                                <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+                                                                            </svg>
+                                                                        </Dropdown.Toggle>
 
-                                                                        if (h !== null) {
-                                                                            printInvoice(patientDetails, branchList.find(b => b.id === x.branch_id).branch_name, x.branch_id, x.invoice_number, moment.unix(x.date._seconds).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items, h, branchList)
-                                                                        }
-                                                                    });
-                                                                }} >Print</Dropdown.Item>
-                                                            </Dropdown.Menu>
-                                                        </Dropdown>
+                                                                        <Dropdown.Menu>
+                                                                            <Dropdown.Item onClick={() => { editInvoiceModalInit(x) }} >Edit</Dropdown.Item>
+                                                                            <Dropdown.Item onClick={() => {
+                                                                                Swal.fire({
+                                                                                    title: "Print with Header On/Off?",
+                                                                                    showDenyButton: true,
+                                                                                    showCancelButton: true,
+                                                                                    confirmButtonText: "On",
+                                                                                    denyButtonText: `Off`
+                                                                                }).then((result) => {
+                                                                                    let h = result.isConfirmed ? true : result.isDenied ? false : null
+
+                                                                                    if (h !== null) {
+                                                                                        printInvoice(patientDetails, branchList.find(b => b.id === x.branch_id).branch_name, x.branch_id, x.invoice_number, moment.unix(x.date._seconds).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items, h, branchList)
+                                                                                    }
+                                                                                });
+                                                                            }} >Print</Dropdown.Item>
+                                                                        </Dropdown.Menu>
+                                                                    </Dropdown>
+                                                                </td>
+                                                            </tr>
+                                                        )
+                                                    })
+                                            }
+                                        </tbody>
+                                        {
+                                            filteredInvoiceList.length !== 0 &&
+                                            <tfoot>
+                                                <tr>
+                                                    <td colSpan={10}>
+                                                        <div className="d-flex justify-content-center">
+                                                            <ul className="pagination m-0">
+                                                                {
+                                                                    currentPage + 1 !== 1 &&
+                                                                    <li className="page-item" onClick={() => { setCurrentPage(currentPage - 1) }}>
+                                                                        <div className="page-link" style={{ cursor: "pointer" }} >&laquo;</div>
+                                                                    </li>
+                                                                }
+                                                                {
+                                                                    Array.from({ length: e - s + 1 }, (_, i) => i + s).map((x, i) => {
+                                                                        return (
+                                                                            <li key={i} className={`page-item ${x - 1 === currentPage ? "active" : ""}`} onClick={() => { setCurrentPage(x - 1) }}>
+                                                                                <div className="page-link" style={{ cursor: "pointer" }} >{x}</div>
+                                                                            </li>
+                                                                        )
+                                                                    })
+                                                                }
+                                                                {
+                                                                    currentPage + 1 !== tp &&
+                                                                    <li className="page-item" onClick={() => { setCurrentPage(currentPage + 1) }}>
+                                                                        <div className="page-link" style={{ cursor: "pointer" }} >&raquo;</div>
+                                                                    </li>
+                                                                }
+                                                            </ul>
+                                                        </div>
                                                     </td>
                                                 </tr>
-                                            )
-                                        })
-                                }
-                            </tbody>
-                            {
-                                filteredInvoiceList.length !== 0 &&
-                                <tfoot>
-                                    <tr>
-                                        <td colSpan={9}>
-                                            <div className="d-flex justify-content-center">
-                                                <ul className="pagination m-0">
-                                                    {
-                                                        currentPage + 1 !== 1 &&
-                                                        <li className="page-item" onClick={() => { setCurrentPage(currentPage - 1) }}>
-                                                            <div className="page-link" style={{ cursor: "pointer" }} >&laquo;</div>
-                                                        </li>
-                                                    }
-                                                    {
-                                                        Array.from({ length: e - s + 1 }, (_, i) => i + s).map((x, i) => {
-                                                            return (
-                                                                <li key={i} className={`page-item ${x - 1 === currentPage ? "active" : ""}`} onClick={() => { setCurrentPage(x - 1) }}>
-                                                                    <div className="page-link" style={{ cursor: "pointer" }} >{x}</div>
-                                                                </li>
-                                                            )
-                                                        })
-                                                    }
-                                                    {
-                                                        currentPage + 1 !== tp &&
-                                                        <li className="page-item" onClick={() => { setCurrentPage(currentPage + 1) }}>
-                                                            <div className="page-link" style={{ cursor: "pointer" }} >&raquo;</div>
-                                                        </li>
-                                                    }
-                                                </ul>
+                                            </tfoot>
+                                        }
+                                    </table>
+
+                                </Tab>
+                                <Tab eventKey="tab2" title="Sales Report">
+
+                                    <div className="container-fluid">
+                                        <div className="row">
+                                            <div className="col-4 d-flex gap-2">
+                                                <div className="form-group flex-grow-1">
+                                                    <label className="form-label my-1" htmlFor="reportMonthYear">Select Month</label>
+                                                    <input type="month" id="reportMonthYear" className="form-control" value={reportMonthYear} onChange={(e) => { setReportMonthYear(e.target.value); }} />
+                                                </div>
+                                                <div className="align-self-end">
+                                                    <button className="btn btn-danger rounded" onClick={() => { setReportMonthYear("") }}>&#x2716;</button>
+                                                </div>
                                             </div>
-                                        </td>
-                                    </tr>
-                                </tfoot>
-                            }
-                        </table>
-
-                        <div className="my-5 p-3 rounded text-white" >
-                            <div className="row g-0">
-                                <div className="col-md-2 mx-2 text-end">
-                                    <label className="form-label my-1 text-white" style={{ fontSize: "larger" }} htmlFor="reportMonthYear">Select Month</label>
-                                </div>
-                                <div className="col-md-4 mx-2">
-                                    <input type="month" id="reportMonthYear" className="form-control" value={reportMonthYear} onChange={(e) => { setReportMonthYear(e.target.value); setTimeout(() => { window.scrollBy({ top: window.innerHeight, left: 0, behavior: "smooth" }) }, 1500) }} />
-                                </div>
-                                <div className="col-md-4 mx-2">
-                                    <button className="btn btn-danger rounded" onClick={() => { setReportMonthYear("") }}>&#x2716;</button>
-                                </div>
-                            </div>
-
-                            <div className="reportPanelWrapper">
-                                <div className={`reportPanel ${reportMonthYear && "panelActive"}`}>
-                                    <hr />
-                                    <div className="row">
-                                        <div className="col-md-6">
-                                            <div className="row mb-4 text-dark">
-                                                <div className="col-md-4">Salesperson</div>
-                                                <div className="col-md-3 text-end">No. of Invoices</div>
-                                                <div className="col-md-3 text-end">No. of Products</div>
-                                                <div className="col-md-2 text-end">Net Total</div>
+                                            <div className="col-4">
+                                                <div className="form-group">
+                                                    <label className="form-label my-1">Salesperson</label>
+                                                    <Select
+                                                        options={salespersonList.map(x => ({ label: x.salesperson_name, value: x.id }))}
+                                                        value={selectedSalespersonReport}
+                                                        onChange={(val) => { setSelectedSalespersonReport(val) }}
+                                                        isClearable
+                                                        styles={dropDownStyle}
+                                                        placeholder="Select Salesperson..."
+                                                    />
+                                                </div>
                                             </div>
-                                            {
-                                                reportMonthYear && salespersonList.map((s, i) => {
-                                                    let d = reportData.find(x => x.salesperson_id === s.id)
-
-                                                    return (
-                                                        <div key={i} className="row my-2 fs-5">
-                                                            <div className="col-md-5">{s.salesperson_name}</div>
-                                                            <div className="col-md-2 text-end">{d?.no_of_invoices || 0}</div>
-                                                            <div className="col-md-2 text-end">{d?.no_of_products_sold || 0}</div>
-                                                            <div className="col-md-3 text-end">{d?.net_total || 0}</div>
-                                                        </div>
-                                                    )
-                                                })
-                                            }
-                                            <div className="row my-2 fs-5">
-                                                <div className="col-md-5">N/A</div>
-                                                <div className="col-md-2 text-end">{reportData.find(x => x.salesperson_id === undefined)?.no_of_invoices || 0}</div>
-                                                <div className="col-md-2 text-end">{reportData.find(x => x.salesperson_id === undefined)?.no_of_products_sold || 0}</div>
-                                                <div className="col-md-3 text-end">{reportData.find(x => x.salesperson_id === undefined)?.net_total || 0}</div>
+                                            <div className="col-2 align-self-end">
+                                                <button className="btn btn-info ms-auto me-2" onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); console.log("exporting report data"); }}>Export Report Data</button>
                                             </div>
                                         </div>
-                                        <div className="col-md-6">
-                                            <div style={{ width: "500px", height: "330px" }}>
-                                                <ResponsivePie
-                                                    data={[
-                                                        ...salespersonList.map(x => ({ id: x.salesperson_name, label: x.salesperson_name, value: reportData.find(y => y.salesperson_id === x.id)?.no_of_invoices || 0 })),
-                                                        { id: "N/A", label: "N/A", value: reportData.find(y => y.salesperson_id === undefined)?.no_of_invoices || 0 }
-                                                    ]}
-                                                    colors={{ scheme: "set1" }}
-                                                    margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
-                                                    innerRadius={0.5}
-                                                    padAngle={0.7}
-                                                    cornerRadius={3}
-                                                    activeOuterRadiusOffset={8}
-                                                    borderWidth={1}
-                                                    borderColor={{
-                                                        from: 'color',
-                                                        modifiers: [
-                                                            [
-                                                                'darker',
-                                                                0.2
-                                                            ]
-                                                        ]
-                                                    }}
-                                                    arcLinkLabelsSkipAngle={10}
-                                                    arcLinkLabelsTextColor="#999999"
-                                                    arcLinkLabelsThickness={2}
-                                                    arcLinkLabelsColor={{ from: 'color' }}
-                                                    arcLabelsSkipAngle={10}
-                                                    arcLabelsTextColor={{
-                                                        from: 'color',
-                                                        modifiers: [
-                                                            [
-                                                                'darker',
-                                                                2
-                                                            ]
-                                                        ]
-                                                    }}
-                                                    tooltip={e => {
-                                                        let { datum: t } = e;
-                                                        return <div className="container bg-secondary rounded">{t.label}: {t.value}</div>
-                                                    }}
-                                                    legends={[
+
+                                        <div className="row align-items-center">
+                                            <div className="col-md-7">
+                                                <table className="table table-hover m-auto">
+                                                    <thead>
+                                                        <tr className="table-dark">
+                                                            <th scope="col">Salesperson</th>
+                                                            <th scope="col">No. of Invoices</th>
+                                                            <th scope="col">No. of Products</th>
+                                                            <th scope="col">Net Total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
                                                         {
-                                                            anchor: 'bottom',
-                                                            direction: 'row',
-                                                            justify: false,
-                                                            translateX: 0,
-                                                            translateY: 50,
-                                                            itemsSpacing: 0,
-                                                            itemWidth: 125,
-                                                            itemHeight: 20,
-                                                            itemTextColor: '#fff',
-                                                            itemDirection: 'left-to-right',
-                                                            itemOpacity: 1,
-                                                            symbolSize: 18,
-                                                            symbolShape: 'circle',
-                                                            effects: [
-                                                                {
-                                                                    on: 'hover',
-                                                                    style: {
-                                                                        itemTextColor: '#999'
-                                                                    }
-                                                                }
-                                                            ]
+                                                            !reportMonthYear ? <tr><td colSpan={4} className="fs-4 text-center text-secondary">Select a Month</td></tr> :
+                                                                reportData.map((row, index) => (
+                                                                    <tr key={index}>
+                                                                        <td>{row.salesperson_name}</td>
+                                                                        <td>{row.no_of_invoices}</td>
+                                                                        <td>{row.no_of_products_sold}</td>
+                                                                        <td>{row.net_total}</td>
+                                                                    </tr>
+                                                                ))
                                                         }
-                                                    ]}
-                                                />
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div className="col-md-5">
+                                                <div style={{ width: "500px", height: "330px" }}>
+                                                    <ResponsivePie
+                                                        data={[
+                                                            ...salespersonList.map(x => ({ id: x.salesperson_name, label: x.salesperson_name, value: reportData.find(y => y.salesperson_id === x.id)?.no_of_invoices || 0 })),
+                                                            { id: "N/A", label: "N/A", value: reportData.find(y => y.salesperson_id === undefined)?.no_of_invoices || 0 }
+                                                        ]}
+                                                        colors={{ scheme: "set1" }}
+                                                        margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
+                                                        innerRadius={0.5}
+                                                        padAngle={0.7}
+                                                        cornerRadius={3}
+                                                        activeOuterRadiusOffset={8}
+                                                        borderWidth={1}
+                                                        borderColor={{
+                                                            from: 'color',
+                                                            modifiers: [
+                                                                [
+                                                                    'darker',
+                                                                    0.2
+                                                                ]
+                                                            ]
+                                                        }}
+                                                        arcLinkLabelsSkipAngle={10}
+                                                        arcLinkLabelsTextColor="#999999"
+                                                        arcLinkLabelsThickness={2}
+                                                        arcLinkLabelsColor={{ from: 'color' }}
+                                                        arcLabelsSkipAngle={10}
+                                                        arcLabelsTextColor={{
+                                                            from: 'color',
+                                                            modifiers: [
+                                                                [
+                                                                    'darker',
+                                                                    2
+                                                                ]
+                                                            ]
+                                                        }}
+                                                        tooltip={e => {
+                                                            let { datum: t } = e;
+                                                            return <div className="container bg-secondary rounded">{t.label}: {t.value}</div>
+                                                        }}
+                                                        legends={[
+                                                            {
+                                                                anchor: 'bottom',
+                                                                direction: 'row',
+                                                                justify: false,
+                                                                translateX: 0,
+                                                                translateY: 50,
+                                                                itemsSpacing: 0,
+                                                                itemWidth: 125,
+                                                                itemHeight: 20,
+                                                                itemTextColor: '#fff',
+                                                                itemDirection: 'left-to-right',
+                                                                itemOpacity: 1,
+                                                                symbolSize: 18,
+                                                                symbolShape: 'circle',
+                                                                effects: [
+                                                                    {
+                                                                        on: 'hover',
+                                                                        style: {
+                                                                            itemTextColor: '#999'
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]}
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
 
+                                        {/* <div className="row">
+                                            <div className="col-md-12"> */}
+                                        <table className="table table-hover mb-5">
+                                            <thead>
+                                                <tr className="table-dark">
+                                                    <th scope="col">Patient Name</th>
+                                                    <th scope="col">Invoice Number</th>
+                                                    <th scope="col">Invoice Amount</th>
+                                                    <th scope="col">Product MRP Value</th>
+                                                    <th scope="col">Product Sell Value</th>
+                                                    <th scope="col">Incentive Percentage</th>
+                                                    <th scope="col">Incentive Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {
+                                                    !reportMonthYear || !selectedSalespersonReport ? <tr><td colSpan={7} className="fs-4 text-center text-secondary">Select a Month and Salesperson</td></tr> :
+                                                        incentiveReportData.map((row, index) => (
+                                                            <tr key={index}>
+                                                                <td>{row.patient_name}</td>
+                                                                <td>{row.invoice_number}</td>
+                                                                <td>{row.invoice_amount.toFixed(2)}</td>
+                                                                <td>{row.product_mrp_value.toFixed(2)}</td>
+                                                                <td>{row.product_sell_value.toFixed(2)}</td>
+                                                                <td>{row.incentive_percentage}%</td>
+                                                                <td>{row.incentive_amount.toFixed(2)}</td>
+                                                            </tr>
+                                                        ))
+                                                }
+                                            </tbody>
+                                        </table>
+                                        {/* </div>
+                                        </div> */}
+                                    </div>
+
+                                </Tab>
+                            </Tabs>
                         </div>
                     </>
                 </AuthWrapper>

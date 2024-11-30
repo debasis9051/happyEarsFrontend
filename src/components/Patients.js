@@ -104,7 +104,7 @@ const Patients = () => {
                             </thead>
                             <tbody>
                                 {
-                                    !filteredPatientList.length ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No patients added</td></tr> :
+                                    !filteredPatientList.length ? <tr><td colSpan={9} className="fs-4 text-center text-secondary">No patients added</td></tr> :
                                         filteredPatientList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
                                             return (
                                                 <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>

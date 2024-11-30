@@ -15,19 +15,6 @@
     display: none !important;
 }
 
-.reportPanelWrapper {
-    overflow: hidden;
-}
-
-.reportPanel {
-    transition: all 1s ease-in-out;
-    margin-top: -100%;
-}
-
-.reportPanel.panelActive {
-    margin-top: 0;
-}
-
 .accordion-button {
     color: #ffffff;
     background-color: #14561d;

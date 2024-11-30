@@ -1,7 +1,5 @@
 Todo:
 
-sales report update for incentives calculation
-
 patient number gap - 241, 244, 245, 251
 
 
