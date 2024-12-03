@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react"
-import { Modal, Button, Dropdown, Tab, Tabs } from "react-bootstrap"
+import { Modal, Button, Dropdown, Tab, Tabs, OverlayTrigger, Tooltip } from "react-bootstrap"
 import Select from "react-select"
 import moment from "moment"
 import Swal from "sweetalert2"
@@ -599,10 +599,10 @@ const SalesReport = () => {
                                                     <th scope="col">Patient Name</th>
                                                     <th scope="col">Invoice Number</th>
                                                     <th scope="col">Invoice Amount</th>
-                                                    <th scope="col">Product MRP Value</th>
-                                                    <th scope="col">Product Sell Value</th>
+                                                    <th scope="col">Product MRP Value <CustomTooltipWrapper msg="Product MRP Value is the total of all the products' mrp in this Invoice" /></th>
+                                                    <th scope="col">Product Sell Value <CustomTooltipWrapper msg="Product Sell Value = Product MRP Value - Discount on Products" /></th>
                                                     <th scope="col">Incentive Percentage</th>
-                                                    <th scope="col">Incentive Amount</th>
+                                                    <th scope="col">Incentive Amount <CustomTooltipWrapper msg="Incentive Amount = Product Sell Value * Incentive Percentage" /></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -612,11 +612,11 @@ const SalesReport = () => {
                                                             <tr key={index}>
                                                                 <td>{row.patient_name}</td>
                                                                 <td>{row.invoice_number}</td>
-                                                                <td>₹ {formatAmount(row.invoice_amount.toFixed(2))}</td>
-                                                                <td>₹ {formatAmount(row.product_mrp_value.toFixed(2))}</td>
-                                                                <td>₹ {formatAmount(row.product_sell_value.toFixed(2))}</td>
+                                                                <td>₹ {formatAmount(row.invoice_amount)}</td>
+                                                                <td>₹ {formatAmount(row.product_mrp_value)}</td>
+                                                                <td>₹ {formatAmount(row.product_sell_value)}</td>
                                                                 <td>{row.incentive_percentage}%</td>
-                                                                <td>₹ {formatAmount(row.incentive_amount.toFixed(2))}</td>
+                                                                <td>₹ {formatAmount(row.incentive_amount)}</td>
                                                             </tr>
                                                         ))
                                                 }
@@ -624,11 +624,11 @@ const SalesReport = () => {
                                                     reportMonthYear && selectedSalespersonReport &&
                                                     <tr>
                                                         <td colSpan={2} className="table-light text-center">TOTAL</td>
-                                                        <td>₹ {formatAmount(incentiveReportData.reduce((p, o) => p + o.invoice_amount, 0).toFixed(2))}</td>
-                                                        <td>₹ {formatAmount(incentiveReportData.reduce((p, o) => p + o.product_mrp_value, 0).toFixed(2))}</td>
-                                                        <td>₹ {formatAmount(incentiveReportData.reduce((p, o) => p + o.product_sell_value, 0).toFixed(2))}</td>
+                                                        <td>₹ {formatAmount(incentiveReportData.reduce((p, o) => p + o.invoice_amount, 0))}</td>
+                                                        <td>₹ {formatAmount(incentiveReportData.reduce((p, o) => p + o.product_mrp_value, 0))}</td>
+                                                        <td>₹ {formatAmount(incentiveReportData.reduce((p, o) => p + o.product_sell_value, 0))}</td>
                                                         <td></td>
-                                                        <td>₹ {formatAmount(incentiveReportData.reduce((p, o) => p + o.incentive_amount, 0).toFixed(2))}</td>
+                                                        <td>₹ {formatAmount(incentiveReportData.reduce((p, o) => p + o.incentive_amount, 0))}</td>
                                                     </tr>
                                                 }
                                             </tbody>
@@ -804,6 +804,20 @@ const SalesReport = () => {
 
             {/* <NewFeatureModal /> */}
         </>
+    )
+}
+
+const CustomTooltipWrapper = ({ msg }) => {
+    return (
+        <OverlayTrigger
+            placement={"top"}
+            overlay={<Tooltip>{msg}</Tooltip>}
+        >
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style={{margin: "0 0 1px 5px"}}>
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+            </svg>
+        </OverlayTrigger>
     )
 }
 

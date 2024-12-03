@@ -22,11 +22,12 @@ function formatPatientNumber(number) {
 }
 
 function formatAmount(amount) {
-    let [integerPart, decimalPart] = amount.toString().split(".");
+    let formattedNumber = parseFloat(amount).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 20
+    });
 
-    integerPart = integerPart.replace(/\B(?=(\d{2})+(?!\d))/g, ",").replace(/^(\d+),/, "$1,");
-
-    return decimalPart !== undefined ? `${integerPart}.${decimalPart}` : integerPart;
+    return formattedNumber;
 }
 
 export { escapeRegex, dropDownStyle, formatPatientNumber, formatAmount }
