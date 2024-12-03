@@ -363,7 +363,7 @@ const Inventory = () => {
                             {/* <button className="btn btn-info mx-2" onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); console.log("exporting products"); }}>Export</button> */}
                         </div>
 
-                        <table className="table table-hover m-auto align-middle" style={{ width: "97%" }}>
+                        <table className="table table-hover table-striped border border-light m-auto align-middle" style={{ width: "97%" }}>
                             <thead>
                                 <tr className="table-dark">
                                     <th scope="col">Sl. No.</th>
@@ -381,7 +381,7 @@ const Inventory = () => {
                                     !filteredProductList.length ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No products added</td></tr> :
                                         filteredProductList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
                                             return (
-                                                <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>
+                                                <tr key={i}>
                                                     <td>{(currentPage * 10) + i + 1}</td>
                                                     <td>{x.manufacturer_name}</td>
                                                     <td>{x.product_name}</td>

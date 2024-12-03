@@ -421,7 +421,7 @@ const Audiometry = () => {
                                         <button className="btn btn-success ms-auto me-2" onClick={() => { setCurrentTab("tab2") }}>+ Add Audiometry Report</button>
                                     </div>
 
-                                    <table className="table table-hover m-auto align-middle" style={{ width: "97%" }}>
+                                    <table className="table table-hover table-striped border border-light m-auto align-middle" style={{ width: "97%" }}>
                                         <thead>
                                             <tr className="table-dark">
                                                 <th scope="col">Sl. No.</th>
@@ -441,7 +441,7 @@ const Audiometry = () => {
                                                         let patientDetails = patientList.find(p => p.id === x.patient_id)
 
                                                         return (
-                                                            <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>
+                                                            <tr key={i}>
                                                                 <td>{(currentPage * 10) + i + 1}</td>
                                                                 <td>{formatPatientNumber(patientDetails.patient_number)}</td>
                                                                 <td>{patientDetails.patient_name}</td>

@@ -88,7 +88,7 @@ const Patients = () => {
                             <button className="btn btn-success ms-auto me-2" onClick={() => { setConfigurePatientModalShow(true) }}>+ Add</button>
                         </div>
 
-                        <table className="table table-hover m-auto align-middle" style={{ width: "97%" }}>
+                        <table className="table table-hover table-striped border border-light m-auto align-middle" style={{ width: "97%" }}>
                             <thead>
                                 <tr className="table-dark">
                                     <th scope="col">Sl. No.</th>
@@ -107,7 +107,7 @@ const Patients = () => {
                                     !filteredPatientList.length ? <tr><td colSpan={9} className="fs-4 text-center text-secondary">No patients added</td></tr> :
                                         filteredPatientList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
                                             return (
-                                                <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>
+                                                <tr key={i}>
                                                     <td>{(currentPage * 10) + i + 1}</td>
                                                     <td>{formatPatientNumber(x.patient_number)}</td>
                                                     <td>{x.patient_name}</td>

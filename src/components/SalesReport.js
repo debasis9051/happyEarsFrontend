@@ -11,7 +11,7 @@ import { useFirebase } from "../contexts/firebase-context";
 import { getInvoiceList, getBranchList, getSalespersonList, getPatientList } from "../utils/getApis"
 import { printInvoice } from "../utils/printInvoice"
 import AuthWrapper from "./AuthWrapper";
-import { escapeRegex, dropDownStyle, formatPatientNumber } from "../utils/commonUtils"
+import { escapeRegex, dropDownStyle, formatPatientNumber, formatAmount } from "../utils/commonUtils"
 // import NewFeatureModal from "./NewFeatureModal"
 
 const SalesReport = () => {
@@ -188,18 +188,18 @@ const SalesReport = () => {
 
         // Calculate fields for each invoice
         const report = filteredInvoices.map((invData) => {
-            const productMRPValue = invData.line_items.reduce((p, o) => p + o.product_rate, 0);
-            const productSellValue = productMRPValue - invData.discount_amount;
+            const productMrpValue = invData.line_items.reduce((p, o) => p + o.product_rate, 0);
+            const productSellValue = productMrpValue - invData.discount_amount;
             const invoiceAmount = productSellValue + invData.accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0);
             const incentivePercentage = 5; // get from chart
-            const incentiveAmount = (invoiceAmount * incentivePercentage) / 100;
+            const incentiveAmount = (productSellValue * incentivePercentage) / 100;
 
             return {
                 patient_id: invData.patient_id,
                 patient_name: patientList.find((x) => x.id === invData.patient_id).patient_name,
                 invoice_number: invData.invoice_number,
                 invoice_amount: invoiceAmount,
-                product_mrp_value: productMRPValue,
+                product_mrp_value: productMrpValue,
                 product_sell_value: productSellValue,
                 incentive_percentage: incentivePercentage,
                 incentive_amount: incentiveAmount,
@@ -363,7 +363,7 @@ const SalesReport = () => {
                                         <button className="btn btn-info ms-auto me-2" onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); console.log("exporting products"); }}>Export</button>
                                     </div>
 
-                                    <table className="table table-hover m-auto align-middle" style={{ width: "97%" }}>
+                                    <table className="table table-hover table-striped border border-light m-auto align-middle" style={{ width: "97%" }}>
                                         <thead>
                                             <tr className="table-dark">
                                                 <th scope="col">Sl. No.</th>
@@ -385,13 +385,13 @@ const SalesReport = () => {
                                                         let patientDetails = patientList.find(p => p.id === x.patient_id)
 
                                                         return (
-                                                            <tr key={i} className={i % 2 ? "table-secondary" : "table-light"}>
+                                                            <tr key={i}>
                                                                 <td>{(currentPage * 10) + i + 1}</td>
                                                                 <td>{formatPatientNumber(patientDetails.patient_number)}</td>
                                                                 <td>{patientDetails.patient_name}</td>
                                                                 <td>{patientDetails.contact_number}</td>
                                                                 <td>{x.invoice_number}</td>
-                                                                <td>{(x.line_items.reduce((p, o) => p + o.product_rate, 0) - x.discount_amount) + x.accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)}</td>
+                                                                <td>₹ {formatAmount((x.line_items.reduce((p, o) => p + o.product_rate, 0) - x.discount_amount) + x.accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0))}</td>
                                                                 <td>{x.mode_of_payment}</td>
                                                                 <td>{x?.salesperson_id ? salespersonList.find(y => y.id === x.salesperson_id).salesperson_name : "N/A"}</td>
                                                                 <td>{moment.unix(x.date._seconds).format("DD-MM-YYYY")}</td>
@@ -498,7 +498,7 @@ const SalesReport = () => {
 
                                         <div className="row align-items-center">
                                             <div className="col-md-7">
-                                                <table className="table table-hover m-auto">
+                                                <table className="table table-hover table-striped border border-light m-auto">
                                                     <thead>
                                                         <tr className="table-dark">
                                                             <th scope="col">Salesperson</th>
@@ -515,7 +515,7 @@ const SalesReport = () => {
                                                                         <td>{row.salesperson_name}</td>
                                                                         <td>{row.no_of_invoices}</td>
                                                                         <td>{row.no_of_products_sold}</td>
-                                                                        <td>{row.net_total}</td>
+                                                                        <td>₹ {formatAmount(row.net_total)}</td>
                                                                     </tr>
                                                                 ))
                                                         }
@@ -593,9 +593,7 @@ const SalesReport = () => {
                                             </div>
                                         </div>
 
-                                        {/* <div className="row">
-                                            <div className="col-md-12"> */}
-                                        <table className="table table-hover mb-5">
+                                        <table className="table table-hover table-striped border border-light mb-5">
                                             <thead>
                                                 <tr className="table-dark">
                                                     <th scope="col">Patient Name</th>
@@ -614,18 +612,27 @@ const SalesReport = () => {
                                                             <tr key={index}>
                                                                 <td>{row.patient_name}</td>
                                                                 <td>{row.invoice_number}</td>
-                                                                <td>{row.invoice_amount.toFixed(2)}</td>
-                                                                <td>{row.product_mrp_value.toFixed(2)}</td>
-                                                                <td>{row.product_sell_value.toFixed(2)}</td>
+                                                                <td>₹ {formatAmount(row.invoice_amount.toFixed(2))}</td>
+                                                                <td>₹ {formatAmount(row.product_mrp_value.toFixed(2))}</td>
+                                                                <td>₹ {formatAmount(row.product_sell_value.toFixed(2))}</td>
                                                                 <td>{row.incentive_percentage}%</td>
-                                                                <td>{row.incentive_amount.toFixed(2)}</td>
+                                                                <td>₹ {formatAmount(row.incentive_amount.toFixed(2))}</td>
                                                             </tr>
                                                         ))
                                                 }
+                                                {
+                                                    reportMonthYear && selectedSalespersonReport &&
+                                                    <tr>
+                                                        <td colSpan={2} className="table-light text-center">TOTAL</td>
+                                                        <td>₹ {formatAmount(incentiveReportData.reduce((p, o) => p + o.invoice_amount, 0).toFixed(2))}</td>
+                                                        <td>₹ {formatAmount(incentiveReportData.reduce((p, o) => p + o.product_mrp_value, 0).toFixed(2))}</td>
+                                                        <td>₹ {formatAmount(incentiveReportData.reduce((p, o) => p + o.product_sell_value, 0).toFixed(2))}</td>
+                                                        <td></td>
+                                                        <td>₹ {formatAmount(incentiveReportData.reduce((p, o) => p + o.incentive_amount, 0).toFixed(2))}</td>
+                                                    </tr>
+                                                }
                                             </tbody>
                                         </table>
-                                        {/* </div>
-                                        </div> */}
                                     </div>
 
                                 </Tab>
