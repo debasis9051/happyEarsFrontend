@@ -11,7 +11,7 @@ import AuthWrapper from "./AuthWrapper";
 import { escapeRegex, formatPatientNumber } from "../utils/commonUtils";
 
 const viewLocation = ({ latitude, longitude }) => {
-    if(!latitude || !longitude){
+    if (!latitude || !longitude) {
         Swal.fire("Oops!", "Map-coordinates not available", "info")
         return
     }
@@ -88,95 +88,97 @@ const Patients = () => {
                             <button className="btn btn-success ms-auto me-2" onClick={() => { setConfigurePatientModalShow(true) }}>+ Add</button>
                         </div>
 
-                        <table className="table table-hover table-striped border border-light m-auto align-middle" style={{ width: "97%" }}>
-                            <thead>
-                                <tr className="table-dark">
-                                    <th scope="col">Sl. No.</th>
-                                    <th scope="col">Patient Number</th>
-                                    <th scope="col">Patient Name</th>
-                                    <th scope="col">Contact Number</th>
-                                    <th scope="col">Age</th>
-                                    <th scope="col">Sex</th>
-                                    <th scope="col">Notes</th>
-                                    <th scope="col">Added On</th>
-                                    <th scope="col">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {
-                                    !filteredPatientList.length ? <tr><td colSpan={9} className="fs-4 text-center text-secondary">No patients added</td></tr> :
-                                        filteredPatientList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
-                                            return (
-                                                <tr key={i}>
-                                                    <td>{(currentPage * 10) + i + 1}</td>
-                                                    <td>{formatPatientNumber(x.patient_number)}</td>
-                                                    <td>{x.patient_name}</td>
-                                                    <td>{x.contact_number}</td>
-                                                    <td>{x.age}</td>
-                                                    <td>{x.sex}</td>
-                                                    <td>
-                                                        <button className="btn btn-info" onClick={() => { Swal.fire("Notes", x.notes || "N/A", "info") }}>
-                                                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                                                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
-                                                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
-                                                            </svg>
-                                                        </button>
-                                                    </td>
-                                                    <td>{moment.unix(x.created_at._seconds).format("lll")}</td>
-                                                    <td>
-                                                        <Dropdown>
-                                                            <Dropdown.Toggle variant="primary">
-                                                                <svg width="16" height="16" fill="currentColor" className="bi bi-list" viewBox="0 0 16 16">
-                                                                    <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
-                                                                </svg>
-                                                            </Dropdown.Toggle>
-
-                                                            <Dropdown.Menu>
-                                                                <Dropdown.Item onClick={() => { setPatientData(x); setConfigurePatientModalShow(true); }} >Edit</Dropdown.Item>
-                                                                <Dropdown.Item onClick={() => { viewLocation(x.map_coordinates) }} >View Location</Dropdown.Item>
-                                                            </Dropdown.Menu>
-                                                        </Dropdown>
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })
-                                }
-                            </tbody>
-                            {
-                                filteredPatientList.length !== 0 &&
-                                <tfoot>
-                                    <tr>
-                                        <td colSpan={9}>
-                                            <div className="d-flex justify-content-center">
-                                                <ul className="pagination m-0">
-                                                    {
-                                                        currentPage + 1 !== 1 &&
-                                                        <li className="page-item" onClick={() => { setCurrentPage(currentPage - 1) }}>
-                                                            <div className="page-link" style={{ cursor: "pointer" }} >&laquo;</div>
-                                                        </li>
-                                                    }
-                                                    {
-                                                        Array.from({ length: e - s + 1 }, (_, i) => i + s).map((x, i) => {
-                                                            return (
-                                                                <li key={i} className={`page-item ${x - 1 === currentPage ? "active" : ""}`} onClick={() => { setCurrentPage(x - 1) }}>
-                                                                    <div className="page-link" style={{ cursor: "pointer" }} >{x}</div>
-                                                                </li>
-                                                            )
-                                                        })
-                                                    }
-                                                    {
-                                                        currentPage + 1 !== tp &&
-                                                        <li className="page-item" onClick={() => { setCurrentPage(currentPage + 1) }}>
-                                                            <div className="page-link" style={{ cursor: "pointer" }} >&raquo;</div>
-                                                        </li>
-                                                    }
-                                                </ul>
-                                            </div>
-                                        </td>
+                        <div className="table-responsive">
+                            <table className="table table-hover table-striped border border-light" style={{ minWidth: "950px" }}>
+                                <thead>
+                                    <tr className="table-dark">
+                                        <th scope="col">Sl. No.</th>
+                                        <th scope="col">Patient Number</th>
+                                        <th scope="col">Patient Name</th>
+                                        <th scope="col">Contact Number</th>
+                                        <th scope="col">Age</th>
+                                        <th scope="col">Sex</th>
+                                        <th scope="col">Notes</th>
+                                        <th scope="col">Added On</th>
+                                        <th scope="col">Actions</th>
                                     </tr>
-                                </tfoot>
-                            }
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {
+                                        !filteredPatientList.length ? <tr><td colSpan={9} className="fs-4 text-center text-secondary">No patients added</td></tr> :
+                                            filteredPatientList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
+                                                return (
+                                                    <tr key={i}>
+                                                        <td>{(currentPage * 10) + i + 1}</td>
+                                                        <td>{formatPatientNumber(x.patient_number)}</td>
+                                                        <td>{x.patient_name}</td>
+                                                        <td>{x.contact_number}</td>
+                                                        <td>{x.age}</td>
+                                                        <td>{x.sex}</td>
+                                                        <td>
+                                                            <button className="btn btn-info" onClick={() => { Swal.fire("Notes", x.notes || "N/A", "info") }}>
+                                                                <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                                                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+                                                                    <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
+                                                                </svg>
+                                                            </button>
+                                                        </td>
+                                                        <td>{moment.unix(x.created_at._seconds).format("lll")}</td>
+                                                        <td>
+                                                            <Dropdown>
+                                                                <Dropdown.Toggle variant="primary">
+                                                                    <svg width="16" height="16" fill="currentColor" className="bi bi-list" viewBox="0 0 16 16">
+                                                                        <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+                                                                    </svg>
+                                                                </Dropdown.Toggle>
+
+                                                                <Dropdown.Menu>
+                                                                    <Dropdown.Item onClick={() => { setPatientData(x); setConfigurePatientModalShow(true); }} >Edit</Dropdown.Item>
+                                                                    <Dropdown.Item onClick={() => { viewLocation(x.map_coordinates) }} >View Location</Dropdown.Item>
+                                                                </Dropdown.Menu>
+                                                            </Dropdown>
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            })
+                                    }
+                                </tbody>
+                                {
+                                    filteredPatientList.length !== 0 &&
+                                    <tfoot>
+                                        <tr>
+                                            <td colSpan={9}>
+                                                <div className="d-flex justify-content-center">
+                                                    <ul className="pagination m-0">
+                                                        {
+                                                            currentPage + 1 !== 1 &&
+                                                            <li className="page-item" onClick={() => { setCurrentPage(currentPage - 1) }}>
+                                                                <div className="page-link" style={{ cursor: "pointer" }} >&laquo;</div>
+                                                            </li>
+                                                        }
+                                                        {
+                                                            Array.from({ length: e - s + 1 }, (_, i) => i + s).map((x, i) => {
+                                                                return (
+                                                                    <li key={i} className={`page-item ${x - 1 === currentPage ? "active" : ""}`} onClick={() => { setCurrentPage(x - 1) }}>
+                                                                        <div className="page-link" style={{ cursor: "pointer" }} >{x}</div>
+                                                                    </li>
+                                                                )
+                                                            })
+                                                        }
+                                                        {
+                                                            currentPage + 1 !== tp &&
+                                                            <li className="page-item" onClick={() => { setCurrentPage(currentPage + 1) }}>
+                                                                <div className="page-link" style={{ cursor: "pointer" }} >&raquo;</div>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                }
+                            </table>
+                        </div>
                     </>
                 </AuthWrapper>
             </div>

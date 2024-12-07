@@ -363,106 +363,108 @@ const SalesReport = () => {
                                         <button className="btn btn-info ms-auto me-2" onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); console.log("exporting products"); }}>Export</button>
                                     </div>
 
-                                    <table className="table table-hover table-striped border border-light m-auto align-middle" style={{ width: "97%" }}>
-                                        <thead>
-                                            <tr className="table-dark">
-                                                <th scope="col">Sl. No.</th>
-                                                <th scope="col">Patient Number</th>
-                                                <th scope="col">Patient Name</th>
-                                                <th scope="col">Contact Number</th>
-                                                <th scope="col">Invoice Number</th>
-                                                <th scope="col">Invoice Amount</th>
-                                                <th scope="col">Mode of Payment</th>
-                                                <th scope="col">Salesperson</th>
-                                                <th scope="col">Invoice Date</th>
-                                                <th scope="col">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {
-                                                !patientList.length || !filteredInvoiceList.length ? <tr><td colSpan={10} className="fs-4 text-center text-secondary">No invoices added</td></tr> :
-                                                    filteredInvoiceList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
-                                                        let patientDetails = patientList.find(p => p.id === x.patient_id)
-
-                                                        return (
-                                                            <tr key={i}>
-                                                                <td>{(currentPage * 10) + i + 1}</td>
-                                                                <td>{formatPatientNumber(patientDetails.patient_number)}</td>
-                                                                <td>{patientDetails.patient_name}</td>
-                                                                <td>{patientDetails.contact_number}</td>
-                                                                <td>{x.invoice_number}</td>
-                                                                <td>₹ {formatAmount((x.line_items.reduce((p, o) => p + o.product_rate, 0) - x.discount_amount) + x.accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0))}</td>
-                                                                <td>{x.mode_of_payment}</td>
-                                                                <td>{x?.salesperson_id ? salespersonList.find(y => y.id === x.salesperson_id).salesperson_name : "N/A"}</td>
-                                                                <td>{moment.unix(x.date._seconds).format("DD-MM-YYYY")}</td>
-                                                                <td>
-                                                                    <Dropdown>
-                                                                        <Dropdown.Toggle variant="primary">
-                                                                            <svg width="16" height="16" fill="currentColor" className="bi bi-list" viewBox="0 0 16 16">
-                                                                                <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
-                                                                            </svg>
-                                                                        </Dropdown.Toggle>
-
-                                                                        <Dropdown.Menu>
-                                                                            <Dropdown.Item onClick={() => { editInvoiceModalInit(x) }} >Edit</Dropdown.Item>
-                                                                            <Dropdown.Item onClick={() => {
-                                                                                Swal.fire({
-                                                                                    title: "Print with Header On/Off?",
-                                                                                    showDenyButton: true,
-                                                                                    showCancelButton: true,
-                                                                                    confirmButtonText: "On",
-                                                                                    denyButtonText: `Off`
-                                                                                }).then((result) => {
-                                                                                    let h = result.isConfirmed ? true : result.isDenied ? false : null
-
-                                                                                    if (h !== null) {
-                                                                                        printInvoice(patientDetails, branchList.find(b => b.id === x.branch_id).branch_name, x.branch_id, x.invoice_number, moment.unix(x.date._seconds).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items, h, branchList)
-                                                                                    }
-                                                                                });
-                                                                            }} >Print</Dropdown.Item>
-                                                                        </Dropdown.Menu>
-                                                                    </Dropdown>
-                                                                </td>
-                                                            </tr>
-                                                        )
-                                                    })
-                                            }
-                                        </tbody>
-                                        {
-                                            filteredInvoiceList.length !== 0 &&
-                                            <tfoot>
-                                                <tr>
-                                                    <td colSpan={10}>
-                                                        <div className="d-flex justify-content-center">
-                                                            <ul className="pagination m-0">
-                                                                {
-                                                                    currentPage + 1 !== 1 &&
-                                                                    <li className="page-item" onClick={() => { setCurrentPage(currentPage - 1) }}>
-                                                                        <div className="page-link" style={{ cursor: "pointer" }} >&laquo;</div>
-                                                                    </li>
-                                                                }
-                                                                {
-                                                                    Array.from({ length: e - s + 1 }, (_, i) => i + s).map((x, i) => {
-                                                                        return (
-                                                                            <li key={i} className={`page-item ${x - 1 === currentPage ? "active" : ""}`} onClick={() => { setCurrentPage(x - 1) }}>
-                                                                                <div className="page-link" style={{ cursor: "pointer" }} >{x}</div>
-                                                                            </li>
-                                                                        )
-                                                                    })
-                                                                }
-                                                                {
-                                                                    currentPage + 1 !== tp &&
-                                                                    <li className="page-item" onClick={() => { setCurrentPage(currentPage + 1) }}>
-                                                                        <div className="page-link" style={{ cursor: "pointer" }} >&raquo;</div>
-                                                                    </li>
-                                                                }
-                                                            </ul>
-                                                        </div>
-                                                    </td>
+                                    <div className="table-responsive">
+                                        <table className="table table-hover table-striped border border-light" style={{ minWidth: "1330px" }}>
+                                            <thead>
+                                                <tr className="table-dark">
+                                                    <th scope="col">Sl. No.</th>
+                                                    <th scope="col">Patient Number</th>
+                                                    <th scope="col">Patient Name</th>
+                                                    <th scope="col">Contact Number</th>
+                                                    <th scope="col">Invoice Number</th>
+                                                    <th scope="col">Invoice Amount</th>
+                                                    <th scope="col">Mode of Payment</th>
+                                                    <th scope="col">Salesperson</th>
+                                                    <th scope="col">Invoice Date</th>
+                                                    <th scope="col">Actions</th>
                                                 </tr>
-                                            </tfoot>
-                                        }
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                {
+                                                    !patientList.length || !filteredInvoiceList.length ? <tr><td colSpan={10} className="fs-4 text-center text-secondary">No invoices added</td></tr> :
+                                                        filteredInvoiceList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
+                                                            let patientDetails = patientList.find(p => p.id === x.patient_id)
+
+                                                            return (
+                                                                <tr key={i}>
+                                                                    <td>{(currentPage * 10) + i + 1}</td>
+                                                                    <td>{formatPatientNumber(patientDetails.patient_number)}</td>
+                                                                    <td>{patientDetails.patient_name}</td>
+                                                                    <td>{patientDetails.contact_number}</td>
+                                                                    <td>{x.invoice_number}</td>
+                                                                    <td>₹&nbsp;{formatAmount((x.line_items.reduce((p, o) => p + o.product_rate, 0) - x.discount_amount) + x.accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0))}</td>
+                                                                    <td>{x.mode_of_payment}</td>
+                                                                    <td>{x?.salesperson_id ? salespersonList.find(y => y.id === x.salesperson_id).salesperson_name : "N/A"}</td>
+                                                                    <td>{moment.unix(x.date._seconds).format("DD-MM-YYYY")}</td>
+                                                                    <td>
+                                                                        <Dropdown>
+                                                                            <Dropdown.Toggle variant="primary">
+                                                                                <svg width="16" height="16" fill="currentColor" className="bi bi-list" viewBox="0 0 16 16">
+                                                                                    <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+                                                                                </svg>
+                                                                            </Dropdown.Toggle>
+
+                                                                            <Dropdown.Menu>
+                                                                                <Dropdown.Item onClick={() => { editInvoiceModalInit(x) }} >Edit</Dropdown.Item>
+                                                                                <Dropdown.Item onClick={() => {
+                                                                                    Swal.fire({
+                                                                                        title: "Print with Header On/Off?",
+                                                                                        showDenyButton: true,
+                                                                                        showCancelButton: true,
+                                                                                        confirmButtonText: "On",
+                                                                                        denyButtonText: `Off`
+                                                                                    }).then((result) => {
+                                                                                        let h = result.isConfirmed ? true : result.isDenied ? false : null
+
+                                                                                        if (h !== null) {
+                                                                                            printInvoice(patientDetails, branchList.find(b => b.id === x.branch_id).branch_name, x.branch_id, x.invoice_number, moment.unix(x.date._seconds).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items, h, branchList)
+                                                                                        }
+                                                                                    });
+                                                                                }} >Print</Dropdown.Item>
+                                                                            </Dropdown.Menu>
+                                                                        </Dropdown>
+                                                                    </td>
+                                                                </tr>
+                                                            )
+                                                        })
+                                                }
+                                            </tbody>
+                                            {
+                                                filteredInvoiceList.length !== 0 &&
+                                                <tfoot>
+                                                    <tr>
+                                                        <td colSpan={10}>
+                                                            <div className="d-flex justify-content-center">
+                                                                <ul className="pagination m-0">
+                                                                    {
+                                                                        currentPage + 1 !== 1 &&
+                                                                        <li className="page-item" onClick={() => { setCurrentPage(currentPage - 1) }}>
+                                                                            <div className="page-link" style={{ cursor: "pointer" }} >&laquo;</div>
+                                                                        </li>
+                                                                    }
+                                                                    {
+                                                                        Array.from({ length: e - s + 1 }, (_, i) => i + s).map((x, i) => {
+                                                                            return (
+                                                                                <li key={i} className={`page-item ${x - 1 === currentPage ? "active" : ""}`} onClick={() => { setCurrentPage(x - 1) }}>
+                                                                                    <div className="page-link" style={{ cursor: "pointer" }} >{x}</div>
+                                                                                </li>
+                                                                            )
+                                                                        })
+                                                                    }
+                                                                    {
+                                                                        currentPage + 1 !== tp &&
+                                                                        <li className="page-item" onClick={() => { setCurrentPage(currentPage + 1) }}>
+                                                                            <div className="page-link" style={{ cursor: "pointer" }} >&raquo;</div>
+                                                                        </li>
+                                                                    }
+                                                                </ul>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            }
+                                        </table>
+                                    </div>
 
                                 </Tab>
                                 <Tab eventKey="tab2" title="Sales Report">
@@ -491,148 +493,145 @@ const SalesReport = () => {
                                                     />
                                                 </div>
                                             </div>
-                                            <div className="col-2 align-self-end">
-                                                <button className="btn btn-info ms-auto me-2" onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); console.log("exporting report data"); }}>Export Report Data</button>
+                                            <div className="col-3 align-self-end">
+                                                <button className="btn btn-info ms-auto me-2" onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); console.log("exporting report data"); }}>Export Report</button>
                                             </div>
                                         </div>
 
-                                        <div className="row align-items-center">
-                                            <div className="col-md-7">
-                                                <table className="table table-hover table-striped border border-light m-auto">
-                                                    <thead>
-                                                        <tr className="table-dark">
-                                                            <th scope="col">Salesperson</th>
-                                                            <th scope="col">No. of Invoices</th>
-                                                            <th scope="col">No. of Products</th>
-                                                            <th scope="col">Net Total</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {
-                                                            !reportMonthYear ? <tr><td colSpan={4} className="fs-4 text-center text-secondary">Select a Month</td></tr> :
-                                                                reportData.map((row, index) => (
-                                                                    <tr key={index}>
-                                                                        <td>{row.salesperson_name}</td>
-                                                                        <td>{row.no_of_invoices}</td>
-                                                                        <td>{row.no_of_products_sold}</td>
-                                                                        <td>₹ {formatAmount(row.net_total)}</td>
-                                                                    </tr>
-                                                                ))
-                                                        }
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                            <div className="col-md-5">
-                                                <div style={{ width: "500px", height: "330px" }}>
-                                                    <ResponsivePie
-                                                        data={[
-                                                            ...salespersonList.map(x => ({ id: x.salesperson_name, label: x.salesperson_name, value: reportData.find(y => y.salesperson_id === x.id)?.no_of_invoices || 0 })),
-                                                            { id: "N/A", label: "N/A", value: reportData.find(y => y.salesperson_id === undefined)?.no_of_invoices || 0 }
-                                                        ]}
-                                                        colors={{ scheme: "set1" }}
-                                                        margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
-                                                        innerRadius={0.5}
-                                                        padAngle={0.7}
-                                                        cornerRadius={3}
-                                                        activeOuterRadiusOffset={8}
-                                                        borderWidth={1}
-                                                        borderColor={{
-                                                            from: 'color',
-                                                            modifiers: [
-                                                                [
-                                                                    'darker',
-                                                                    0.2
-                                                                ]
-                                                            ]
-                                                        }}
-                                                        arcLinkLabelsSkipAngle={10}
-                                                        arcLinkLabelsTextColor="#999999"
-                                                        arcLinkLabelsThickness={2}
-                                                        arcLinkLabelsColor={{ from: 'color' }}
-                                                        arcLabelsSkipAngle={10}
-                                                        arcLabelsTextColor={{
-                                                            from: 'color',
-                                                            modifiers: [
-                                                                [
-                                                                    'darker',
-                                                                    2
-                                                                ]
-                                                            ]
-                                                        }}
-                                                        tooltip={e => {
-                                                            let { datum: t } = e;
-                                                            return <div className="container bg-secondary rounded">{t.label}: {t.value}</div>
-                                                        }}
-                                                        legends={[
-                                                            {
-                                                                anchor: 'bottom',
-                                                                direction: 'row',
-                                                                justify: false,
-                                                                translateX: 0,
-                                                                translateY: 50,
-                                                                itemsSpacing: 0,
-                                                                itemWidth: 125,
-                                                                itemHeight: 20,
-                                                                itemTextColor: '#fff',
-                                                                itemDirection: 'left-to-right',
-                                                                itemOpacity: 1,
-                                                                symbolSize: 18,
-                                                                symbolShape: 'circle',
-                                                                effects: [
-                                                                    {
-                                                                        on: 'hover',
-                                                                        style: {
-                                                                            itemTextColor: '#999'
-                                                                        }
-                                                                    }
-                                                                ]
-                                                            }
-                                                        ]}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <table className="table table-hover table-striped border border-light mb-5">
+                                        <table className="table table-hover table-striped border border-light mt-5">
                                             <thead>
                                                 <tr className="table-dark">
-                                                    <th scope="col">Patient Name</th>
-                                                    <th scope="col">Invoice Number</th>
-                                                    <th scope="col">Invoice Amount</th>
-                                                    <th scope="col">Product MRP Value <CustomTooltipWrapper msg="Product MRP Value is the total of all the products' mrp in this Invoice" /></th>
-                                                    <th scope="col">Product Sell Value <CustomTooltipWrapper msg="Product Sell Value = Product MRP Value - Discount on Products" /></th>
-                                                    <th scope="col">Incentive Percentage</th>
-                                                    <th scope="col">Incentive Amount <CustomTooltipWrapper msg="Incentive Amount = Product Sell Value * Incentive Percentage" /></th>
+                                                    <th scope="col">Salesperson</th>
+                                                    <th scope="col">No. of Invoices</th>
+                                                    <th scope="col">No. of Products</th>
+                                                    <th scope="col">Net Total</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {
-                                                    !reportMonthYear || !selectedSalespersonReport ? <tr><td colSpan={7} className="fs-4 text-center text-secondary">Select a Month and Salesperson</td></tr> :
-                                                        incentiveReportData.map((row, index) => (
+                                                    !reportMonthYear ? <tr><td colSpan={4} className="fs-4 text-center text-secondary">Select a Month</td></tr> :
+                                                        reportData.map((row, index) => (
                                                             <tr key={index}>
-                                                                <td>{row.patient_name}</td>
-                                                                <td>{row.invoice_number}</td>
-                                                                <td>₹ {formatAmount(row.invoice_amount)}</td>
-                                                                <td>₹ {formatAmount(row.product_mrp_value)}</td>
-                                                                <td>₹ {formatAmount(row.product_sell_value)}</td>
-                                                                <td>{row.incentive_percentage}%</td>
-                                                                <td>₹ {formatAmount(row.incentive_amount)}</td>
+                                                                <td>{row.salesperson_name}</td>
+                                                                <td>{row.no_of_invoices}</td>
+                                                                <td>{row.no_of_products_sold}</td>
+                                                                <td>₹&nbsp;{formatAmount(row.net_total)}</td>
                                                             </tr>
                                                         ))
                                                 }
-                                                {
-                                                    reportMonthYear && selectedSalespersonReport &&
-                                                    <tr>
-                                                        <td colSpan={2} className="table-light text-center">TOTAL</td>
-                                                        <td>₹ {formatAmount(incentiveReportData.reduce((p, o) => p + o.invoice_amount, 0))}</td>
-                                                        <td>₹ {formatAmount(incentiveReportData.reduce((p, o) => p + o.product_mrp_value, 0))}</td>
-                                                        <td>₹ {formatAmount(incentiveReportData.reduce((p, o) => p + o.product_sell_value, 0))}</td>
-                                                        <td></td>
-                                                        <td>₹ {formatAmount(incentiveReportData.reduce((p, o) => p + o.incentive_amount, 0))}</td>
-                                                    </tr>
-                                                }
                                             </tbody>
                                         </table>
+
+                                        <div className="mx-auto" style={{ width: "750px", height: "330px" }}>
+                                            <ResponsivePie
+                                                data={[
+                                                    ...salespersonList.map(x => ({ id: x.salesperson_name, label: x.salesperson_name, value: reportData.find(y => y.salesperson_id === x.id)?.no_of_invoices || 0 })),
+                                                    { id: "N/A", label: "N/A", value: reportData.find(y => y.salesperson_id === undefined)?.no_of_invoices || 0 }
+                                                ]}
+                                                colors={{ scheme: "set1" }}
+                                                margin={{ top: 20, right: 20, bottom: 60, left: 140 }}
+                                                innerRadius={0.5}
+                                                padAngle={0.7}
+                                                cornerRadius={3}
+                                                activeOuterRadiusOffset={8}
+                                                borderWidth={1}
+                                                borderColor={{
+                                                    from: 'color',
+                                                    modifiers: [
+                                                        [
+                                                            'darker',
+                                                            0.2
+                                                        ]
+                                                    ]
+                                                }}
+                                                arcLinkLabelsSkipAngle={10}
+                                                arcLinkLabelsTextColor="#999999"
+                                                arcLinkLabelsThickness={2}
+                                                arcLinkLabelsColor={{ from: 'color' }}
+                                                arcLabelsSkipAngle={10}
+                                                arcLabelsTextColor={{
+                                                    from: 'color',
+                                                    modifiers: [
+                                                        [
+                                                            'darker',
+                                                            2
+                                                        ]
+                                                    ]
+                                                }}
+                                                tooltip={e => {
+                                                    let { datum: t } = e;
+                                                    return <div className="container bg-secondary rounded">{t.label}: {t.value}</div>
+                                                }}
+                                                legends={[
+                                                    {
+                                                        anchor: 'left',
+                                                        direction: 'column',
+                                                        justify: false,
+                                                        translateX: -50,
+                                                        translateY: 0,
+                                                        itemsSpacing: 10,
+                                                        itemWidth: 100,
+                                                        itemHeight: 20,
+                                                        itemTextColor: '#fff',
+                                                        itemDirection: 'left-to-right',
+                                                        itemOpacity: 1,
+                                                        symbolSize: 20,
+                                                        symbolShape: 'circle',
+                                                        effects: [
+                                                            {
+                                                                on: 'hover',
+                                                                style: {
+                                                                    itemTextColor: '#999'
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                ]}
+                                            />
+                                        </div>
+
+                                        <div className="table-responsive">
+                                            <table className="table table-hover table-striped border border-light mb-5" style={{ minWidth: "1300px" }}>
+                                                <thead>
+                                                    <tr className="table-dark">
+                                                        <th scope="col">Patient Name</th>
+                                                        <th scope="col">Invoice Number</th>
+                                                        <th scope="col">Invoice Amount</th>
+                                                        <th scope="col">Product MRP Value <CustomTooltipWrapper msg="Product MRP Value is the total of all the products' mrp in this Invoice" /></th>
+                                                        <th scope="col">Product Sell Value <CustomTooltipWrapper msg="Product Sell Value = Product MRP Value - Discount on Products" /></th>
+                                                        <th scope="col">Incentive Percentage</th>
+                                                        <th scope="col">Incentive Amount <CustomTooltipWrapper msg="Incentive Amount = Product Sell Value * Incentive Percentage" /></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {
+                                                        !reportMonthYear || !selectedSalespersonReport ? <tr><td colSpan={7} className="fs-4 text-center text-secondary">Select a Month and Salesperson</td></tr> :
+                                                            incentiveReportData.map((row, index) => (
+                                                                <tr key={index}>
+                                                                    <td>{row.patient_name}</td>
+                                                                    <td>{row.invoice_number}</td>
+                                                                    <td>₹&nbsp;{formatAmount(row.invoice_amount)}</td>
+                                                                    <td>₹&nbsp;{formatAmount(row.product_mrp_value)}</td>
+                                                                    <td>₹&nbsp;{formatAmount(row.product_sell_value)}</td>
+                                                                    <td>{row.incentive_percentage}%</td>
+                                                                    <td>₹&nbsp;{formatAmount(row.incentive_amount)}</td>
+                                                                </tr>
+                                                            ))
+                                                    }
+                                                    {
+                                                        reportMonthYear && selectedSalespersonReport &&
+                                                        <tr>
+                                                            <td colSpan={2} className="table-light text-center">TOTAL</td>
+                                                            <td>₹&nbsp;{formatAmount(incentiveReportData.reduce((p, o) => p + o.invoice_amount, 0))}</td>
+                                                            <td>₹&nbsp;{formatAmount(incentiveReportData.reduce((p, o) => p + o.product_mrp_value, 0))}</td>
+                                                            <td>₹&nbsp;{formatAmount(incentiveReportData.reduce((p, o) => p + o.product_sell_value, 0))}</td>
+                                                            <td></td>
+                                                            <td>₹&nbsp;{formatAmount(incentiveReportData.reduce((p, o) => p + o.incentive_amount, 0))}</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
 
                                 </Tab>
@@ -813,7 +812,7 @@ const CustomTooltipWrapper = ({ msg }) => {
             placement={"top"}
             overlay={<Tooltip>{msg}</Tooltip>}
         >
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style={{margin: "0 0 1px 5px"}}>
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style={{ margin: "0 0 1px 5px" }}>
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
                 <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
             </svg>

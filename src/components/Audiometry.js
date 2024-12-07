@@ -421,114 +421,116 @@ const Audiometry = () => {
                                         <button className="btn btn-success ms-auto me-2" onClick={() => { setCurrentTab("tab2") }}>+ Add Audiometry Report</button>
                                     </div>
 
-                                    <table className="table table-hover table-striped border border-light m-auto align-middle" style={{ width: "97%" }}>
-                                        <thead>
-                                            <tr className="table-dark">
-                                                <th scope="col">Sl. No.</th>
-                                                <th scope="col">Patient Number</th>
-                                                <th scope="col">Patient Name</th>
-                                                <th scope="col">Contact Number</th>
-                                                <th scope="col">LHL(db)</th>
-                                                <th scope="col">RHL(db)</th>
-                                                <th scope="col">Added On</th>
-                                                <th scope="col">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {
-                                                !patientList.length || !filteredAudiometryList.length ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No audiometry reports added</td></tr> :
-                                                    filteredAudiometryList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
-                                                        let patientDetails = patientList.find(p => p.id === x.patient_id)
-
-                                                        return (
-                                                            <tr key={i}>
-                                                                <td>{(currentPage * 10) + i + 1}</td>
-                                                                <td>{formatPatientNumber(patientDetails.patient_number)}</td>
-                                                                <td>{patientDetails.patient_name}</td>
-                                                                <td>{patientDetails.contact_number}</td>
-                                                                <td>{calculateHearingLoss(x.ac_left_ear_pta.data).unit}</td>
-                                                                <td>{calculateHearingLoss(x.ac_right_ear_pta.data).unit}</td>
-                                                                <td>{moment.unix(x.created_at._seconds).format("lll")}</td>
-                                                                <td>
-                                                                    <Dropdown>
-                                                                        <Dropdown.Toggle variant="primary">
-                                                                            <svg width="16" height="16" fill="currentColor" className="bi bi-list" viewBox="0 0 16 16">
-                                                                                <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
-                                                                            </svg>
-                                                                        </Dropdown.Toggle>
-
-                                                                        <Dropdown.Menu>
-                                                                            <Dropdown.Item onClick={() => { updateAudiometryReportInit(x) }} >Edit Report </Dropdown.Item>
-                                                                            <Dropdown.Item href={`/generate-invoice/${x.id}`} >Generate Invoice </Dropdown.Item>
-                                                                            <Dropdown.Item
-                                                                                onClick={() => {
-                                                                                    Swal.fire({
-                                                                                        title: "Print with Header On/Off?",
-                                                                                        showDenyButton: true,
-                                                                                        showCancelButton: true,
-                                                                                        confirmButtonText: "On",
-                                                                                        denyButtonText: `Off`
-                                                                                    }).then((result) => {
-                                                                                        let h = result.isConfirmed ? true : result.isDenied ? false : null
-
-                                                                                        if (h !== null) {
-                                                                                            if (!x.trial_mode && x.doctor_id) {
-                                                                                                getDoctorDetails(x.doctor_id)
-                                                                                                    .then((doctor_details) => {
-                                                                                                        printAudiometryReport(x, patientDetails, calculateHearingLoss, h, doctor_details, branchList)
-                                                                                                    })
-                                                                                            }
-                                                                                            else {
-                                                                                                printAudiometryReport(x, patientDetails, calculateHearingLoss, h, null, branchList)
-                                                                                            }
-                                                                                        }
-                                                                                    });
-                                                                                }}
-                                                                            >Print Report
-                                                                            </Dropdown.Item>
-                                                                        </Dropdown.Menu>
-                                                                    </Dropdown>
-                                                                </td>
-                                                            </tr>
-                                                        )
-                                                    })
-                                            }
-                                        </tbody>
-                                        {
-                                            filteredAudiometryList.length !== 0 &&
-                                            <tfoot>
-                                                <tr>
-                                                    <td colSpan={8}>
-                                                        <div className="d-flex justify-content-center">
-                                                            <ul className="pagination m-0">
-                                                                {
-                                                                    currentPage + 1 !== 1 &&
-                                                                    <li className="page-item" onClick={() => { setCurrentPage(currentPage - 1) }}>
-                                                                        <div className="page-link" style={{ cursor: "pointer" }} >&laquo;</div>
-                                                                    </li>
-                                                                }
-                                                                {
-                                                                    Array.from({ length: e - s + 1 }, (_, i) => i + s).map((x, i) => {
-                                                                        return (
-                                                                            <li key={i} className={`page-item ${x - 1 === currentPage ? "active" : ""}`} onClick={() => { setCurrentPage(x - 1) }}>
-                                                                                <div className="page-link" style={{ cursor: "pointer" }} >{x}</div>
-                                                                            </li>
-                                                                        )
-                                                                    })
-                                                                }
-                                                                {
-                                                                    currentPage + 1 !== tp &&
-                                                                    <li className="page-item" onClick={() => { setCurrentPage(currentPage + 1) }}>
-                                                                        <div className="page-link" style={{ cursor: "pointer" }} >&raquo;</div>
-                                                                    </li>
-                                                                }
-                                                            </ul>
-                                                        </div>
-                                                    </td>
+                                    <div className="table-responsive">
+                                        <table className="table table-hover table-striped border border-light" style={{ minWidth: "950px" }}>
+                                            <thead>
+                                                <tr className="table-dark">
+                                                    <th scope="col">Sl. No.</th>
+                                                    <th scope="col">Patient Number</th>
+                                                    <th scope="col">Patient Name</th>
+                                                    <th scope="col">Contact Number</th>
+                                                    <th scope="col">LHL(db)</th>
+                                                    <th scope="col">RHL(db)</th>
+                                                    <th scope="col">Added On</th>
+                                                    <th scope="col">Actions</th>
                                                 </tr>
-                                            </tfoot>
-                                        }
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                {
+                                                    !patientList.length || !filteredAudiometryList.length ? <tr><td colSpan={8} className="fs-4 text-center text-secondary">No audiometry reports added</td></tr> :
+                                                        filteredAudiometryList.slice(currentPage * 10, (currentPage * 10) + 10).map((x, i) => {
+                                                            let patientDetails = patientList.find(p => p.id === x.patient_id)
+
+                                                            return (
+                                                                <tr key={i}>
+                                                                    <td>{(currentPage * 10) + i + 1}</td>
+                                                                    <td>{formatPatientNumber(patientDetails.patient_number)}</td>
+                                                                    <td>{patientDetails.patient_name}</td>
+                                                                    <td>{patientDetails.contact_number}</td>
+                                                                    <td>{calculateHearingLoss(x.ac_left_ear_pta.data).unit}</td>
+                                                                    <td>{calculateHearingLoss(x.ac_right_ear_pta.data).unit}</td>
+                                                                    <td>{moment.unix(x.created_at._seconds).format("lll")}</td>
+                                                                    <td>
+                                                                        <Dropdown>
+                                                                            <Dropdown.Toggle variant="primary">
+                                                                                <svg width="16" height="16" fill="currentColor" className="bi bi-list" viewBox="0 0 16 16">
+                                                                                    <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+                                                                                </svg>
+                                                                            </Dropdown.Toggle>
+
+                                                                            <Dropdown.Menu>
+                                                                                <Dropdown.Item onClick={() => { updateAudiometryReportInit(x) }} >Edit Report </Dropdown.Item>
+                                                                                <Dropdown.Item href={`/generate-invoice/${x.id}`} >Generate Invoice </Dropdown.Item>
+                                                                                <Dropdown.Item
+                                                                                    onClick={() => {
+                                                                                        Swal.fire({
+                                                                                            title: "Print with Header On/Off?",
+                                                                                            showDenyButton: true,
+                                                                                            showCancelButton: true,
+                                                                                            confirmButtonText: "On",
+                                                                                            denyButtonText: `Off`
+                                                                                        }).then((result) => {
+                                                                                            let h = result.isConfirmed ? true : result.isDenied ? false : null
+
+                                                                                            if (h !== null) {
+                                                                                                if (!x.trial_mode && x.doctor_id) {
+                                                                                                    getDoctorDetails(x.doctor_id)
+                                                                                                        .then((doctor_details) => {
+                                                                                                            printAudiometryReport(x, patientDetails, calculateHearingLoss, h, doctor_details, branchList)
+                                                                                                        })
+                                                                                                }
+                                                                                                else {
+                                                                                                    printAudiometryReport(x, patientDetails, calculateHearingLoss, h, null, branchList)
+                                                                                                }
+                                                                                            }
+                                                                                        });
+                                                                                    }}
+                                                                                >Print Report
+                                                                                </Dropdown.Item>
+                                                                            </Dropdown.Menu>
+                                                                        </Dropdown>
+                                                                    </td>
+                                                                </tr>
+                                                            )
+                                                        })
+                                                }
+                                            </tbody>
+                                            {
+                                                filteredAudiometryList.length !== 0 &&
+                                                <tfoot>
+                                                    <tr>
+                                                        <td colSpan={8}>
+                                                            <div className="d-flex justify-content-center">
+                                                                <ul className="pagination m-0">
+                                                                    {
+                                                                        currentPage + 1 !== 1 &&
+                                                                        <li className="page-item" onClick={() => { setCurrentPage(currentPage - 1) }}>
+                                                                            <div className="page-link" style={{ cursor: "pointer" }} >&laquo;</div>
+                                                                        </li>
+                                                                    }
+                                                                    {
+                                                                        Array.from({ length: e - s + 1 }, (_, i) => i + s).map((x, i) => {
+                                                                            return (
+                                                                                <li key={i} className={`page-item ${x - 1 === currentPage ? "active" : ""}`} onClick={() => { setCurrentPage(x - 1) }}>
+                                                                                    <div className="page-link" style={{ cursor: "pointer" }} >{x}</div>
+                                                                                </li>
+                                                                            )
+                                                                        })
+                                                                    }
+                                                                    {
+                                                                        currentPage + 1 !== tp &&
+                                                                        <li className="page-item" onClick={() => { setCurrentPage(currentPage + 1) }}>
+                                                                            <div className="page-link" style={{ cursor: "pointer" }} >&raquo;</div>
+                                                                        </li>
+                                                                    }
+                                                                </ul>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            }
+                                        </table>
+                                    </div>
 
                                 </Tab>
                                 <Tab eventKey="tab2" title="Audiometry Report">
@@ -556,13 +558,13 @@ const Audiometry = () => {
                                                         />
                                                     </div>
                                                 </div>
-                                                <div className="col-4">
+                                                <div className="col-3">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required" htmlFor="date">Date</label>
                                                         <input type="date" id="date" className="form-control" value={date} onChange={(e) => { setDate(e.target.value) }} />
                                                     </div>
                                                 </div>
-                                                <div className="col-4 d-flex gap-2">
+                                                <div className="col-5 d-flex gap-2">
                                                     <div className="form-group flex-grow-1">
                                                         <label className="form-label my-1 required">Patient</label>
                                                         <Select
