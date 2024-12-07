@@ -295,7 +295,7 @@ const Patients = () => {
                                                     </svg>
                                                 </div>
                                             </div>
-                                        }) : <div>No Invoices Reports created for this Patient</div>
+                                        }) : <div>No Invoices created for this Patient</div>
                                     }
                                 </div>
                             </div>
