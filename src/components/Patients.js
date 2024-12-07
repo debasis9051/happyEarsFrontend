@@ -349,13 +349,13 @@ const ConfigurePatientsModal = ({ configurePatientModalShow, currentUserInfo, ap
             <Modal.Body>
                 <div className="container">
                     <div className="row">
-                        <div className="col-md-6">
+                        <div className="col-6">
                             <div className="form-group">
                                 <label className="form-label my-1 required" htmlFor="patientName">Patient Name</label>
                                 <input type="text" id="patientName" className="form-control" value={patientName} onChange={(e) => { setPatientName(e.target.value) }} placeholder="Enter name" />
                             </div>
                         </div>
-                        <div className="col-md-6">
+                        <div className="col-6">
                             <div className="form-group">
                                 <label className="form-label my-1 required" htmlFor="contactNumber">Contact Number</label>
                                 <input type="text" id="contactNumber" className="form-control" value={contactNumber} onChange={(e) => { setContactNumber(e.target.value) }} placeholder="Enter contact no." />
@@ -363,25 +363,27 @@ const ConfigurePatientsModal = ({ configurePatientModalShow, currentUserInfo, ap
                         </div>
                     </div>
                     <div className="row">
-                        <div className="col-md-3">
+                        <div className="col-6">
                             <div className="form-group">
                                 <label className="form-label my-1 required" htmlFor="patientNumber">Patient No.</label>
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">PAT</span>
+                                <div className="input-group mb-3">
+                                    <span className="input-group-text">PAT</span>
                                     <input type="number" id="patientNumber" className="form-control" value={patientNumber.toString()} onChange={(e) => { setPatientNumber(e.target.value === "" ? 0 : parseInt(e.target.value)) }} placeholder="Enter PAT No." />
                                 </div>
                             </div>
                         </div>
-                        <div className="col-md-3">
+                        <div className="col-6">
                             <div className="form-group">
                                 <label className="form-label my-1 required" htmlFor="age">Age</label>
                                 <input type="text" id="age" className="form-control" value={age} onChange={(e) => { setAge(e.target.value) }} placeholder="Enter age" />
                             </div>
                         </div>
-                        <div className="col-md-6">
+                    </div>
+                    <div className="row">
+                        <div className="col-12">
                             <div className="form-group">
                                 <label className="form-label my-1 required">Sex</label>
-                                <div className="d-flex gap-2 text-white">
+                                <div className="d-flex gap-4 text-white" style={{ margin: "0 40px" }}>
                                     <div className={`p-2 flex-grow-1 text-center rounded ${sex === "male" ? "bg-primary" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setSex("male") }}>Male</div>
                                     <div className={`p-2 flex-grow-1 text-center rounded ${sex === "female" ? "bg-primary" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setSex("female") }}>Female</div>
                                     <div className={`p-2 flex-grow-1 text-center rounded ${sex === "others" ? "bg-primary" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setSex("others") }}>Others</div>
@@ -390,13 +392,13 @@ const ConfigurePatientsModal = ({ configurePatientModalShow, currentUserInfo, ap
                         </div>
                     </div>
                     <div className="row">
-                        <div className="col-md-6">
+                        <div className="col-6">
                             <div className="form-group">
                                 <label className="form-label my-1 required" htmlFor="patientAddress">Patient Address</label>
                                 <textarea id="patientAddress" rows={3} className="form-control" value={patientAddress} onChange={(e) => { setPatientAddress(e.target.value) }} placeholder="Enter address" />
                             </div>
                         </div>
-                        <div className="col-md-6">
+                        <div className="col-6">
                             <div className="form-group">
                                 <label className="form-label my-1" htmlFor="notes">Notes</label>
                                 <textarea id="notes" rows={3} className="form-control" value={notes} onChange={(e) => { setNotes(e.target.value) }} placeholder="Enter notes" />
@@ -404,7 +406,7 @@ const ConfigurePatientsModal = ({ configurePatientModalShow, currentUserInfo, ap
                         </div>
                     </div>
                     <div className="row">
-                        <div className="col-md-6">
+                        <div className="col-6">
                             <div className="form-group">
                                 <label className="form-label my-1" htmlFor="latitude">Latitude</label>
                                 <div className="input-group">
@@ -417,7 +419,7 @@ const ConfigurePatientsModal = ({ configurePatientModalShow, currentUserInfo, ap
                                 </div>
                             </div>
                         </div>
-                        <div className="col-md-6">
+                        <div className="col-6">
                             <div className="form-group">
                                 <label className="form-label my-1" htmlFor="longitude">Longitude</label>
                                 <div className="input-group">
@@ -430,7 +432,7 @@ const ConfigurePatientsModal = ({ configurePatientModalShow, currentUserInfo, ap
                                 </div>
                             </div>
                         </div>
-                        <div className="col-md-12">
+                        <div className="col-12">
                             <button className="btn btn-info my-3 mx-2" onClick={() => { getCurrentLocation() }} disabled={isGeolocationLoading}>
                                 {
                                     isGeolocationLoading ?
