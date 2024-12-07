@@ -66,6 +66,22 @@ const calculateHearingLoss = (frequencyData) => {
     return { unit, color, text }
 }
 
+const getDoctorDetails = (doctor_id, current_user_uid, current_user_name) => {
+    return axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-doctor-details`, { doctor_id: doctor_id, current_user_uid: current_user_uid, current_user_name: current_user_name }, { headers: { 'Content-Type': 'application/json' } })
+        .then((res) => {
+            if (res.data.operation === "success") {
+                return res.data.info
+            }
+            else {
+                Swal.fire('Oops!', res.data.message, 'error');
+            }
+        })
+        .catch((err) => {
+            console.log(err)
+            Swal.fire('Error!!', err.message, 'error');
+        })
+}
+
 const Audiometry = () => {
     const { currentUserInfo } = useFirebase()
 
@@ -152,22 +168,6 @@ const Audiometry = () => {
             setBranchFilter({ label: b.branch_name, value: b.id })
         }
     }, [branchList])
-
-    const getDoctorDetails = (doctor_id) => {
-        return axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-doctor-details`, { doctor_id: doctor_id, current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
-            .then((res) => {
-                if (res.data.operation === "success") {
-                    return res.data.info
-                }
-                else {
-                    Swal.fire('Oops!', res.data.message, 'error');
-                }
-            })
-            .catch((err) => {
-                console.log(err)
-                Swal.fire('Error!!', err.message, 'error');
-            })
-    }
 
     const updateAudiometryReportInit = (audiometry_report_data) => {
         setAudiometryReportMode("update");
@@ -421,7 +421,7 @@ const Audiometry = () => {
                                         <button className="btn btn-success ms-auto me-2" onClick={() => { setCurrentTab("tab2") }}>+ Add Audiometry Report</button>
                                     </div>
 
-                                    <div className="table-responsive">
+                                    <div className="table-responsive" style={{ minHeight: "250px" }}>
                                         <table className="table table-hover table-striped border border-light" style={{ minWidth: "950px" }}>
                                             <thead>
                                                 <tr className="table-dark">
@@ -474,13 +474,13 @@ const Audiometry = () => {
 
                                                                                             if (h !== null) {
                                                                                                 if (!x.trial_mode && x.doctor_id) {
-                                                                                                    getDoctorDetails(x.doctor_id)
+                                                                                                    getDoctorDetails(x.doctor_id, currentUserInfo.uid, currentUserInfo.displayName)
                                                                                                         .then((doctor_details) => {
-                                                                                                            printAudiometryReport(x, patientDetails, calculateHearingLoss, h, doctor_details, branchList)
+                                                                                                            printAudiometryReport(x, patientDetails, h, doctor_details, branchList)
                                                                                                         })
                                                                                                 }
                                                                                                 else {
-                                                                                                    printAudiometryReport(x, patientDetails, calculateHearingLoss, h, null, branchList)
+                                                                                                    printAudiometryReport(x, patientDetails, h, null, branchList)
                                                                                                 }
                                                                                             }
                                                                                         });
@@ -918,4 +918,4 @@ const AudiogramInput = ({ ptaData, setPtaData, hearingLossRatingPanel = true }) 
     )
 }
 
-export default Audiometry
+export { Audiometry as default, getDoctorDetails, calculateHearingLoss }

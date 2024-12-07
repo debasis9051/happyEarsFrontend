@@ -1,5 +1,6 @@
 import moment from "moment"
 import { formatPatientNumber } from "./commonUtils";
+import { calculateHearingLoss } from "../components/Audiometry";
 
 const drawMarker = (ctx, x, y, marker, markerColor, arrowFlag) => {
     if (marker === "circle") {
@@ -201,7 +202,7 @@ const drawChartData = (ctx, ptaData, lineType, lineColor, marker) => {
     })
 }
 
-const printAudiometryReport = (reportData, patientDetails, calculateHearingLoss, headerVisible, doctor_details, branchList) => {
+const printAudiometryReport = (reportData, patientDetails, headerVisible, doctor_details, branchList) => {
 
     let header_image = "/happy_ears_invoice_header_" + branchList.find(x=>x.id===reportData.branch_id).branch_name.toLowerCase() + ".png"
 

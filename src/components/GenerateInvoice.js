@@ -538,12 +538,12 @@ const GenerateInvoice = () => {
                                                         confirmButtonText: "Print",
                                                     }).then((result) => {
                                                         if (result.isConfirmed) {
-                                                            printInvoice(patientDetails, selectedBranch.label, selectedBranch.value, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, h, branchList)
+                                                            printInvoice(patientDetails, selectedBranch.value, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, h, branchList)
                                                         }
                                                     });
                                                 }
                                                 else {
-                                                    printInvoice(patientDetails, selectedBranch.label, selectedBranch.value, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, h, branchList)
+                                                    printInvoice(patientDetails, selectedBranch.value, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, h, branchList)
                                                 }
                                             }
                                         });

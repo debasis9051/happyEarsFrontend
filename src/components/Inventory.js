@@ -363,7 +363,7 @@ const Inventory = () => {
                             {/* <button className="btn btn-info mx-2" onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); console.log("exporting products"); }}>Export</button> */}
                         </div>
 
-                        <div className="table-responsive">
+                        <div className="table-responsive" style={{ minHeight: "250px" }}>
                             <table className="table table-hover table-striped border border-light" style={{ minWidth: "950px" }}>
                                 <thead>
                                     <tr className="table-dark">

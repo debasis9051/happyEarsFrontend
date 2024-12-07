@@ -6,9 +6,12 @@ import moment from "moment"
 import { Helmet } from "react-helmet-async";
 
 import { useFirebase } from "../contexts/firebase-context";
-import { getPatientList } from "../utils/getApis"
+import { getBranchList, getPatientList } from "../utils/getApis"
 import AuthWrapper from "./AuthWrapper";
 import { escapeRegex, formatPatientNumber } from "../utils/commonUtils";
+import { getDoctorDetails } from "./Audiometry";
+import { printAudiometryReport } from "../utils/printAudiometryReport";
+import { printInvoice } from "../utils/printInvoice";
 
 const viewLocation = ({ latitude, longitude }) => {
     if (!latitude || !longitude) {
@@ -22,6 +25,7 @@ const viewLocation = ({ latitude, longitude }) => {
 const Patients = () => {
     const { currentUserInfo } = useFirebase()
 
+    const [branchList, setBranchList] = useState([])
     const [patientList, setPatientList] = useState([])
 
     const [currentPage, setCurrentPage] = useState(0)
@@ -30,6 +34,11 @@ const Patients = () => {
 
     const [configurePatientModalShow, setConfigurePatientModalShow] = useState(false)
     const [patientData, setPatientData] = useState(null)
+
+    const [patientDocsModalShow, setPatientDocsModalShow] = useState(false)
+    const [selectedPatientDetails, setSelectedPatientDetails] = useState(null)
+    const [patientDocs, setPatientDocs] = useState(null)
+    const [patientDocsApiState, setPatientDocsApiState] = useState(false)
 
 
     const filteredPatientList = useMemo(() => {
@@ -48,8 +57,27 @@ const Patients = () => {
         })
     }, [searchBarState, searchValue, patientList])
 
+    const getPatientDocs = (patient_id) => {
+        setPatientDocsApiState(true)
+        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-patient-docs-by-id`, { patient_id: patient_id, current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
+            .then((res) => {
+                setPatientDocsApiState(false)
+                if (res.data.operation === "success") {
+                    setPatientDocs(res.data.info)
+                }
+                else {
+                    Swal.fire('Oops!', res.data.message, 'error');
+                }
+            })
+            .catch((err) => {
+                console.log(err)
+                Swal.fire('Error!!', err.message, 'error');
+            })
+    }
+
     useEffect(() => {
         if (currentUserInfo !== null) {
+            getBranchList(currentUserInfo, setBranchList)
             getPatientList(currentUserInfo, setPatientList)
         }
     }, [currentUserInfo])
@@ -88,7 +116,7 @@ const Patients = () => {
                             <button className="btn btn-success ms-auto me-2" onClick={() => { setConfigurePatientModalShow(true) }}>+ Add</button>
                         </div>
 
-                        <div className="table-responsive">
+                        <div className="table-responsive" style={{ minHeight: "250px" }}>
                             <table className="table table-hover table-striped border border-light" style={{ minWidth: "950px" }}>
                                 <thead>
                                     <tr className="table-dark">
@@ -135,6 +163,7 @@ const Patients = () => {
                                                                 <Dropdown.Menu>
                                                                     <Dropdown.Item onClick={() => { setPatientData(x); setConfigurePatientModalShow(true); }} >Edit</Dropdown.Item>
                                                                     <Dropdown.Item onClick={() => { viewLocation(x.map_coordinates) }} >View Location</Dropdown.Item>
+                                                                    <Dropdown.Item onClick={() => { setPatientDocsModalShow(true); setSelectedPatientDetails(x); getPatientDocs(x.id); }} >View Patient Documents</Dropdown.Item>
                                                                 </Dropdown.Menu>
                                                             </Dropdown>
                                                         </td>
@@ -190,6 +219,89 @@ const Patients = () => {
                 modalCloseCallback={() => { setConfigurePatientModalShow(false); setPatientData(null); }}
                 patientData={patientData}
             />
+
+            <Modal show={patientDocsModalShow} onHide={() => { setPatientDocsModalShow(false) }} size="md" centered >
+                <Modal.Header closeButton>
+                    <Modal.Title>Patient Documents</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {
+                        !patientDocs || patientDocsApiState ? <div><div className="spinner-border"></div></div> :
+                            <div className="container">
+                                <div className="mb-4">
+                                    <h5 className="m-0">Audiometry Reports</h5>
+                                    {
+                                        patientDocs?.audiometry.length ? patientDocs.audiometry.map((x, i) => {
+                                            return <div key={x.id} className="row align-items-center">
+                                                <div className="col-5">Report {i + 1}</div>
+                                                <div className="col-5">{moment.unix(x.created_at._seconds).format("lll")}</div>
+                                                <div className="col-2">
+                                                    <svg className="text-info hover-grow" width="24" height="24" fill="currentColor" viewBox="0 0 16 16" onClick={() => {
+                                                        Swal.fire({
+                                                            title: "Print with Header On/Off?",
+                                                            showDenyButton: true,
+                                                            showCancelButton: true,
+                                                            confirmButtonText: "On",
+                                                            denyButtonText: `Off`
+                                                        }).then((result) => {
+                                                            let h = result.isConfirmed ? true : result.isDenied ? false : null
+
+                                                            if (h !== null) {
+                                                                if (!x.trial_mode && x.doctor_id) {
+                                                                    getDoctorDetails(x.doctor_id, currentUserInfo.uid, currentUserInfo.displayName)
+                                                                        .then((doctor_details) => {
+                                                                            printAudiometryReport(x, selectedPatientDetails, h, doctor_details, branchList)
+                                                                        })
+                                                                }
+                                                                else {
+                                                                    printAudiometryReport(x, selectedPatientDetails, h, null, branchList)
+                                                                }
+                                                            }
+                                                        });
+                                                    }}>
+                                                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+                                                        <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        }) : <div>No Audiometry Reports created for this Patient</div>
+                                    }
+                                </div>
+                                <div className="mt-4">
+                                    <h5 className="m-0">Invoices</h5>
+                                    {
+                                        patientDocs?.invoices.length ? patientDocs.invoices.map(x => {
+                                            return <div key={x.id} className="row align-items-center">
+                                                <div className="col-5">{x.invoice_number}</div>
+                                                <div className="col-5">{moment.unix(x.created_at._seconds).format("lll")}</div>
+                                                <div className="col-2">
+                                                    <svg className="text-info hover-grow" width="24" height="24" fill="currentColor" viewBox="0 0 16 16" onClick={() => {
+                                                        Swal.fire({
+                                                            title: "Print with Header On/Off?",
+                                                            showDenyButton: true,
+                                                            showCancelButton: true,
+                                                            confirmButtonText: "On",
+                                                            denyButtonText: `Off`
+                                                        }).then((result) => {
+                                                            let h = result.isConfirmed ? true : result.isDenied ? false : null
+
+                                                            if (h !== null) {
+                                                                printInvoice(selectedPatientDetails, x.branch_id, x.invoice_number, moment.unix(x.date._seconds).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items, h, branchList)
+                                                            }
+                                                        });
+                                                    }}>
+                                                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
+                                                        <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        }) : <div>No Invoices Reports created for this Patient</div>
+                                    }
+                                </div>
+                            </div>
+                    }
+                </Modal.Body>
+            </Modal>
         </>
     )
 }

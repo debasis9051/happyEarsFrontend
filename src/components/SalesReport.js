@@ -363,7 +363,7 @@ const SalesReport = () => {
                                         <button className="btn btn-info ms-auto me-2" onClick={() => { Swal.fire('Oops!!', 'This feature is not ready yet', 'warning'); console.log("exporting products"); }}>Export</button>
                                     </div>
 
-                                    <div className="table-responsive">
+                                    <div className="table-responsive" style={{ minHeight: "250px" }}>
                                         <table className="table table-hover table-striped border border-light" style={{ minWidth: "1330px" }}>
                                             <thead>
                                                 <tr className="table-dark">
@@ -417,7 +417,7 @@ const SalesReport = () => {
                                                                                         let h = result.isConfirmed ? true : result.isDenied ? false : null
 
                                                                                         if (h !== null) {
-                                                                                            printInvoice(patientDetails, branchList.find(b => b.id === x.branch_id).branch_name, x.branch_id, x.invoice_number, moment.unix(x.date._seconds).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items, h, branchList)
+                                                                                            printInvoice(patientDetails, x.branch_id, x.invoice_number, moment.unix(x.date._seconds).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items, h, branchList)
                                                                                         }
                                                                                     });
                                                                                 }} >Print</Dropdown.Item>
