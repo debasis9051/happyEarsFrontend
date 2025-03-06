@@ -65,7 +65,7 @@ const designParticulars = (discount_amount,line_items,accessory_items) => {
     }).join("")
 }
 
-const printInvoice = ({patient_name, patient_number, patient_address, contact_number}, branch_id, invoice_number, date, mode_of_payment, discount_amount, line_items, accessory_items, headerVisible, branchList) => {
+const printInvoice = ({patient_name, patient_number, patient_address, contact_number}, branch_id, invoice_number, date, mode_of_payment, discount_amount, line_items, accessory_items, printConfigData, branchList) => {
 
     const branch_name = branchList.find(b => b.id === branch_id).branch_name
     let header_image = "/happy_ears_invoice_header_" + branch_name.toLowerCase() + ".png"
@@ -74,7 +74,7 @@ const printInvoice = ({patient_name, patient_number, patient_address, contact_nu
     let html = `
         <div class="container-fluid position-relative my-4 fw-bold" style="height:90%;">
             <div>
-                <img src="${headerVisible ? header_image : "/happy_ears_invoice_header_empty.jpg"}" alt="header_image" style="width:100%;" >
+                <img src="${printConfigData.header ? header_image : "/happy_ears_invoice_header_empty.jpg"}" alt="header_image" style="width:100%;" >
             </div> 
 
             <div class="mt-2 text-end mx-4">Branch:- ${branch_name}</div>
@@ -117,17 +117,21 @@ const printInvoice = ({patient_name, patient_number, patient_address, contact_nu
                 <div>E. & O.E.<br>For Happy Ears Kolkata</div>
             </div>
 
-            <div class="position-absolute w-100" style="bottom:-82px; border-top:solid 1px black;">
-                <div class="d-flex">Branches:
-                    <div class="d-flex justify-content-around flex-grow-1">
-                        ${branchList.filter(x=> x.id !== branch_id && x.branch_name !== "Ranikuthi").map(x=>`<span>
-                            <svg width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/></svg>
-                            ${x.branch_name}
-                        </span>`).join("")}
+            ${
+                printConfigData.footer ?
+                `<div class="position-absolute w-100" style="bottom:-82px; border-top:solid 1px black;">
+                    <div class="d-flex">Branches:
+                        <div class="d-flex justify-content-around flex-grow-1">
+                            ${branchList.filter(x=> x.id !== branch_id && x.branch_name !== "Ranikuthi").map(x=>`<span>
+                                <svg width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/></svg>
+                                ${x.branch_name}
+                            </span>`).join("")}
+                        </div>
                     </div>
-                </div>
-                <div class="text-center" >Copyright © 2024 Happy Ears Kolkata</div>
-            </div>
+                    <div class="text-center" >Copyright © 2024 Happy Ears Kolkata</div>
+                </div>` : ""
+            }
+
         </div>
     `
 
@@ -137,7 +141,7 @@ const printInvoice = ({patient_name, patient_number, patient_address, contact_nu
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     `
     nw.document.body.innerHTML = html
-    nw.print()
+    setTimeout(() => { nw.print() }, 2000);
 }
 
 export { printInvoice }

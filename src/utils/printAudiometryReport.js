@@ -202,7 +202,7 @@ const drawChartData = (ctx, ptaData, lineType, lineColor, marker) => {
     })
 }
 
-const printAudiometryReport = (reportData, patientDetails, headerVisible, doctor_details, branchList) => {
+const printAudiometryReport = (reportData, patientDetails, printConfigData, doctor_details, branchList) => {
 
     let header_image = "/happy_ears_invoice_header_" + branchList.find(x=>x.id===reportData.branch_id).branch_name.toLowerCase() + ".png"
 
@@ -213,7 +213,7 @@ const printAudiometryReport = (reportData, patientDetails, headerVisible, doctor
         <div class="container-fluid position-relative my-4 fw-bold" style="height:90%;">
 
             <div>
-                <img src="${headerVisible ? header_image : "/happy_ears_invoice_header_empty.jpg"}" alt="header_image" style="width:100%;" >
+                <img src="${printConfigData.header ? header_image : "/happy_ears_invoice_header_empty.jpg"}" alt="header_image" style="width:100%;" >
             </div> 
 
             <h2 class="text-center text-decoration-underline text-uppercase m-2" style="color:navy;">${reportData.trial_mode ? "Audiogram Hearing Aid Trial" : "Pure Tone Audiogram"} </h2>
@@ -234,8 +234,7 @@ const printAudiometryReport = (reportData, patientDetails, headerVisible, doctor
                     <span class="mx-2 text-nowrap border-bottom border-dark fs-5 flex-grow-1">${reportData.client_chosen_machine}</span>
                 </div>`
                 :
-                `
-                <div class="d-flex my-2 align-items-center">
+                `<div class="d-flex my-2 align-items-center">
                     <span class="mx-2 text-nowrap fs-5">Referred By: </span>
                     <span class="mx-2 text-nowrap border-bottom border-dark fs-5 flex-grow-1">${reportData.referred_by}</span>
                     <span class="mx-2 text-nowrap fs-5">Audiometer: </span>
@@ -291,7 +290,7 @@ const printAudiometryReport = (reportData, patientDetails, headerVisible, doctor
             </div>
 
             ${!reportData.trial_mode ?
-            `<div class="d-flex align-items-center gap-3 my-2">
+                `<div class="d-flex align-items-center gap-3 my-2">
                     <div class="d-flex flex-wrap mb-1 align-items-center">
                         <span class="fs-5">Tuning Fork: </span>
                         <span class="mx-2 border-bottom border-dark fs-5">${reportData.tuning_fork}</span>
@@ -326,35 +325,38 @@ const printAudiometryReport = (reportData, patientDetails, headerVisible, doctor
                     <span class="fs-5">Recommendations: </span>
                     <span class="mx-2 fs-5">${reportData.recommendations.map((x, i) => `<div class="border-bottom border-dark"><span style="color:blue;">${i + 1}. </span>${x}</div>`).join("")}</span>
                 </div>` : ""
-        }
+            }
 
             ${!reportData.trial_mode ?
-            `<div class="ms-auto d-flex flex-column align-items-center" style="width:max-content; margin-right: 6rem" >
+                `<div class="ms-auto d-flex flex-column align-items-center" style="width:max-content; margin-right: 6rem" >
                     ${doctor_details? `<div class="text-center"><img src=${doctor_details.doctor_signature} alt="doctor_signature" height="60"></div>` : `<div style="height:60px;"></div>`}
                     <span style="font-size:smaller;">Clinical Audiologist & Speech Therapist </span>
                     ${doctor_details? `<span style="font-size:smaller;">${doctor_details.doctor_qualification}</span>`: ""} 
                     ${doctor_details? `<span style="font-size:smaller;">RCI Reg No.: ${doctor_details.doctor_registration_number}</span>`: ""} 
                 </div>` : ""
-        }
+            }
 
             ${reportData.trial_mode ?
-            `<div class="my-5">
-                    <span>Disclaimer :: </span>
-                    <span class="text-danger">This is just a trial report based on patient response. This cannot be or should not be treated as medical audiogram report(PTA)</span>
+                `<div class="my-5">
+                <span>Disclaimer :: </span>
+                <span class="text-danger">This is just a trial report based on patient response. This cannot be or should not be treated as medical audiogram report(PTA)</span>
                 </div>` : ""
-        }
-
-            <div class="position-absolute w-100" style="bottom:-110px; border-top:solid 1px black;">
-                <div class="d-flex">Branches:
-                    <div class="d-flex justify-content-around flex-grow-1">
-                        ${branchList.filter(x=> x.id !== reportData.branch_id && x.branch_name !== "Ranikuthi").map(x=>`<span>
-                            <svg width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/></svg>
-                            ${x.branch_name}
-                        </span>`).join("")}
+            }
+            
+            ${printConfigData.footer ?
+                `<div class="position-absolute w-100" style="bottom:-110px; border-top:solid 1px black;">
+                    <div class="d-flex">Branches:
+                        <div class="d-flex justify-content-around flex-grow-1">
+                            ${branchList.filter(x=> x.id !== reportData.branch_id && x.branch_name !== "Ranikuthi").map(x=>`<span>
+                                <svg width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/></svg>
+                                ${x.branch_name}
+                            </span>`).join("")}
+                        </div>
                     </div>
-                </div>
-                <div class="text-center" >Copyright © 2024 Happy Ears Kolkata</div>
-            </div>
+                    <div class="text-center" >Copyright © 2024 Happy Ears Kolkata</div>
+                </div>`: ""
+            }
+
         </div>
     `
 

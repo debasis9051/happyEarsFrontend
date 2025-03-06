@@ -8,14 +8,15 @@ import { ResponsivePie } from '@nivo/pie'
 import { Helmet } from "react-helmet-async";
 
 import { useFirebase } from "../contexts/firebase-context";
+import { useModal } from "../contexts/modal-context"
 import { getInvoiceList, getBranchList, getSalespersonList, getPatientList } from "../utils/getApis"
 import { printInvoice } from "../utils/printInvoice"
 import AuthWrapper from "./AuthWrapper";
 import { escapeRegex, dropDownStyle, formatPatientNumber, formatAmount } from "../utils/commonUtils"
-// import NewFeatureModal from "./NewFeatureModal"
 
 const SalesReport = () => {
     const { currentUserInfo } = useFirebase()
+    const { openModal, setModalView, setModalData } = useModal()
 
     const [currentTab, setCurrentTab] = useState("tab1")
 
@@ -60,40 +61,6 @@ const SalesReport = () => {
             }
         }) : []
     }, [branchFilter, salespersonFilter, searchBarState, searchValue, invoiceList, patientList])
-
-
-    // const reportData = []
-    // if (reportMonthYear) {
-    //     let sd = moment(reportMonthYear)
-    //     let ed = moment(reportMonthYear).add(1, "month")
-
-    //     for (let i = 0; i < invoiceList.length; i++) {
-    //         let invData = invoiceList[i]
-    //         let d = moment.unix(invData.date._seconds)
-
-    //         let gt = (invData.line_items.reduce((p, o) => p + o.product_rate, 0) - invData.discount_amount) + invData.accessory_items.reduce((p, o) => p + o.quantity * o.accessory_rate, 0)
-
-    //         if (d.isBetween(sd, ed)) {
-
-    //             let t = reportData.find(x => x.salesperson_id === invData?.salesperson_id)
-
-    //             if (t) {
-    //                 t.no_of_invoices += 1
-    //                 t.no_of_products_sold += invData.line_items.filter(x => !(x.product_name.toLowerCase().includes("charger") || x.product_name.toLowerCase().includes("chgr"))).length
-    //                 t.net_total += gt
-    //             }
-    //             else {
-    //                 reportData.push({
-    //                     salesperson_id: invData?.salesperson_id,
-    //                     salesperson_name: invData?.salesperson_id && salespersonList.find(x => x.id === invData.salesperson_id).salesperson_name,
-    //                     no_of_invoices: 1,
-    //                     no_of_products_sold: invData.line_items.length,
-    //                     net_total: gt,
-    //                 })
-    //             }
-    //         }
-    //     }
-    // }
 
     const reportData = useMemo(() => {
         if (!reportMonthYear || !invoiceList.length) return [];
@@ -407,19 +374,13 @@ const SalesReport = () => {
                                                                             <Dropdown.Menu>
                                                                                 <Dropdown.Item onClick={() => { editInvoiceModalInit(x) }} >Edit</Dropdown.Item>
                                                                                 <Dropdown.Item onClick={() => {
-                                                                                    Swal.fire({
-                                                                                        title: "Print with Header On/Off?",
-                                                                                        showDenyButton: true,
-                                                                                        showCancelButton: true,
-                                                                                        confirmButtonText: "On",
-                                                                                        denyButtonText: `Off`
-                                                                                    }).then((result) => {
-                                                                                        let h = result.isConfirmed ? true : result.isDenied ? false : null
-
-                                                                                        if (h !== null) {
-                                                                                            printInvoice(patientDetails, x.branch_id, x.invoice_number, moment.unix(x.date._seconds).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items, h, branchList)
+                                                                                    setModalView("PRINT_CONFIG_MODAL");
+                                                                                    setModalData({
+                                                                                        submitCallback: (printConfigData) => {
+                                                                                            printInvoice(patientDetails, x.branch_id, x.invoice_number, moment.unix(x.date._seconds).format("DD-MM-YYYY"), x.mode_of_payment, x.discount_amount, x.line_items, x.accessory_items, printConfigData, branchList)
                                                                                         }
-                                                                                    });
+                                                                                    })
+                                                                                    openModal()
                                                                                 }} >Print</Dropdown.Item>
                                                                             </Dropdown.Menu>
                                                                         </Dropdown>
@@ -800,8 +761,6 @@ const SalesReport = () => {
                     <Button onClick={() => { handleEditInvoiceModalClose() }}>Close</Button>
                 </Modal.Footer>
             </Modal>
-
-            {/* <NewFeatureModal /> */}
         </>
     )
 }

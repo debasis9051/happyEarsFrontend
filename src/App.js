@@ -9,6 +9,7 @@ import "./bootstrap.css";
 import "./App.css";
 
 import { FirebaseProvider } from './contexts/firebase-context';
+import { ManagedModal, ModalProvider } from './contexts/modal-context.js';
 
 import Navbar from "./components/Navbar.js"
 
@@ -27,28 +28,32 @@ function App() {
         <HelmetProvider>
 
             <FirebaseProvider>
-                <div className="App">
-                    <Helmet>
-                        <meta name="description" content="Happy Ears Kolkata is a React-powered app for efficient hearing care management, offering seamless invoice creation, inventory control, and secure patient data storage with integrated location tracking, created by Hritwick De" />
-                        <title>Happy Ears Kolkata Invoicing</title>
-                    </Helmet>
+                <ModalProvider>
+                    <div className="App">
+                        <Helmet>
+                            <meta name="description" content="Happy Ears Kolkata is a React-powered app for efficient hearing care management, offering seamless invoice creation, inventory control, and secure patient data storage with integrated location tracking, created by Hritwick De" />
+                            <title>Happy Ears Kolkata Invoicing</title>
+                        </Helmet>
 
-                    <BrowserRouter basename="/">
-                        <Navbar />
+                        <BrowserRouter basename="/">
+                            <Navbar />
 
-                        <Routes>
-                            <Route path="*" element={<NotFound />} />
-                            <Route path="/unauthorized" element={<Unauthorized />} />
-                            <Route path="/" element={<Home />} />
-                            <Route path="/admin-panel" element={<AdminPanel />} />
-                            <Route path="/audiometry" element={<Audiometry />} />
-                            <Route path="/inventory" element={<Inventory />} />
-                            <Route path="/generate-invoice/:audiometryId?" element={<GenerateInvoice />} />
-                            <Route path="/sales-report" element={<SalesReport />} />
-                            <Route path="/patients" element={<Patients />} />
-                        </Routes>
-                    </BrowserRouter>
-                </div>
+                            <Routes>
+                                <Route path="*" element={<NotFound />} />
+                                <Route path="/unauthorized" element={<Unauthorized />} />
+                                <Route path="/" element={<Home />} />
+                                <Route path="/admin-panel" element={<AdminPanel />} />
+                                <Route path="/audiometry" element={<Audiometry />} />
+                                <Route path="/inventory" element={<Inventory />} />
+                                <Route path="/generate-invoice/:audiometryId?" element={<GenerateInvoice />} />
+                                <Route path="/sales-report" element={<SalesReport />} />
+                                <Route path="/patients" element={<Patients />} />
+                            </Routes>
+                            
+                            <ManagedModal />
+                        </BrowserRouter>
+                    </div>
+                </ModalProvider>
             </FirebaseProvider>
         </HelmetProvider>
     )

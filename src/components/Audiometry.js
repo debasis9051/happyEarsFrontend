@@ -7,10 +7,10 @@ import Select from "react-select"
 import { Helmet } from "react-helmet-async";
 
 import { useFirebase } from "../contexts/firebase-context";
+import { useModal } from "../contexts/modal-context";
 import { getAudiometryList, getBranchList, getDoctorList, getPatientList } from "../utils/getApis"
 import AuthWrapper from "./AuthWrapper";
 import { printAudiometryReport } from "../utils/printAudiometryReport"
-import { ConfigurePatientsModal } from "./Patients";
 import { escapeRegex, dropDownStyle, formatPatientNumber } from "../utils/commonUtils";
 
 const acConfig = [
@@ -84,6 +84,7 @@ const getDoctorDetails = (doctor_id, current_user_uid, current_user_name) => {
 
 const Audiometry = () => {
     const { currentUserInfo } = useFirebase()
+    const { openModal, setModalView, setModalData } = useModal()
 
     const [currentTab, setCurrentTab] = useState("tab1")
 
@@ -131,8 +132,6 @@ const Audiometry = () => {
     const [recommendations, setRecommendations] = useState(["Aural Hygiene", "Follow Up", "Refer Back to Ent.", "Hearing Aid Trial and Fitting"])
 
     const [isAudiometryReportApiLoading, setIsAudiometryReportApiLoading] = useState(false)
-
-    const [configurePatientModalShow, setConfigurePatientModalShow] = useState(false)
 
 
     const filteredAudiometryList = useMemo(() => {
@@ -463,27 +462,21 @@ const Audiometry = () => {
                                                                                 <Dropdown.Item href={`/generate-invoice/${x.id}`} >Generate Invoice </Dropdown.Item>
                                                                                 <Dropdown.Item
                                                                                     onClick={() => {
-                                                                                        Swal.fire({
-                                                                                            title: "Print with Header On/Off?",
-                                                                                            showDenyButton: true,
-                                                                                            showCancelButton: true,
-                                                                                            confirmButtonText: "On",
-                                                                                            denyButtonText: `Off`
-                                                                                        }).then((result) => {
-                                                                                            let h = result.isConfirmed ? true : result.isDenied ? false : null
-
-                                                                                            if (h !== null) {
+                                                                                        setModalView("PRINT_CONFIG_MODAL");
+                                                                                        setModalData({
+                                                                                            submitCallback: (printConfigData) => {
                                                                                                 if (!x.trial_mode && x.doctor_id) {
                                                                                                     getDoctorDetails(x.doctor_id, currentUserInfo.uid, currentUserInfo.displayName)
                                                                                                         .then((doctor_details) => {
-                                                                                                            printAudiometryReport(x, patientDetails, h, doctor_details, branchList)
+                                                                                                            printAudiometryReport(x, patientDetails, printConfigData, doctor_details, branchList)
                                                                                                         })
                                                                                                 }
                                                                                                 else {
-                                                                                                    printAudiometryReport(x, patientDetails, h, null, branchList)
+                                                                                                    printAudiometryReport(x, patientDetails, printConfigData, null, branchList)
                                                                                                 }
                                                                                             }
                                                                                         });
+                                                                                        openModal()
                                                                                     }}
                                                                                 >Print Report
                                                                                 </Dropdown.Item>
@@ -577,7 +570,19 @@ const Audiometry = () => {
                                                         />
                                                     </div>
                                                     <div className="align-self-end">
-                                                        <button className="btn btn-success p-1" title="Add Patient" onClick={() => { setConfigurePatientModalShow(true) }}>
+                                                        <button className="btn btn-success p-1" title="Add Patient"
+                                                            onClick={() => {
+                                                                setModalView("PATIENT_MODAL");
+                                                                setModalData({
+                                                                    currentUserInfo,
+                                                                    apiEndCallback: (responseData) => {
+                                                                        getPatientList(currentUserInfo, setPatientList);
+                                                                        setSelectedPatient({ label: responseData.patient_name, value: responseData.patient_id });
+                                                                    }
+                                                                });
+                                                                openModal()
+                                                            }}
+                                                        >
                                                             <svg width="30" height="30" fill="currentColor" viewBox="0 0 16 16">
                                                                 <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
                                                             </svg>
@@ -830,14 +835,6 @@ const Audiometry = () => {
                     </>
                 </AuthWrapper>
             </div>
-
-            <ConfigurePatientsModal
-                configurePatientModalShow={configurePatientModalShow}
-                currentUserInfo={currentUserInfo}
-                apiEndCallback={(responseData) => { getPatientList(currentUserInfo, setPatientList); setSelectedPatient({ label: responseData.patient_name, value: responseData.patient_id }); }}
-                modalCloseCallback={() => { setConfigurePatientModalShow(false); }}
-                patientData={null}
-            />
         </>
     )
 }

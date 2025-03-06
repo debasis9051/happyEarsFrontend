@@ -1,14 +1,14 @@
 import React from "react"
-import { useState } from "react";
 import Modal from 'react-bootstrap/Modal';
 import { Link } from 'react-router-dom';
+import { useModal } from "../contexts/modal-context";
 
 const NewFeatureModal = () => {
 
-    const [modalShow, setModalShow] = useState(true)
+    const {modalShow, closeModal} = useModal()
 
     return (
-        <Modal show={modalShow} className="my-modal" size="lg" centered onHide={() => { setModalShow(false) }} >
+        <Modal show={modalShow} className="my-modal" size="lg" centered onHide={() => { closeModal() }} >
             <Modal.Header closeVariant="white" closeButton>
                 <div className="d-flex align-items-center gap-3 flex-grow-1 justify-content-center">
                     <div>

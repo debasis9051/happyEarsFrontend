@@ -7,16 +7,16 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 
 import { useFirebase } from "../contexts/firebase-context";
+import { useModal } from "../contexts/modal-context";
 import { getProductList, getBranchList, getSalespersonList, getPatientList } from "../utils/getApis"
 import { printInvoice } from "../utils/printInvoice"
 import AuthWrapper from "./AuthWrapper";
-// import NewFeatureModal from "./NewFeatureModal";
-import { ConfigurePatientsModal } from "./Patients";
 import { dropDownStyle } from "../utils/commonUtils";
 
 
 const GenerateInvoice = () => {
     const { currentUserInfo } = useFirebase()
+    const { openModal, setModalView, setModalData } = useModal()
 
     const navigate = useNavigate()
     const { audiometryId } = useParams()
@@ -39,8 +39,6 @@ const GenerateInvoice = () => {
 
     const [isSaveApiLoading, setIsSaveApiLoading] = useState(false)
     const [isInvoiceSaved, setIsInvoiceSaved] = useState(false)
-
-    const [configurePatientModalShow, setConfigurePatientModalShow] = useState(false)
 
 
     const filteredProductList = selectedBranch ? productList.filter(x => x.instock).filter(x => x.branch_id === selectedBranch.value) : []
@@ -254,7 +252,19 @@ const GenerateInvoice = () => {
                                     />
                                 </div>
                                 <div className="align-self-end">
-                                    <button className="btn btn-success p-1" title="Add Patient" onClick={() => { setConfigurePatientModalShow(true) }}>
+                                    <button className="btn btn-success p-1" title="Add Patient"
+                                        onClick={() => {
+                                            setModalView("PATIENT_MODAL");
+                                            setModalData({
+                                                currentUserInfo,
+                                                apiEndCallback: (responseData) => {
+                                                    getPatientList(currentUserInfo, setPatientList);
+                                                    setSelectedPatient({ label: responseData.patient_name, value: responseData.patient_id });
+                                                }
+                                            });
+                                            openModal()
+                                        }}
+                                    >
                                         <svg width="30" height="30" fill="currentColor" viewBox="0 0 16 16">
                                             <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
                                         </svg>
@@ -519,16 +529,9 @@ const GenerateInvoice = () => {
                                             }
                                         })
 
-                                        Swal.fire({
-                                            title: "Print with Header On/Off?",
-                                            showDenyButton: true,
-                                            showCancelButton: true,
-                                            confirmButtonText: "On",
-                                            denyButtonText: `Off`
-                                        }).then((result) => {
-                                            let h = result.isConfirmed ? true : result.isDenied ? false : null
-
-                                            if (h !== null) {
+                                        setModalView("PRINT_CONFIG_MODAL");
+                                        setModalData({
+                                            submitCallback: (printConfigData) => {
                                                 let patientDetails = patientList.find(p => p.id === selectedPatient.value)
 
                                                 if (!isInvoiceSaved) {
@@ -538,15 +541,16 @@ const GenerateInvoice = () => {
                                                         confirmButtonText: "Print",
                                                     }).then((result) => {
                                                         if (result.isConfirmed) {
-                                                            printInvoice(patientDetails, selectedBranch.value, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, h, branchList)
+                                                            printInvoice(patientDetails, selectedBranch.value, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, printConfigData, branchList)
                                                         }
                                                     });
                                                 }
                                                 else {
-                                                    printInvoice(patientDetails, selectedBranch.value, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, h, branchList)
+                                                    printInvoice(patientDetails, selectedBranch.value, invoiceNumber, moment(date).format("DD-MM-YYYY"), selectedModeOfPayment.value, discountAmount, t, accessoryItems, printConfigData, branchList)
                                                 }
                                             }
-                                        });
+                                        })
+                                        openModal()
                                     }
                                 }}
                             >Print</button>
@@ -555,16 +559,6 @@ const GenerateInvoice = () => {
                 </AuthWrapper>
 
             </div>
-
-            <ConfigurePatientsModal
-                configurePatientModalShow={configurePatientModalShow}
-                currentUserInfo={currentUserInfo}
-                apiEndCallback={(responseData) => { getPatientList(currentUserInfo, setPatientList); setSelectedPatient({ label: responseData.patient_name, value: responseData.patient_id }); }}
-                modalCloseCallback={() => { setConfigurePatientModalShow(false); }}
-                patientData={null}
-            />
-
-            {/* <NewFeatureModal /> */}
         </>
     )
 }

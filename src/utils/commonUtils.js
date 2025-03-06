@@ -1,3 +1,5 @@
+import Swal from "sweetalert2"
+
 function escapeRegex(string) {
     return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
 }
@@ -30,4 +32,13 @@ function formatAmount(amount) {
     return formattedNumber;
 }
 
-export { escapeRegex, dropDownStyle, formatPatientNumber, formatAmount }
+function viewLocation({ latitude, longitude }){
+    if (!latitude || !longitude) {
+        Swal.fire("Oops!", "Map-coordinates not available", "info")
+        return
+    }
+
+    window.open(`https://maps.google.com/?q=${latitude},${longitude}`)
+}
+
+export { escapeRegex, dropDownStyle, formatPatientNumber, formatAmount, viewLocation }
