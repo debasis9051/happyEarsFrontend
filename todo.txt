@@ -1,8 +1,5 @@
 Todo:
 
-patient number gap - 3, 7, 241, 244, 245, 251, 254
-
-
 1. modal provider to be implemented
 
 
@@ -37,7 +34,7 @@ frontend routes:
         iii. return product button to mark product as returned
         iv. view product logs
         
-5. "/generate-invoice" - Invoice generation page with form
+5. "/generate-invoice" - Invoice generation page with form against patients
         features: 
         i. save and print
         
@@ -48,12 +45,18 @@ frontend routes:
         iii. print action button
         iv. sales report data tabs
 
-6. "/patients" - List of all patient records linked with audiometry and invoices
+6. "/patients" - List of all patient records linked with other records
         features:-
         i. edit
         ii. view location
+
+7. "/service" - List of all patient service request records
+        features:-
+        i. create/edit service request
+        ii. mark service as complete
+        ii. mark service as cancel
         
-7. "/admin-panel" - Admin Panel for additional features and to execute custom scripts
+8. "/admin-panel" - Admin Panel for additional features and to execute custom scripts
         features:-
         i. add salesperson
         ii. add branch
@@ -72,6 +75,7 @@ database collections:
 7. doctor - each document representing a doctor entity with their respective details and signature file
 8. patients - each document representing a patient entity with their name and location
 9. salesperson - each document representing a salesperson entity with their name only
+10. service - each document representing a patient service request entity with its details
 
 
 

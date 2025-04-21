@@ -116,7 +116,7 @@ const Patients = () => {
                         </div>
 
                         <div className="table-responsive" style={{ minHeight: "250px" }}>
-                            <table className="table table-hover table-striped border border-light" style={{ minWidth: "950px" }}>
+                            <table className="table table-hover table-striped border border-light align-middle" style={{ minWidth: "950px" }}>
                                 <thead>
                                     <tr className="table-dark">
                                         <th scope="col">Sl. No.</th>

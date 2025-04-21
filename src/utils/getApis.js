@@ -25,5 +25,6 @@ const getAudiometryList = (currentUserInfo, svRef) => listRequestBody("get-audio
 const getDoctorList = (currentUserInfo, svRef) => listRequestBody("get-doctor-list", currentUserInfo, svRef)
 const getUserList = (currentUserInfo, svRef) => listRequestBody("get-user-list", currentUserInfo, svRef)
 const getPatientList = (currentUserInfo, svRef) => listRequestBody("get-patient-list", currentUserInfo, svRef)
+const getServiceList = (currentUserInfo, svRef) => listRequestBody("get-service-list", currentUserInfo, svRef)
 
-export { getProductList, getBranchList, getSalespersonList, getInvoiceList, getAudiometryList, getDoctorList, getUserList, getPatientList }
+export { getProductList, getBranchList, getSalespersonList, getInvoiceList, getAudiometryList, getDoctorList, getUserList, getPatientList, getServiceList }

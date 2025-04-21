@@ -331,7 +331,7 @@ const SalesReport = () => {
                                     </div>
 
                                     <div className="table-responsive" style={{ minHeight: "250px" }}>
-                                        <table className="table table-hover table-striped border border-light" style={{ minWidth: "1330px" }}>
+                                        <table className="table table-hover table-striped border border-light align-middle" style={{ minWidth: "1330px" }}>
                                             <thead>
                                                 <tr className="table-dark">
                                                     <th scope="col">Sl. No.</th>
@@ -459,7 +459,7 @@ const SalesReport = () => {
                                             </div>
                                         </div>
 
-                                        <table className="table table-hover table-striped border border-light mt-5">
+                                        <table className="table table-hover table-striped border border-light align-middle mt-5">
                                             <thead>
                                                 <tr className="table-dark">
                                                     <th scope="col">Salesperson</th>
@@ -552,7 +552,7 @@ const SalesReport = () => {
                                         </div>
 
                                         <div className="table-responsive">
-                                            <table className="table table-hover table-striped border border-light mb-5" style={{ minWidth: "1300px" }}>
+                                            <table className="table table-hover table-striped border border-light align-middle mb-5" style={{ minWidth: "1300px" }}>
                                                 <thead>
                                                     <tr className="table-dark">
                                                         <th scope="col">Patient Name</th>

@@ -17,6 +17,7 @@ const defaultAccess = {
     inventory: false,
     sales_report: false,
     patients: false,
+    service: false
 }
 
 const AdminPanel = () => {

@@ -22,6 +22,7 @@ import Inventory from "./components/Inventory.js"
 import GenerateInvoice from "./components/GenerateInvoice.js"
 import SalesReport from "./components/SalesReport.js"
 import Patients from "./components/Patients.js"
+import Service from "./components/Service.js"
 
 function App() {
     return (
@@ -48,6 +49,7 @@ function App() {
                                 <Route path="/generate-invoice/:audiometryId?" element={<GenerateInvoice />} />
                                 <Route path="/sales-report" element={<SalesReport />} />
                                 <Route path="/patients" element={<Patients />} />
+                                <Route path="/service" element={<Service />} />
                             </Routes>
                             
                             <ManagedModal />
