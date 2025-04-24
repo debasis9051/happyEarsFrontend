@@ -53,8 +53,7 @@ frontend routes:
 7. "/service" - List of all patient service request records
         features:-
         i. create/edit service request
-        ii. mark service as complete
-        ii. mark service as cancel
+        ii. mark service as complete/cancel after filling up their respective forms
         
 8. "/admin-panel" - Admin Panel for additional features and to execute custom scripts
         features:-
@@ -75,7 +74,7 @@ database collections:
 7. doctor - each document representing a doctor entity with their respective details and signature file
 8. patients - each document representing a patient entity with their name and location
 9. salesperson - each document representing a salesperson entity with their name only
-10. service - each document representing a patient service request entity with its details
+10. service - each document representing a patient service request entity with its details including uploaded file
 
 
 
