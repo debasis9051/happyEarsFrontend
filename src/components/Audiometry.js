@@ -528,7 +528,7 @@ const Audiometry = () => {
                                 </Tab>
                                 <Tab eventKey="tab2" title="Audiometry Report">
 
-                                    <div className="container card container my-5 p-3">
+                                    <div className="card container my-5 p-3">
                                         <div className="card-header rounded d-flex align-items-center justify-content-between">
                                             <h4 className="m-0">{audiometryReportMode === "add" ? "Add" : "Update"} Audiometry Report</h4>
                                             <div className="d-flex align-items-center gap-2">
