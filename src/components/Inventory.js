@@ -105,6 +105,9 @@ const Inventory = () => {
             .then((res) => {
                 if (res.data.operation === "success") {
                     setIsProductLogHistoryApiLoading(false)
+                    res.data.info.sort((a, b) => {
+                        return moment.unix(a.created_at._seconds) - moment.unix(b.created_at._seconds)
+                    })
                     setProductLogHistoryData(res.data.info)
                 }
                 else {

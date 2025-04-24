@@ -25,10 +25,15 @@ const Patients = () => {
     const [searchBarState, setSearchBarState] = useState(false)
     const [searchValue, setSearchValue] = useState("")
 
-    const [patientDocsModalShow, setPatientDocsModalShow] = useState(false)
     const [selectedPatientDetails, setSelectedPatientDetails] = useState(null)
+
+    const [patientDocsModalShow, setPatientDocsModalShow] = useState(false)
     const [patientDocs, setPatientDocs] = useState(null)
     const [patientDocsApiState, setPatientDocsApiState] = useState(false)
+
+    const [patientServiceRequestHistoryModalShow, setPatientServiceRequestHistoryModalShow] = useState(false)
+    const [patientServiceRequestHistoryData, setPatientServiceRequestHistoryData] = useState([])
+    const [patientServiceRequestHistoryApiState, setPatientServiceRequestHistoryApiState] = useState(false)
 
 
     const filteredPatientList = useMemo(() => {
@@ -54,6 +59,27 @@ const Patients = () => {
                 setPatientDocsApiState(false)
                 if (res.data.operation === "success") {
                     setPatientDocs(res.data.info)
+                }
+                else {
+                    Swal.fire('Oops!', res.data.message, 'error');
+                }
+            })
+            .catch((err) => {
+                console.log(err)
+                Swal.fire('Error!!', err.message, 'error');
+            })
+    }
+
+    const getPatientServiceRequestHistory = (patient_id) => {
+        setPatientServiceRequestHistoryApiState(true)
+        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-patient-service-request-history-by-id`, { patient_id: patient_id, current_user_uid: currentUserInfo.uid, current_user_name: currentUserInfo.displayName }, { headers: { 'Content-Type': 'application/json' } })
+            .then((res) => {
+                setPatientServiceRequestHistoryApiState(false)
+                if (res.data.operation === "success") {
+                    res.data.info.sort((a, b) => {
+                        return moment.unix(a.created_at._seconds) - moment.unix(b.created_at._seconds)
+                    })
+                    setPatientServiceRequestHistoryData(res.data.info)
                 }
                 else {
                     Swal.fire('Oops!', res.data.message, 'error');
@@ -173,6 +199,7 @@ const Patients = () => {
                                                                     }} >Edit</Dropdown.Item>
                                                                     <Dropdown.Item onClick={() => { viewLocation(x.map_coordinates) }} >View Location</Dropdown.Item>
                                                                     <Dropdown.Item onClick={() => { setPatientDocsModalShow(true); setSelectedPatientDetails(x); getPatientDocs(x.id); }} >View Patient Documents</Dropdown.Item>
+                                                                    <Dropdown.Item onClick={() => { setPatientServiceRequestHistoryModalShow(true); setSelectedPatientDetails(x); getPatientServiceRequestHistory(x.id); }} >View Service Request History</Dropdown.Item>
                                                                 </Dropdown.Menu>
                                                             </Dropdown>
                                                         </td>
@@ -221,9 +248,9 @@ const Patients = () => {
                 </AuthWrapper>
             </div>
 
-            <Modal show={patientDocsModalShow} onHide={() => { setPatientDocsModalShow(false) }} size="md" centered >
+            <Modal show={patientDocsModalShow} onHide={() => { setPatientDocsModalShow(false); setPatientDocs(null); }} size="md" centered >
                 <Modal.Header closeButton>
-                    <Modal.Title>Patient Documents</Modal.Title>
+                    <Modal.Title>{selectedPatientDetails?.patient_name} - Patient Documents</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {
@@ -289,6 +316,49 @@ const Patients = () => {
                                 </div>
                             </div>
                     }
+                </Modal.Body>
+            </Modal>
+
+            <Modal show={patientServiceRequestHistoryModalShow} onHide={() => { setPatientServiceRequestHistoryModalShow(false); setPatientServiceRequestHistoryData([]); }} size="lg" centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>{selectedPatientDetails?.patient_name} - Service Request History</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="container">
+                        {
+                            patientServiceRequestHistoryApiState ? <div className="text-center"><div className="spinner-border text-success" style={{ width: "3rem", height: "3rem" }}></div></div> :
+                                patientServiceRequestHistoryData.length === 0 ? <div className="text-center fs-4 text-secondary">No Service Request History Yet</div> :
+                                    <div className="vertical-timeline vertical-timeline--animate vertical-timeline--one-column">
+                                        {
+                                            patientServiceRequestHistoryData.map((x, i) => {
+                                                return (
+                                                    <div key={i} className="vertical-timeline-item vertical-timeline-element">
+                                                        <div>
+                                                            <span className="vertical-timeline-element-icon bounce-in"><i className="badge badge-dot badge-dot-xl badge-success"></i></span>
+                                                            <div className="vertical-timeline-element-content bounce-in">
+                                                                <h4 className="timeline-title">
+                                                                    <span className="badge bg-primary mx-2 text-black" style={{ fontSize: "13px" }}>CREATED</span>
+                                                                    <span>
+                                                                        <svg width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                                                            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
+                                                                        </svg>
+                                                                    </span>
+                                                                    <span className={`badge ${x.status === "COMPLETED" ? "bg-success" : x.status === "PENDING" ? "bg-warning" : "bg-danger"} mx-2 text-black`} style={{ fontSize: "13px" }}>{x.status}</span>
+                                                                </h4>
+                                                                <p className="fs-6">
+                                                                    <span className="fw-bold">Service ID: </span>{x.service_id}
+                                                                    {x.closed_at && <><span className="fw-bold ms-3">Closed At: </span>{moment.unix(x.closed_at._seconds).format("YYYY-MM-DD")}</>}
+                                                                </p>
+                                                                <span className="vertical-timeline-element-date">{moment.unix(x.created_at._seconds).format("YYYY-MM-DD")}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })
+                                        }
+                                    </div>
+                        }
+                    </div>
                 </Modal.Body>
             </Modal>
         </>
