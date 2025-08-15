@@ -1,6 +1,6 @@
 import moment from "moment"
 import { formatPatientNumber } from "./commonUtils";
-import { calculateHearingLoss } from "../components/Audiometry";
+import { calculateHearingLoss, acConfig, bcConfig } from "../components/Audiometry";
 
 const drawMarker = (ctx, x, y, marker, markerColor, arrowFlag) => {
     if (marker === "circle") {
@@ -109,20 +109,12 @@ const setupChart = (ctx) => {
     ctx.stroke();
 
     //drawing colored sections in chart
-    // let temp = [
-    //     { range: 20, color: "#b8eeaa" },
-    //     { range: 40, color: "#d5eaae" },
-    //     { range: 70, color: "#e9d1af" },
-    //     { range: 90, color: "#f5d6da" },
-    //     { range: 120, color: "#f6a2b3" }
-    // ];
-
     let temp = [
         { range: 20, color: "#d3f4c7" },
         { range: 40, color: "#e4f3b7" },
         { range: 70, color: "#f0e2b8" },
         { range: 90, color: "#f8d7db" },
-        { range: 120, color: "#f8b7c1" } 
+        { range: 120, color: "#f8b7c1" }
     ];
 
     let y1 = 60
@@ -138,7 +130,7 @@ const setupChart = (ctx) => {
     ctx.stroke();
 
     //drawing lines
-    let x_labels = [250, 500, 1000, 2000, 4000, 6000, 8000]
+    let x_labels = acConfig.map(elem => elem.frequency);
     ctx.beginPath();
     x_labels.forEach((elem, i, arr) => {
         let x = 60 + 420 / (arr.length - 1) * i
@@ -165,46 +157,67 @@ const setupChart = (ctx) => {
     ctx.stroke();
 }
 
-const drawChartData = (ctx, ptaData, lineType, lineColor, marker) => {
-    ctx.lineWidth = 4
+const drawChartData = (ctx, ptaData, config, lineType, lineColor, marker) => {
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = lineColor;
 
-    if (lineType === "solid") {
-        ctx.setLineDash([]);
-    }
-    else if (lineType === "dashed") {
-        ctx.setLineDash([5, 10]);
-    }
+    // Set line dash style
+    ctx.setLineDash(lineType === "dashed" ? [5, 10] : []);
 
-    ctx.strokeStyle = lineColor
+    // Create a lookup table: frequency → decibal value
+    const dataMap = new Map(ptaData.data.map(r => [r.frequency, r.decibal]));
 
-    ctx.beginPath()
-    ptaData.data.forEach((elem, i, arr) => {
-        let pos = (elem.decibal === null ? ptaData.config.find(a => a.frequency === elem.frequency).max : elem.decibal)
-        let x = 60 + 420 / 6 * i
-        let y = 60 + (420 - 10) / (120 + 10) * (pos + 10)
+    // Draw lines
+    ctx.beginPath();
+    let prevValid = false; // Tracks if previous point was valid (not null)
+    for (let i = 0; i < config.length; i++) {
+        const freq = config[i].frequency;
+        const decibal = dataMap.get(freq);
 
-        if (i === 0 || elem.decibal === null || arr[i - 1].decibal === null) {
-            ctx.moveTo(x, y);
+        // Missing reading → skip this point, keep line connected
+        if (decibal === undefined) continue;
+
+        const x = 60 + (420 / 7) * i;
+        const y = 60 + (410 / 130) * (decibal + 10);
+
+        if (decibal === null) {
+            // Null reading → break connection before & after
+            prevValid = false;
+            continue;
         }
-        else {
-            ctx.lineTo(x, y)
+
+        if (!prevValid) {
+            ctx.moveTo(x, y); // Start new segment
+        } else {
+            ctx.lineTo(x, y);
         }
-    })
+
+        prevValid = true;
+    }
     ctx.stroke();
+
+    // Draw markers (always drawn, even for nulls/missing)
     ctx.setLineDash([]);
+    for (let i = 0; i < config.length; i++) {
+        const elem = config[i];
+        const decibal = dataMap.get(elem.frequency);
 
-    ptaData.data.forEach((elem, i) => {
-        let pos = (elem.decibal === null ? ptaData.config.find(a => a.frequency === elem.frequency).max : elem.decibal)
-        let x = 60 + 420 / 6 * i
-        let y = 60 + (420 - 10) / (120 + 10) * (pos + 10)
+        // Missing reading → skip marker entirely
+        if (decibal === undefined) continue;
 
-        drawMarker(ctx, x, y, marker, lineColor, (elem.decibal === null ? true : false))
-    })
-}
+        // Null reading → plot at max
+        const pos = decibal === null ? elem.max : decibal;
+        const x = 60 + (420 / 7) * i;
+        const y = 60 + (410 / 130) * (pos + 10);
+
+        drawMarker(ctx, x, y, marker, lineColor, decibal === null);
+    }
+};
+
 
 const printAudiometryReport = (reportData, patientDetails, printConfigData, doctor_details, branchList) => {
 
-    let header_image = "/happy_ears_invoice_header_" + branchList.find(x=>x.id===reportData.branch_id).branch_name.toLowerCase() + ".png"
+    let header_image = "/happy_ears_invoice_header_" + branchList.find(x => x.id === reportData.branch_id).branch_name.toLowerCase() + ".png"
 
     let ac_lhl_data = calculateHearingLoss(reportData.ac_left_ear_pta.data)
     let ac_rhl_data = calculateHearingLoss(reportData.ac_right_ear_pta.data)
@@ -227,20 +240,20 @@ const printAudiometryReport = (reportData, patientDetails, printConfigData, doct
             </div>
 
             ${reportData.trial_mode ?
-                `<div class="d-flex my-2 align-items-center">
+            `<div class="d-flex my-2 align-items-center">
                     <span class="mx-2 text-nowrap fs-5 ">Recommended Machine: </span>
                     <span class="mx-2 text-nowrap border-bottom border-dark fs-5 flex-grow-1">${reportData.recommended_machine}</span>
                     <span class="mx-2 text-nowrap fs-5 ">Client Chosen Machine: </span>
                     <span class="mx-2 text-nowrap border-bottom border-dark fs-5 flex-grow-1">${reportData.client_chosen_machine}</span>
                 </div>`
-                :
-                `<div class="d-flex my-2 align-items-center">
+            :
+            `<div class="d-flex my-2 align-items-center">
                     <span class="mx-2 text-nowrap fs-5">Referred By: </span>
                     <span class="mx-2 text-nowrap border-bottom border-dark fs-5 flex-grow-1">${reportData.referred_by}</span>
                     <span class="mx-2 text-nowrap fs-5">Audiometer: </span>
                     <span class="mx-2 text-nowrap border-bottom border-dark fs-5 flex-grow-1">${reportData.audiometer}</span>
                 </div>`
-            }
+        }
 
             <div class="d-flex my-2 align-items-center">
                 <span class="mx-2 text-nowrap fs-5">Date: </span>
@@ -248,11 +261,11 @@ const printAudiometryReport = (reportData, patientDetails, printConfigData, doct
             </div>
 
             ${!reportData.trial_mode ?
-                `<div class="d-flex my-2">
+            `<div class="d-flex my-2">
                     <span class="mx-2 text-nowrap fs-5">Complaint: </span>
                     <span class="mx-2 text-nowrap flex-grow-1 border-bottom border-dark fs-5">${reportData.complaint}</span>
                 </div>` : ""
-            }
+        }
 
             <div class="d-flex text-center" style="gap:10px;">
                 <div class="flex-grow-1">
@@ -260,7 +273,7 @@ const printAudiometryReport = (reportData, patientDetails, printConfigData, doct
                     <canvas id="acLeftEarChart" style="width: 400px; height: 400px" width="500" height="500"></canvas>
                     <div>
                         <span style="color:blue;">PTA (LT EAR) </span> =
-                        <span class="border-bottom border-dark">${ac_lhl_data.unit} db</span>
+                        <span class="border-bottom border-dark">${ac_lhl_data.unit} dB</span>
                     </div>
                 </div>
                 <div class="flex-grow-1">
@@ -268,7 +281,7 @@ const printAudiometryReport = (reportData, patientDetails, printConfigData, doct
                     <canvas id="acRightEarChart" style="width: 400px; height: 400px" width="500" height="500"></canvas>
                     <div>
                         <span style="color:red;">PTA (RT EAR) </span> =
-                        <span class="border-bottom border-dark">${ac_rhl_data.unit} db</span>
+                        <span class="border-bottom border-dark">${ac_rhl_data.unit} dB</span>
                     </div>
                 </div>
                 <div>
@@ -290,7 +303,7 @@ const printAudiometryReport = (reportData, patientDetails, printConfigData, doct
             </div>
 
             ${!reportData.trial_mode ?
-                `<div class="d-flex align-items-center gap-3 my-2">
+            `<div class="d-flex align-items-center gap-3 my-2">
                     <div class="d-flex flex-wrap mb-1 align-items-center">
                         <span class="fs-5">Tuning Fork: </span>
                         <span class="mx-2 border-bottom border-dark fs-5">${reportData.tuning_fork}</span>
@@ -325,37 +338,33 @@ const printAudiometryReport = (reportData, patientDetails, printConfigData, doct
                     <span class="fs-5">Recommendations: </span>
                     <span class="mx-2 fs-5">${reportData.recommendations.map((x, i) => `<div class="border-bottom border-dark"><span style="color:blue;">${i + 1}. </span>${x}</div>`).join("")}</span>
                 </div>` : ""
-            }
+        }
 
             ${!reportData.trial_mode ?
-                `<div class="ms-auto d-flex flex-column align-items-center" style="width:max-content; margin-right: 6rem" >
-                    ${doctor_details? `<div class="text-center"><img src=${doctor_details.doctor_signature} alt="doctor_signature" height="60"></div>` : `<div style="height:60px;"></div>`}
+            `<div class="ms-auto d-flex flex-column align-items-center" style="width:max-content; margin-right: 6rem" >
+                    ${doctor_details ? `<div class="text-center"><img src=${doctor_details.doctor_signature} alt="doctor_signature" height="60"></div>` : `<div style="height:60px;"></div>`}
                     <span style="font-size:smaller;">Clinical Audiologist & Speech Therapist </span>
-                    ${doctor_details? `<span style="font-size:smaller;">${doctor_details.doctor_qualification}</span>`: ""} 
-                    ${doctor_details? `<span style="font-size:smaller;">RCI Reg No.: ${doctor_details.doctor_registration_number}</span>`: ""} 
+                    ${doctor_details ? `<span style="font-size:smaller;">${doctor_details.doctor_qualification}</span>` : ""} 
+                    ${doctor_details ? `<span style="font-size:smaller;">RCI Reg No.: ${doctor_details.doctor_registration_number}</span>` : ""} 
                 </div>` : ""
-            }
+        }
 
             ${reportData.trial_mode ?
-                `<div class="my-5">
+            `<div class="my-5">
                 <span>Disclaimer :: </span>
                 <span class="text-danger">This is just a trial report based on patient response. This cannot be or should not be treated as medical audiogram report(PTA)</span>
                 </div>` : ""
-            }
+        }
             
             ${printConfigData.footer ?
-                `<div class="position-absolute w-100" style="bottom:-110px; border-top:solid 1px black;">
-                    <div class="d-flex">Branches:
-                        <div class="d-flex justify-content-around flex-grow-1">
-                            ${branchList.filter(x=> x.id !== reportData.branch_id && x.branch_name !== "Ranikuthi").map(x=>`<span>
-                                <svg width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/></svg>
-                                ${x.branch_name}
-                            </span>`).join("")}
-                        </div>
+            `<div class="position-absolute w-100" style="bottom:-110px; border-top:solid 1px black;">
+                    <div>
+                        Audiometry reports is subject to patient response and cooperation. This report is not be used for medico-legal purpose.<br>
+                        The contents of this report require clinical correlation before diagnosis.
                     </div>
                     <div class="text-center" >Copyright © 2024 Happy Ears Kolkata</div>
                 </div>`: ""
-            }
+        }
 
         </div>
     `
@@ -373,11 +382,11 @@ const printAudiometryReport = (reportData, patientDetails, printConfigData, doct
     setupChart(ctx1)
     setupChart(ctx2)
 
-    drawChartData(ctx1, reportData.ac_left_ear_pta, "solid", "blue", reportData.ac_left_ear_pta.masked ? "rectangle" : "cross")
-    drawChartData(ctx2, reportData.ac_right_ear_pta, "solid", "red", reportData.ac_right_ear_pta.masked ? "triangle" : "circle")
+    drawChartData(ctx1, reportData.ac_left_ear_pta, acConfig, "solid", "blue", reportData.ac_left_ear_pta.masked ? "rectangle" : "cross")
+    drawChartData(ctx2, reportData.ac_right_ear_pta, acConfig, "solid", "red", reportData.ac_right_ear_pta.masked ? "triangle" : "circle")
     if (reportData.bc_input) {
-        drawChartData(ctx1, reportData.bc_left_ear_pta, "dashed", "blue", reportData.bc_left_ear_pta.masked ? "right_bracket" : "right_arrow")
-        drawChartData(ctx2, reportData.bc_right_ear_pta, "dashed", "red", reportData.bc_right_ear_pta.masked ? "left_bracket" : "left_arrow")
+        drawChartData(ctx1, reportData.bc_left_ear_pta, bcConfig, "dashed", "blue", reportData.bc_left_ear_pta.masked ? "right_bracket" : "right_arrow")
+        drawChartData(ctx2, reportData.bc_right_ear_pta, bcConfig, "dashed", "red", reportData.bc_right_ear_pta.masked ? "left_bracket" : "left_arrow")
     }
 
     setTimeout(() => { nw.print() }, 2000);

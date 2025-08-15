@@ -24,6 +24,15 @@ export const FirebaseProvider = ({ children }) => {
         sales_report: false,
         admin_panel: false,
     })
+
+    //defaulting userAccess to true for testing purposes
+    // const [userAccess, setUserAccess] = useState({
+    //     audiometry: true,
+    //     inventory: true,
+    //     generate_invoice: true,
+    //     sales_report: true,
+    //     admin_panel: true,
+    // })
     const [loading, setLoading] = useState(false)
 
     const getUserDetails = (user_uid) => {
@@ -33,12 +42,16 @@ export const FirebaseProvider = ({ children }) => {
     useEffect(() => {
         onAuthStateChanged(auth, (user) => {
             setLoading(true)
+
             if (user) {
                 setUser(user)
 
                 getUserDetails(user.uid)
                     .then((res) => {
-                        if (res.data.operation !== "success") {
+                        if (res.data.operation === "success" && res.data.info) {
+                            res.data.info?.auth_access && setUserAccess(res.data.info.auth_access)
+                        }
+                        else if (res.data.operation === "success" && !res.data.info) {
                             axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/create-user`, { user_uid: user.uid, user_name: user.displayName, user_email: user.email, user_photo: user.photoURL }, { headers: { 'Content-Type': 'application/json' } })
                                 .then((res) => {
                                     console.log("new user created");
@@ -48,11 +61,14 @@ export const FirebaseProvider = ({ children }) => {
                                 })
                         }
                         else {
-                            res.data.info?.auth_access && setUserAccess(res.data.info.auth_access)
+                            Swal.fire('Error!!', res.data.message, 'error');
                         }
+
                         setLoading(false)
                     })
                     .catch((err) => {
+                        setLoading(false)
+
                         console.log(err)
                         Swal.fire('Error!!', err.message, 'error');
                     })
@@ -66,6 +82,7 @@ export const FirebaseProvider = ({ children }) => {
                     sales_report: false,
                     admin_panel: false,
                 })
+
                 setLoading(false)
             }
         })

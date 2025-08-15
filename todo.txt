@@ -1,8 +1,22 @@
 Todo:
 
-1. modal provider to be implemented
+Current changes: 
+1. Audiometry - Add 3k frequency both l and r, 3k and 6k are optional, rest frequency are mandatory - DONE
+2. Audiometry - db -> dB - DONE
+3. Audiometry - Branches lines should be replaced - DONE
+        Audiometry reports is subject to patient response and cooperation. This report is not be used for medico-legal purpose. The contents of this report require clinical correlation before diagnosis.
+4. Audiometry - Provisitional diagonosis should have 130 character limit on both left and right - DONE
+
+5. Invoice - Remove branches segment
+6. Invoice - Add print T&C button
+
+7. Invoice delete option - upon deleting invoice document the product should be marked as in stock again and product log should be added
+8. Product delete option - upon deleting remove product and product_logs
+9. Show patient name in the invoice log of a product
 
 
+modal provider to be implemented
+----------------------------
 
 HAPPY EARS PROJECT
 Frontend using React.js, Bootstrap 5

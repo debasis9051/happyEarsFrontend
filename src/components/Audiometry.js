@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Dropdown, Tab, Tabs, FormCheck } from "react-bootstrap"
 import axios from "axios";
 import Swal from "sweetalert2"
@@ -13,22 +13,47 @@ import AuthWrapper from "./AuthWrapper";
 import { printAudiometryReport } from "../utils/printAudiometryReport"
 import { escapeRegex, dropDownStyle, formatPatientNumber } from "../utils/commonUtils";
 
+// import { dummyBranchList } from "../testData/branchList";
+// import { dummyAudiometryList } from "../testData/audiometryList";
+// import { dummyDoctorList } from "../testData/doctorList";
+// import { dummyPatientList } from "../testData/patientList";
+
+
 const acConfig = [
-    { frequency: 250, min: -10, max: 120 },
-    { frequency: 500, min: -10, max: 120 },
-    { frequency: 1000, min: -10, max: 120 },
-    { frequency: 2000, min: -10, max: 120 },
-    { frequency: 4000, min: -10, max: 120 },
-    { frequency: 6000, min: -10, max: 120 },
-    { frequency: 8000, min: -10, max: 100 }
+    { frequency: 250, min: -10, max: 120, optional: false },
+    { frequency: 500, min: -10, max: 120, optional: false },
+    { frequency: 1000, min: -10, max: 120, optional: false },
+    { frequency: 2000, min: -10, max: 120, optional: false },
+    { frequency: 3000, min: -10, max: 120, optional: true },
+    { frequency: 4000, min: -10, max: 120, optional: false },
+    { frequency: 6000, min: -10, max: 120, optional: true },
+    { frequency: 8000, min: -10, max: 100, optional: false }
 ]
 const bcConfig = [
-    { frequency: 250, min: -10, max: 80 },
-    { frequency: 500, min: -10, max: 80 },
-    { frequency: 1000, min: -10, max: 80 },
-    { frequency: 2000, min: -10, max: 80 },
-    { frequency: 4000, min: -10, max: 80 },
+    { frequency: 250, min: -10, max: 80, optional: false },
+    { frequency: 500, min: -10, max: 80, optional: false },
+    { frequency: 1000, min: -10, max: 80, optional: false },
+    { frequency: 2000, min: -10, max: 80, optional: false },
+    { frequency: 3000, min: -10, max: 80, optional: true },
+    { frequency: 4000, min: -10, max: 80, optional: false },
 ]
+
+function removeFrequency(arr, freq) {
+    const index = arr.findIndex(obj => obj.frequency === freq);
+    if (index === -1) return { arr, removed: null };
+    const [removed] = arr.splice(index, 1);
+    return { arr, removed };
+}
+
+function insertSorted(arr, obj) {
+    const index = arr.findIndex(item => item.frequency > obj.frequency);
+    if (index === -1) {
+        arr.push(obj); // insert at end if larger than all
+    } else {
+        arr.splice(index, 0, obj);
+    }
+    return arr;
+}
 
 const calculateHearingLoss = (frequencyData) => {
     let readings = frequencyData.reduce((p, o) => {
@@ -93,6 +118,12 @@ const Audiometry = () => {
     const [doctorList, setDoctorList] = useState([])
     const [patientList, setPatientList] = useState([])
 
+    //for testing purpose
+    // const [branchList, setBranchList] = useState(dummyBranchList)
+    // const [audiometryList, setAudiometryList] = useState(dummyAudiometryList)
+    // const [doctorList, setDoctorList] = useState(dummyDoctorList)
+    // const [patientList, setPatientList] = useState(dummyPatientList)
+
     const [currentPage, setCurrentPage] = useState(0)
     const [searchBarState, setSearchBarState] = useState(false)
     const [searchValue, setSearchValue] = useState("")
@@ -116,12 +147,12 @@ const Audiometry = () => {
     const [audiometer, setAudiometer] = useState("")
     const [complaint, setComplaint] = useState("")
 
-    const [acLeftEarPta, setAcLeftEarPta] = useState({ masked: false, data: acConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: acConfig })
-    const [acRightEarPta, setAcRightEarPta] = useState({ masked: false, data: acConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: acConfig })
+    const [acLeftEarPta, setAcLeftEarPta] = useState({ masked: false, data: acConfig.filter(x => x.optional !== true).map(x => ({ frequency: x.frequency, decibal: 0 })) })
+    const [acRightEarPta, setAcRightEarPta] = useState({ masked: false, data: acConfig.filter(x => x.optional !== true).map(x => ({ frequency: x.frequency, decibal: 0 })) })
 
     const [bcInput, setBcInput] = useState(false)
-    const [bcLeftEarPta, setBcLeftEarPta] = useState({ masked: false, data: bcConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: bcConfig })
-    const [bcRightEarPta, setBcRightEarPta] = useState({ masked: false, data: bcConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: bcConfig })
+    const [bcLeftEarPta, setBcLeftEarPta] = useState({ masked: false, data: bcConfig.filter(x => x.optional !== true).map(x => ({ frequency: x.frequency, decibal: 0 })) })
+    const [bcRightEarPta, setBcRightEarPta] = useState({ masked: false, data: bcConfig.filter(x => x.optional !== true).map(x => ({ frequency: x.frequency, decibal: 0 })) })
 
     const [tuningFork, setTuningFork] = useState(null)
     const [rinne, setRinne] = useState({ left: null, right: null })
@@ -346,12 +377,12 @@ const Audiometry = () => {
         setAudiometer("")
         setComplaint("")
 
-        setAcLeftEarPta({ masked: false, data: acConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: acConfig })
-        setAcRightEarPta({ masked: false, data: acConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: acConfig })
+        setAcLeftEarPta({ masked: false, data: acConfig.filter(x => x.optional !== true).map(x => ({ frequency: x.frequency, decibal: 0 })) })
+        setAcRightEarPta({ masked: false, data: acConfig.filter(x => x.optional !== true).map(x => ({ frequency: x.frequency, decibal: 0 })) })
 
         setBcInput(false)
-        setBcLeftEarPta({ masked: false, data: bcConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: bcConfig })
-        setBcRightEarPta({ masked: false, data: bcConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: bcConfig })
+        setBcLeftEarPta({ masked: false, data: bcConfig.filter(x => x.optional !== true).map(x => ({ frequency: x.frequency, decibal: 0 })) })
+        setBcRightEarPta({ masked: false, data: bcConfig.filter(x => x.optional !== true).map(x => ({ frequency: x.frequency, decibal: 0 })) })
 
         setTuningFork(null)
         setRinne({ left: null, right: null })
@@ -656,28 +687,34 @@ const Audiometry = () => {
                                             <div className="row">
                                                 <div className="col-xl-6 text-center">
                                                     <h5 className="mt-3">Left Ear PTA</h5>
-                                                    <AudiogramInput ptaData={acLeftEarPta} setPtaData={setAcLeftEarPta} />
+                                                    <AudiogramInput ptaData={acLeftEarPta} setPtaData={setAcLeftEarPta} earside={"LEFT"} config={acConfig} />
                                                 </div>
 
                                                 <div className="col-xl-6 text-center">
                                                     <h5 className="mt-3">Right Ear PTA</h5>
-                                                    <AudiogramInput ptaData={acRightEarPta} setPtaData={setAcRightEarPta} />
+                                                    <AudiogramInput ptaData={acRightEarPta} setPtaData={setAcRightEarPta} earside={"RIGHT"} config={acConfig} />
                                                 </div>
                                             </div>
                                             <br />
                                             <h4 className="text-center my-2">Bone Conduction (BC)</h4>
-                                            <FormCheck className="fs-4 text-center" type="switch" checked={bcInput} onChange={(e) => { setBcInput(e.target.checked); setBcLeftEarPta({ masked: false, data: bcConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: bcConfig }); setBcRightEarPta({ masked: false, data: bcConfig.map(x => ({ frequency: x.frequency, decibal: 0 })), config: bcConfig }); }} />
+                                            <FormCheck className="fs-4 text-center" type="switch" checked={bcInput}
+                                                onChange={(e) => {
+                                                    setBcInput(e.target.checked);
+                                                    setBcLeftEarPta({ masked: false, data: bcConfig.filter(x => x.optional !== true).map(x => ({ frequency: x.frequency, decibal: 0 })) });
+                                                    setBcRightEarPta({ masked: false, data: bcConfig.filter(x => x.optional !== true).map(x => ({ frequency: x.frequency, decibal: 0 })) });
+                                                }}
+                                            />
                                             {
                                                 bcInput &&
                                                 <div className="row">
                                                     <div className="col-xl-6 text-center">
                                                         <h5 className="mt-3">Left Ear PTA</h5>
-                                                        <AudiogramInput ptaData={bcLeftEarPta} setPtaData={setBcLeftEarPta} hearingLossRatingPanel={false} />
+                                                        <AudiogramInput ptaData={bcLeftEarPta} setPtaData={setBcLeftEarPta} earside={"LEFT"} config={bcConfig} hearingLossRatingPanel={false} />
                                                     </div>
 
                                                     <div className="col-xl-6 text-center">
                                                         <h5 className="mt-3">Right Ear PTA</h5>
-                                                        <AudiogramInput ptaData={bcRightEarPta} setPtaData={setBcRightEarPta} hearingLossRatingPanel={false} />
+                                                        <AudiogramInput ptaData={bcRightEarPta} setPtaData={setBcRightEarPta} earside={"RIGHT"} config={bcConfig} hearingLossRatingPanel={false} />
                                                     </div>
                                                 </div>
                                             }
@@ -758,13 +795,13 @@ const Audiometry = () => {
                                                         <div className="col-6">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required" htmlFor="provisionalDiagnosisLeft">Provisional Diagnosis (Left)</label>
-                                                                <textarea id="provisionalDiagnosisLeft" rows={3} maxLength={80} className="form-control" value={provisionalDiagnosis.left} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, left: e.target.value }) }} />
+                                                                <textarea id="provisionalDiagnosisLeft" rows={3} maxLength={130} className="form-control" value={provisionalDiagnosis.left} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, left: e.target.value }) }} />
                                                             </div>
                                                         </div>
                                                         <div className="col-6">
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required" htmlFor="provisionalDiagnosisRight">Provisional Diagnosis (Right)</label>
-                                                                <textarea id="provisionalDiagnosisRight" rows={3} maxLength={80} className="form-control" value={provisionalDiagnosis.right} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, right: e.target.value }) }} />
+                                                                <textarea id="provisionalDiagnosisRight" rows={3} maxLength={130} className="form-control" value={provisionalDiagnosis.right} onChange={(e) => { setProvisionalDiagnosis({ ...provisionalDiagnosis, right: e.target.value }) }} />
                                                             </div>
                                                         </div>
                                                     </div>
@@ -839,80 +876,115 @@ const Audiometry = () => {
     )
 }
 
-const AudiogramInput = ({ ptaData, setPtaData, hearingLossRatingPanel = true }) => {
+const AudiogramInput = ({ ptaData, setPtaData, earside, config, hearingLossRatingPanel = true }) => {
     return (
-        <div className="border border-5 border-primary rounded-5 px-4 d-inline-block">
+        <div className="border border-5 border-primary rounded-5 d-inline-block">
             <div className="d-flex justify-content-center">
-                <div className="px-1" style={{ fontSize: "smaller", writingMode: "tb", textOrientation: "upright" }}>frequency</div>
-                <div className="py-3">
+                <div style={{ fontSize: "smaller", writingMode: "tb", textOrientation: "upright" }}>frequency</div>
+                <div className="pt-3 pe-3">
                     {
-                        ptaData.data.map((x, i) => {
+                        config.map((cd, i) => {
 
-                            let t = ptaData.config.find(y => y.frequency === x.frequency)
-                            let min = t.min
-                            let max = t.max
+                            let min = cd.min
+                            let max = cd.max
 
-                            return (
-                                <div key={i} className="row gx-0 align-items-center my-2">
-                                    <div className="col-2 px-2">{x.frequency}</div>
-                                    <div className="col-9 px-2 d-flex">
-                                        <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal <= min} onClick={() => {
-                                            let t = ptaData.data.map(x => ({ ...x }))
-                                            t[i].decibal = t[i].decibal <= min ? min : t[i].decibal - 5
-                                            setPtaData({ ...ptaData, data: t })
-                                        }}>&ndash;</button>
-                                        <input type={x.decibal === null ? "text" : "number"} className="form-control rounded-0"
-                                            value={x.decibal === null ? "NR" : x.decibal.toString()}
-                                            onChange={(e) => {
-                                                let t = ptaData.data.map(x => ({ ...x }))
-                                                t[i].decibal = e.target.value === "" ? 0 : parseInt(e.target.value) > max ? max : parseInt(e.target.value) < min ? min : parseInt(e.target.value)
-                                                setPtaData({ ...ptaData, data: t })
+                            let t = ptaData.data.find(y => y.frequency === cd.frequency)
+                            if (t) {
+                                return (
+                                    <div key={i} className="row gx-0 align-items-center my-2">
+                                        <div className="col-2 px-2">{cd.frequency}</div>
+                                        <div className="col-9 px-2 d-flex">
+                                            <button className="btn btn-primary rounded-0 rounded-start fs-4" style={{ height: "40px", lineHeight: "10px" }}
+                                                disabled={t.decibal === null || t.decibal <= min}
+                                                onClick={() => {
+                                                    let temp = ptaData.data.map(x => ({ ...x }))
+                                                    let fq = temp.find(y => y.frequency === cd.frequency)
+                                                    fq.decibal = t.decibal <= min ? min : fq.decibal - 5
+                                                    setPtaData({ ...ptaData, data: temp })
+                                                }}
+                                            >&ndash;</button>
+                                            <input type={t.decibal === null ? "text" : "number"} className="form-control rounded-0"
+                                                value={t.decibal === null ? "NR" : t.decibal.toString()}
+                                                onChange={(e) => {
+                                                    let value = parseInt(e.target.value === "" ? 0 : e.target.value)
+
+                                                    let temp = ptaData.data.map(x => ({ ...x }))
+                                                    let fq = temp.find(y => y.frequency === cd.frequency)
+                                                    fq.decibal = value > max ? max : value < min ? min : value
+                                                    setPtaData({ ...ptaData, data: temp })
+                                                }}
+                                                onBlur={(e) => {
+                                                    let temp = ptaData.data.map(x => ({ ...x }))
+                                                    let fq = temp.find(y => y.frequency === cd.frequency)
+                                                    fq.decibal = Math.round(fq.decibal / 5) * 5
+                                                    setPtaData({ ...ptaData, data: temp })
+                                                }}
+                                                disabled={t.decibal === null}
+                                            />
+                                            <button className="btn btn-primary rounded-0 rounded-end fs-4" style={{ height: "40px", lineHeight: "10px" }}
+                                                disabled={t.decibal === null || t.decibal >= max}
+                                                onClick={() => {
+                                                    let temp = ptaData.data.map(x => ({ ...x }))
+                                                    let fq = temp.find(y => y.frequency === cd.frequency)
+                                                    fq.decibal = fq.decibal >= max ? max : fq.decibal + 5
+                                                    setPtaData({ ...ptaData, data: temp })
+                                                }}
+                                            >&#43;</button>
+                                        </div>
+                                        <div className={`col-1 px-2 rounded-circle ${t.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "30px", height: "30px", cursor: "pointer" }}
+                                            onClick={() => {
+                                                let temp = ptaData.data.map(x => ({ ...x }))
+                                                let fq = temp.find(y => y.frequency === cd.frequency)
+                                                fq.decibal = fq.decibal !== null ? null : 0
+                                                setPtaData({ ...ptaData, data: temp })
                                             }}
-                                            onBlur={(e) => {
-                                                let t = ptaData.data.map(x => ({ ...x }))
-                                                t[i].decibal = Math.round(t[i].decibal / 5) * 5
-                                                setPtaData({ ...ptaData, data: t })
-                                            }}
-                                            disabled={x.decibal === null}
-                                        />
-                                        <button className="btn btn-primary rounded-0 rounded-end fs-4" style={{ height: "40px", lineHeight: "10px" }} disabled={x.decibal === null || x.decibal >= max} onClick={() => {
-                                            let t = ptaData.data.map(x => ({ ...x }))
-                                            t[i].decibal = t[i].decibal >= max ? max : t[i].decibal + 5
-                                            setPtaData({ ...ptaData, data: t })
-                                        }}>&#43;</button>
+                                        ></div>
                                     </div>
-                                    <div className={`col-1 px-2 rounded-circle ${x.decibal === null ? "bg-danger" : "bg-success"}`} style={{ width: "30px", height: "30px", cursor: "pointer" }}
-                                        onClick={() => {
-                                            let t = ptaData.data.map(x => ({ ...x }))
-                                            t[i].decibal = t[i].decibal !== null ? null : 0
-                                            setPtaData({ ...ptaData, data: t })
-                                        }}
-                                    ></div>
-                                </div>
-                            )
+                                )
+                            } else { return null; }
                         })
                     }
                 </div>
             </div>
-            <div className="my-2 d-flex align-items-center justify-content-center">
-                <h5 className="m-0">Masked</h5>
-                <FormCheck className="fs-4" type="switch" checked={ptaData.masked} onChange={(e) => { setPtaData({ ...ptaData, masked: e.target.checked }); }} />
-                {
-                    hearingLossRatingPanel &&
-                    (() => {
-                        let { unit, color, text } = calculateHearingLoss(ptaData.data)
+            {
+                hearingLossRatingPanel &&
+                (() => {
+                    let { unit, color, text } = calculateHearingLoss(ptaData.data)
 
+                    return (
+                        <div className="d-flex align-items-center justify-content-center mt-2">
+                            <span className="mx-3 fw-bold">{earside === "LEFT" ? "LHL" : "RHL"} - {Math.round(unit * 1000) / 1000}</span>
+                            <div className="fw-bold p-2 rounded text-black text-nowrap" style={{ backgroundColor: color }}>{text}</div>
+                        </div>
+                    )
+                })()
+            }
+            <hr className="mb-1" />
+            <h5>Settings</h5>
+            <div className="d-flex align-items-center justify-content-center mb-2">
+                {
+                    config.filter(x => x.optional === true).map((cd, i) => {
                         return (
-                            <div>
-                                <span className="mx-3 fw-bold">LHL - {Math.round(unit * 1000) / 1000}</span>
-                                <span className="fw-bold p-2 rounded text-black text-nowrap" style={{ backgroundColor: color }}>{text}</span>
+                            <div className="d-flex align-items-center" key={i}>
+                                <span className="text-white">{cd.frequency} Hz</span>
+                                <FormCheck className="fs-5" type="switch" checked={ptaData.data.find(x => x.frequency === cd.frequency) !== undefined}
+                                    onChange={(e) => {
+                                        let temp = ptaData.data.map(x => ({ ...x }))
+                                        temp = e.target.checked ? insertSorted(temp, { frequency: cd.frequency, decibal: 0 }) : removeFrequency(temp, cd.frequency).arr
+                                        setPtaData({ ...ptaData, data: temp });
+                                    }}
+                                />
                             </div>
                         )
-                    })()
+                    })
                 }
+                <div className="d-flex align-items-center">
+                    <span className="text-white">Masked</span>
+                    <FormCheck className="fs-5" type="switch" checked={ptaData.masked} onChange={(e) => { setPtaData({ ...ptaData, masked: e.target.checked }); }} />
+                </div>
             </div>
         </div>
     )
 }
 
-export { Audiometry as default, getDoctorDetails, calculateHearingLoss }
+export { Audiometry as default, getDoctorDetails, calculateHearingLoss, acConfig, bcConfig }
