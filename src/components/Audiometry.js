@@ -781,7 +781,7 @@ const Audiometry = () => {
                                                             <div className="form-group">
                                                                 <label className="form-label my-1 required">Weber</label>
                                                                 <Select
-                                                                    options={["Left", "Center", "Right"].map(x => ({ label: x, value: x }))}
+                                                                    options={["Left", "Center", "Right", "Not Responsive"].map(x => ({ label: x, value: x }))}
                                                                     value={weber === null ? null : { label: weber, value: weber }}
                                                                     onChange={(val) => { setWeber(val.value) }}
                                                                     styles={dropDownStyle}
