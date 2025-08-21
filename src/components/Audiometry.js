@@ -30,12 +30,12 @@ const acConfig = [
     { frequency: 8000, min: -10, max: 100, optional: false }
 ]
 const bcConfig = [
-    { frequency: 250, min: -10, max: 80, optional: false },
-    { frequency: 500, min: -10, max: 80, optional: false },
-    { frequency: 1000, min: -10, max: 80, optional: false },
-    { frequency: 2000, min: -10, max: 80, optional: false },
-    { frequency: 3000, min: -10, max: 80, optional: true },
-    { frequency: 4000, min: -10, max: 80, optional: false },
+    { frequency: 250, min: -10, max: 70, optional: false },
+    { frequency: 500, min: -10, max: 70, optional: false },
+    { frequency: 1000, min: -10, max: 70, optional: false },
+    { frequency: 2000, min: -10, max: 70, optional: false },
+    { frequency: 3000, min: -10, max: 70, optional: true },
+    { frequency: 4000, min: -10, max: 70, optional: false },
 ]
 
 function removeFrequency(arr, freq) {
