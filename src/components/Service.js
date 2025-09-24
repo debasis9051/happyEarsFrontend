@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Tab, Tabs } from "react-bootstrap"
 import Dropzone from 'react-dropzone'
 import Select from "react-select"
@@ -12,6 +12,7 @@ import { useModal } from "../contexts/modal-context";
 import { getPatientList, getServiceList } from "../utils/getApis"
 import AuthWrapper from "./AuthWrapper";
 import { dropDownStyle, escapeRegex, formatPatientNumber } from "../utils/commonUtils";
+import { redirect } from "react-router-dom"
 
 const Service = () => {
     const { currentUserInfo } = useFirebase()

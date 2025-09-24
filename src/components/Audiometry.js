@@ -12,6 +12,7 @@ import { getAudiometryList, getBranchList, getDoctorList, getPatientList } from 
 import AuthWrapper from "./AuthWrapper";
 import { printAudiometryReport } from "../utils/printAudiometryReport"
 import { escapeRegex, dropDownStyle, formatPatientNumber } from "../utils/commonUtils";
+import { handlePrintTermsAndConditions } from "../utils/printTermsAndConditions";
 
 // import { dummyBranchList } from "../testData/branchList";
 // import { dummyAudiometryList } from "../testData/audiometryList";
@@ -182,6 +183,12 @@ const Audiometry = () => {
         }) : []
     }, [branchFilter, searchBarState, searchValue, audiometryList, patientList])
 
+
+    useEffect(() => {
+        setModalView("NEW_FEATURE_MODAL")
+        setModalData({ redirectLink: "/service", featureTitle: "Service" })
+        openModal()
+    }, [setModalView, setModalData, openModal])
 
     useEffect(() => {
         if (currentUserInfo !== null) {
@@ -408,8 +415,9 @@ const Audiometry = () => {
             </Helmet>
 
             <div>
-                <div className="d-flex align-items-center">
-                    <span className="fs-3 px-3 pt-3">Audiometry</span>
+                <div className="d-flex justify-content-between align-items-center my-2">
+                    <span className="fs-3 px-3">Audiometry</span>
+                    <button className="btn btn-success me-3" onClick={() => { handlePrintTermsAndConditions() }}>Print Terms & Conditions</button>
                 </div>
 
                 <AuthWrapper page={"audiometry"}>

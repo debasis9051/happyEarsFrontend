@@ -92,6 +92,12 @@ const Patients = () => {
     }
 
     useEffect(() => {
+        setModalView("NEW_FEATURE_MODAL")
+        setModalData({ redirectLink: "/service", featureTitle: "Service" })
+        openModal()
+    }, [setModalView, setModalData, openModal])
+
+    useEffect(() => {
         if (currentUserInfo !== null) {
             getBranchList(currentUserInfo, setBranchList)
             getPatientList(currentUserInfo, setPatientList)

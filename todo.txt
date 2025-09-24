@@ -1,19 +1,21 @@
 Todo:
 
-remove config structure from audiometry data
 
 Current changes: 
-1. Change audiometry max bc limit to 70 - DONE
+1. Add Print Terms & Conditions button - added in Audiometry and Sales Report - DONE
+2. Invoice - Remove branches segment - DONE
+3. Set marker and popup for New Feature for Service in all pages - DONE
 
-2. Invoice - Remove branches segment
-3. Invoice - Add print T&C button
+4. Invoice delete option - upon deleting invoice document the product should be marked as in stock again and product log should be added - DONE
+5. Product delete option - upon deleting remove product and product_logs - DONE
+6. Find associated invoice of the product - DONE
 
-4. Invoice delete option - upon deleting invoice document the product should be marked as in stock again and product log should be added
-5. Product delete option - upon deleting remove product and product_logs
-6. Show patient name in the invoice log of a product OR find associated invoice of the product
-
-
-modal provider to be implemented - if needed - check number of modals first
+7. pagination for all list apis
+8. restructuring invoices collection
+9. Restructuring all backend routes to use proper RESTFUL methods
+10. remove config structure from audiometry data
+11. change "decibal" -> "decibel" in all places
+12. why does accessory get saved when there is no data
 
 
 

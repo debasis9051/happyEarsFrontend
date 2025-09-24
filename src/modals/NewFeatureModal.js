@@ -1,11 +1,10 @@
-import React from "react"
 import Modal from 'react-bootstrap/Modal';
 import { Link } from 'react-router-dom';
 import { useModal } from "../contexts/modal-context";
 
 const NewFeatureModal = () => {
 
-    const {modalShow, closeModal} = useModal()
+    const {modalShow, closeModal, modalData} = useModal()
 
     return (
         <Modal show={modalShow} className="my-modal" size="lg" centered onHide={() => { closeModal() }} >
@@ -62,8 +61,8 @@ const NewFeatureModal = () => {
                         <img src="/newly-launched-rubber-grunge-stamp-seal.png" alt="new_stamp" width="200" />
                     </div>
                     <div className="flex-grow-1 fs-3">
-                        We've released a new Audiometry feature. Check it out!!
-                        <Link to="/audiometry" className="btn rounded-pill fs-5 mx-5 text-white" style={{ background: "linear-gradient(#9900ff, #073763)" }}>Open Audiometry</Link>
+                        We've released a new feature {modalData.featureTitle}. Check it out!!
+                        <Link to={modalData.redirectLink} className="btn rounded-pill fs-5 mx-5 text-white" style={{ background: "linear-gradient(#9900ff, #073763)" }}>Open {modalData.featureTitle}</Link>
                     </div>
                 </div>
             </Modal.Body>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Modal, Button, Dropdown, Tab, Tabs, OverlayTrigger, Tooltip } from "react-bootstrap"
 import Select from "react-select"
 import moment from "moment"
@@ -13,6 +13,7 @@ import { getInvoiceList, getBranchList, getSalespersonList, getPatientList } fro
 import { printInvoice } from "../utils/printInvoice"
 import AuthWrapper from "./AuthWrapper";
 import { escapeRegex, dropDownStyle, formatPatientNumber, formatAmount } from "../utils/commonUtils"
+import { handlePrintTermsAndConditions } from "../utils/printTermsAndConditions"
 
 const SalesReport = () => {
     const { currentUserInfo } = useFirebase()
@@ -178,6 +179,12 @@ const SalesReport = () => {
 
 
     useEffect(() => {
+        setModalView("NEW_FEATURE_MODAL")
+        setModalData({ redirectLink: "/service", featureTitle: "Service" })
+        openModal()
+    }, [setModalView, setModalData, openModal])
+
+    useEffect(() => {
         if (currentUserInfo !== null) {
             getBranchList(currentUserInfo, setBranchList)
             getSalespersonList(currentUserInfo, setSalespersonList)
@@ -286,8 +293,9 @@ const SalesReport = () => {
             </Helmet>
 
             <div>
-                <div className="d-flex align-items-center">
-                    <span className="fs-3 px-3 pt-3">Sales Report</span>
+                <div className="d-flex align-items-center justify-content-between my-2">
+                    <span className="fs-3 px-3">Sales Report</span>
+                    <button className="btn btn-success me-3" onClick={() => { handlePrintTermsAndConditions() }}>Print Terms & Conditions</button>
                 </div>
 
                 <AuthWrapper page={"sales_report"}>
@@ -382,6 +390,43 @@ const SalesReport = () => {
                                                                                     })
                                                                                     openModal()
                                                                                 }} >Print</Dropdown.Item>
+                                                                                <Dropdown.Item
+                                                                                    onClick={() => {
+                                                                                        Swal.fire({
+                                                                                            title: "Are you sure?",
+                                                                                            text: "You won't be able to revert this! This will delete the invoice permanently and restock it's products.",
+                                                                                            icon: "warning",
+                                                                                            showCancelButton: true,
+                                                                                            showLoaderOnConfirm: true,
+                                                                                            preConfirm: async (val) => {
+                                                                                                try {
+                                                                                                    let data = {
+                                                                                                        current_user_uid: currentUserInfo.uid,
+                                                                                                        current_user_name: currentUserInfo.displayName
+                                                                                                    }
+
+                                                                                                    return await axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/invoice/${x.id}`, data, { headers: { 'Content-Type': 'application/json' } })
+                                                                                                } catch (error) {
+                                                                                                    console.log(error)
+                                                                                                    Swal.showValidationMessage(error.message);
+                                                                                                }
+                                                                                            },
+                                                                                            allowOutsideClick: () => !Swal.isLoading()
+                                                                                        }).then((result) => {
+                                                                                            if (!result.isConfirmed) return;
+
+                                                                                            let data = result.value.data;
+                                                                                            if (data.operation === "success") {
+                                                                                                setCurrentPage(0)
+                                                                                                getInvoiceList(currentUserInfo, setInvoiceList)
+                                                                                                Swal.fire('Success!', data.message, 'success');
+                                                                                            }
+                                                                                            else {
+                                                                                                Swal.fire('Oops!', data.message, 'error');
+                                                                                            }
+                                                                                        });
+                                                                                    }}
+                                                                                >Delete Invoice</Dropdown.Item>
                                                                             </Dropdown.Menu>
                                                                         </Dropdown>
                                                                     </td>
