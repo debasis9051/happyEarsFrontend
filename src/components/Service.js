@@ -1,18 +1,17 @@
 import { useState, useEffect, useMemo } from "react"
-import { Tab, Tabs } from "react-bootstrap"
-import Dropzone from 'react-dropzone'
+import { Dropdown, Tab, Tabs } from "react-bootstrap"
 import Select from "react-select"
 import Swal from "sweetalert2"
 import axios from "axios";
 import moment from "moment"
 import { Helmet } from "react-helmet-async";
-
 import { useFirebase } from "../contexts/firebase-context";
 import { useModal } from "../contexts/modal-context";
 import { getPatientList, getServiceList } from "../utils/getApis"
 import AuthWrapper from "./AuthWrapper";
 import { dropDownStyle, escapeRegex, formatPatientNumber } from "../utils/commonUtils";
-import { redirect } from "react-router-dom"
+import FileDropzone from "./FileDropzone"
+import { printServiceReport } from "../utils/printServiceReport"
 
 const Service = () => {
     const { currentUserInfo } = useFirebase()
@@ -33,11 +32,12 @@ const Service = () => {
     const [isServiceCreateApiLoading, setIsServiceCreateApiLoading] = useState(false)
 
     const [selectedService, setSelectedService] = useState(null)
-    const [serviceCloseMode, setServiceCloseMode] = useState(null)
-    const [outcomeDetails, setOutcomeDetails] = useState(null)
     const [technician, setTechnician] = useState(null)
-    const [uploadedFile, setUploadedFile] = useState(null)
-    const [uploadedFileImage, setUploadedFileImage] = useState(null)
+    const [serviceCloseMode, setServiceCloseMode] = useState("COMPLETE") // COMPLETE or CANCEL
+    const [serviceType, setServiceType] = useState("PAID") // PAID or FREE
+    const [outcomeDetails, setOutcomeDetails] = useState(null)
+    const [uploadedFiles, setUploadedFiles] = useState([])
+    const [maxFiles, setMaxFiles] = useState(3) // Max 3 files can be uploaded for Completed service request
     const [isServiceCloseApiLoading, setIsServiceCloseApiLoading] = useState(false)
 
     const filteredServiceList = useMemo(() => {
@@ -79,11 +79,11 @@ const Service = () => {
 
     const clearServiceCloseForm = () => {
         setSelectedService(null)
-        setServiceCloseMode(null)
-        setOutcomeDetails(null)
         setTechnician(null)
-        setUploadedFile(null)
-        setUploadedFileImage(null)
+        setServiceCloseMode("COMPLETE")
+        setServiceType("PAID")
+        setOutcomeDetails(null)
+        setUploadedFiles([])
     }
 
     const createNewServiceRequest = () => {
@@ -129,11 +129,16 @@ const Service = () => {
     const completeServiceRequest = () => {
         let data = new FormData()
         data.append("service_unique_id", selectedService.value)
-        data.append("outcome_details", outcomeDetails)
         data.append("technician", technician)
-        data.append("uploaded_file", uploadedFile)
+        data.append("service_type", serviceType)
+        data.append("outcome_details", outcomeDetails)
         data.append("current_user_uid", currentUserInfo.uid)
         data.append("current_user_name", currentUserInfo.displayName)
+
+        // Append each file individually against same key
+        uploadedFiles.forEach((file) => {
+            data.append("uploaded_files", file);
+        });
 
         setIsServiceCloseApiLoading(true)
         axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/complete-service-request`, data, { headers: { 'Content-Type': 'multipart/form-data' } })
@@ -158,16 +163,15 @@ const Service = () => {
     }
 
     const cancelServiceRequest = () => {
-        let data = {
-            service_unique_id: selectedService.value,
-            outcome_details: outcomeDetails,
-
-            current_user_uid: currentUserInfo.uid,
-            current_user_name: currentUserInfo.displayName
-        }
+        let data = new FormData()
+        data.append("service_unique_id", selectedService.value)
+        data.append("outcome_details", outcomeDetails)
+        data.append("uploaded_file", uploadedFiles[0])
+        data.append("current_user_uid", currentUserInfo.uid)
+        data.append("current_user_name", currentUserInfo.displayName)
 
         setIsServiceCloseApiLoading(true)
-        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/cancel-service-request`, data, { headers: { 'Content-Type': 'application/json' } })
+        axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/cancel-service-request`, data, { headers: { 'Content-Type': 'multipart/form-data' } })
             .then((res) => {
                 setIsServiceCloseApiLoading(false)
 
@@ -194,6 +198,8 @@ const Service = () => {
     s = (s < 1 ? 1 : s)
     let e = (c + 2) + (c - 2 < 1 ? 1 - (c - 2) : 0)
     e = (e > tp ? tp : e)
+
+
 
     return (
         <>
@@ -242,10 +248,10 @@ const Service = () => {
                                                     <th scope="col">Service ID</th>
                                                     <th scope="col">Patient</th>
                                                     <th scope="col">Contact Number</th>
-                                                    <th scope="col">Description</th>
                                                     <th scope="col">Added On</th>
                                                     <th scope="col">Closed On</th>
                                                     <th scope="col">Status</th>
+                                                    <th scope="col">Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -260,27 +266,33 @@ const Service = () => {
                                                                     <td>{x.service_id}</td>
                                                                     <td>{patientDetails.patient_name} <span className="badge text-primary">{formatPatientNumber(patientDetails.patient_number)}</span></td>
                                                                     <td>{patientDetails.contact_number}</td>
-                                                                    <td>
-                                                                        <button className="btn btn-info" onClick={() => {
-                                                                            Swal.fire("Notes", x.problem_description || "N/A", "info")
-                                                                            Swal.fire({
-                                                                                html: `
-                                                                                    <div class="my-2 text-start"><span class="fs-5 fw-bold">Problem Description</span></br>${x.problem_description}</div>
-                                                                                    ${x.outcome_details ? `<div class="my-2 text-start"><span class="fs-5 fw-bold">Outcome Details</span></br> ${x.outcome_details}</div>` : ""}
-                                                                                    ${x.technician ? `<div class="my-2 text-start"><span class="fs-5 fw-bold">Technician:</span> ${x.technician}</div>` : ""}
-                                                                                    ${x.file_reference ? `<img class="my-2 text-start w-100" src="${x.file_reference}" alt="Uploaded file">` : ""}
-                                                                                `,
-                                                                            });
-                                                                        }}>
-                                                                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                                                                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
-                                                                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
-                                                                            </svg>
-                                                                        </button>
-                                                                    </td>
                                                                     <td>{moment.unix(x.created_at._seconds).format("lll")}</td>
                                                                     <td>{x.closed_at ? moment.unix(x.closed_at._seconds).format("lll") : "N/A"}</td>
                                                                     <td><span className={`badge ${x.status === "PENDING" ? "text-warning" : x.status === "COMPLETED" ? "text-success" : "text-danger"}`}>{x.status}</span></td>
+                                                                    <td>
+                                                                        <Dropdown>
+                                                                            <Dropdown.Toggle variant="primary">
+                                                                                <svg width="16" height="16" fill="currentColor" className="bi bi-list" viewBox="0 0 16 16">
+                                                                                    <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+                                                                                </svg>
+                                                                            </Dropdown.Toggle>
+
+                                                                            <Dropdown.Menu>
+                                                                                <Dropdown.Item
+                                                                                    onClick={() => {
+                                                                                        setModalView("PRINT_CONFIG_MODAL");
+                                                                                        setModalData({
+                                                                                            submitCallback: (printConfigData) => {
+                                                                                                printServiceReport(x, patientDetails, printConfigData)
+                                                                                            }
+                                                                                        })
+                                                                                        openModal()
+                                                                                    }}
+                                                                                >Print Report
+                                                                                </Dropdown.Item>
+                                                                            </Dropdown.Menu>
+                                                                        </Dropdown>
+                                                                    </td>
                                                                 </tr>
                                                             )
                                                         })
@@ -406,50 +418,80 @@ const Service = () => {
                                         </div>
                                         <div className="card-body">
 
-                                            <div className="row align-items-center">
-                                                <div className="col-3">
+                                            <div className="row mb-2">
+                                                <div className="col-4">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required">Service ID</label>
                                                         <Select
-                                                            options={serviceList.filter(x => x.status === "PENDING").map(x => ({ label: x.service_id, value: x.id }))}
+                                                            options={
+                                                                serviceList.filter(x => x.status === "PENDING").map(x => {
+                                                                    let pd = patientList.find(p => p.id === x.patient_id)
+                                                                    return { label: `${x.service_id} - ${pd?.patient_name}`, value: x.id, patient_details: pd }
+                                                                })
+                                                            }
                                                             value={selectedService}
                                                             onChange={(val) => { setSelectedService(val); }}
                                                             styles={dropDownStyle}
-                                                            placeholder="Select a Service Number..."
+                                                            placeholder="Choose Service No."
                                                         />
                                                     </div>
                                                 </div>
-                                                <div className="col-5">
-                                                    <label className="form-label my-1">Patient</label>
-                                                    {
-                                                        (() => {
-                                                            if (!selectedService) {
-                                                                return <div>
-                                                                    <span className="fs-5">No Service selected</span>
-                                                                </div>
-                                                            }
-
-                                                            let patientDetails = patientList.find(x => x.id === serviceList.find(y => y.id === selectedService.value).patient_id)
-
-                                                            return <div>
-                                                                <span className="fs-5">{patientDetails.patient_name}</span>
-                                                                <span className="badge text-primary">{formatPatientNumber(patientDetails.patient_number)}</span>
-                                                            </div>
-                                                        })()
-                                                    }
+                                                <div className="col-4">
+                                                    <label className="form-label my-1">
+                                                        Patient
+                                                        {selectedService && <span className="badge text-primary">{formatPatientNumber(selectedService.patient_details.patient_number)}</span>}
+                                                    </label>
+                                                    <div>
+                                                        <span style={{ fontSize: "1.4rem" }}>
+                                                            {selectedService ? selectedService.patient_details.patient_name : "No Service selected"}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                                 <div className="col-4">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required">Mark as:</label>
-                                                        <div className="d-flex gap-4 text-white" style={{ margin: "0 40px" }}>
-                                                            <div className={`p-2 flex-grow-1 text-center rounded ${serviceCloseMode === "COMPLETE" ? "bg-success" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setServiceCloseMode("COMPLETE") }}>COMPLETE</div>
-                                                            <div className={`p-2 flex-grow-1 text-center rounded ${serviceCloseMode === "CANCEL" ? "bg-danger" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setServiceCloseMode("CANCEL") }}>CANCEL</div>
+                                                        <div className="d-flex gap-4 text-white pe-5">
+                                                            <div
+                                                                className={`p-2 flex-grow-1 text-center rounded ${serviceCloseMode === "COMPLETE" ? "bg-success" : "bg-secondary"}`}
+                                                                style={{ cursor: "pointer" }}
+                                                                onClick={() => { setServiceCloseMode("COMPLETE"); setMaxFiles(3); setUploadedFiles([]); }}
+                                                            >
+                                                                COMPLETE
+                                                            </div>
+                                                            <div
+                                                                className={`p-2 flex-grow-1 text-center rounded ${serviceCloseMode === "CANCEL" ? "bg-danger" : "bg-secondary"}`}
+                                                                style={{ cursor: "pointer" }}
+                                                                onClick={() => { setServiceCloseMode("CANCEL"); setMaxFiles(1); setUploadedFiles([]); }}
+                                                            >
+                                                                CANCEL
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="row">
+                                            {
+                                                serviceCloseMode === "COMPLETE" &&
+                                                <div className="row mb-2">
+                                                    <div className="col-6">
+                                                        <div className="form-group">
+                                                            <label className="form-label my-1 required" htmlFor="technician">Technician</label>
+                                                            <input type="text" id="technician" className="form-control" value={technician || ""} onChange={(e) => { setTechnician(e.target.value) }} />
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-6">
+                                                        <div className="form-group">
+                                                            <label className="form-label my-1 required">Service Type:</label>
+                                                            <div className="d-flex gap-4 text-white pe-5">
+                                                                <div className={`p-2 flex-grow-1 text-center rounded ${serviceType === "PAID" ? "bg-success" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setServiceType("PAID") }}>PAID</div>
+                                                                <div className={`p-2 flex-grow-1 text-center rounded ${serviceType === "FREE" ? "bg-danger" : "bg-secondary"}`} style={{ cursor: "pointer" }} onClick={() => { setServiceType("FREE") }}>FREE</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+
+                                            <div className="row mb-2">
                                                 <div className="col-12">
                                                     <div className="form-group">
                                                         <label className="form-label my-1 required" htmlFor="outcomeDetails">Outcome Details</label>
@@ -458,50 +500,23 @@ const Service = () => {
                                                 </div>
                                             </div>
 
-                                            {
-                                                serviceCloseMode === "COMPLETE" &&
-                                                <div className="row">
-                                                    <div className="col-6">
-                                                        <div className="form-group">
-                                                            <label className="form-label my-1 required" htmlFor="technician">Technician</label>
-                                                            <input type="text" id="technician" className="form-control" value={technician || ""} onChange={(e) => { setTechnician(e.target.value) }} />
-                                                        </div>
-                                                    </div>
-                                                    <div className="col-6">
-                                                        <label className="required form-label my-1">Choose Upload File</label>
-                                                        {
-                                                            uploadedFile === null ?
-                                                                <Dropzone maxFiles={1}
-                                                                    onDrop={acceptedFiles => {
-                                                                        if (acceptedFiles.length) {
-                                                                            setUploadedFile(acceptedFiles[0]);
-                                                                            setUploadedFileImage(URL.createObjectURL(acceptedFiles[0]));
-                                                                        }
-                                                                    }}
-                                                                    accept={{
-                                                                        "image/png": [".png"],
-                                                                        "image/jpeg": [".jpg", ".jpeg"],
-                                                                    }}
-                                                                >
-                                                                    {({ getRootProps, getInputProps }) => (
-                                                                        <section>
-                                                                            <div {...getRootProps()} style={{ border: "2px dotted green", borderRadius: "10px", fontSize: "x-large", fontWeight: "bolder", padding: "20px" }}>
-                                                                                <input {...getInputProps()} />
-                                                                                <span className="text-white">Drag 'n' drop some files here, or click to select files</span>
-                                                                            </div>
-                                                                        </section>
-                                                                    )}
-                                                                </Dropzone>
-                                                                :
-                                                                <div className="fs-5 text-white">
-                                                                    <img className="m-3" src={uploadedFileImage} alt="signature" height="200" onLoad={() => { URL.revokeObjectURL(uploadedFileImage); }} /><br />
-                                                                    <span className="me-3 fw-bold">Selected File:</span> {uploadedFile.path}
-                                                                    <button className="btn btn-outline-danger ms-3 rounded-pill" onClick={() => { setUploadedFile(null); setUploadedFileImage(null); }}>🗙</button>
-                                                                </div>
-                                                        }
-                                                    </div>
+                                            <div className="row mb-2">
+                                                <div className="col-12">
+                                                    <label className="required form-label my-1">Choose File(s) to Upload</label>
+                                                    <FileDropzone
+                                                        uploadedFiles={uploadedFiles}
+                                                        onFilesChange={(newFiles) => {
+                                                            setUploadedFiles(newFiles)
+                                                        }}
+                                                        maxFiles={maxFiles}
+                                                        maxSize={2 * 1024 * 1024} // 2 MB
+                                                        accept={{
+                                                            "image/png": [".png"],
+                                                            "image/jpeg": [".jpg", ".jpeg"],
+                                                        }}
+                                                    />
                                                 </div>
-                                            }
+                                            </div>
 
                                         </div>
                                         <div className="card-footer rounded text-end">
@@ -517,8 +532,16 @@ const Service = () => {
                                                         Swal.fire('Oops!!', 'Select a Service Mode', 'warning');
                                                         return
                                                     }
+                                                    if (serviceType === null) {
+                                                        Swal.fire('Oops!!', 'Select a Service Type', 'warning');
+                                                        return
+                                                    }
                                                     if (outcomeDetails === null || !outcomeDetails.trim()) {
                                                         Swal.fire('Oops!!', 'Enter Outcome Details', 'warning');
+                                                        return
+                                                    }
+                                                    if (uploadedFiles.length === 0) {
+                                                        Swal.fire('Oops!!', 'Upload a file', 'warning');
                                                         return
                                                     }
                                                     if (serviceCloseMode === "COMPLETE") {
@@ -526,14 +549,9 @@ const Service = () => {
                                                             Swal.fire('Oops!!', 'Enter Technician Name', 'warning');
                                                             return
                                                         }
-                                                        if (uploadedFile === null) {
-                                                            Swal.fire('Oops!!', 'Upload a file', 'warning');
-                                                            return
-                                                        }
                                                     }
 
-                                                    if (serviceCloseMode === "COMPLETE") { completeServiceRequest(); }
-                                                    else { cancelServiceRequest() }
+                                                    serviceCloseMode === "COMPLETE" ? completeServiceRequest() : cancelServiceRequest()
                                                 }}
                                             >
                                                 {

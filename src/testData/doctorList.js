@@ -1,6 +1,4 @@
-//last updated: 15/08/2025
-
-export const dummyDoctorList = [
+const dummyDoctorList = [
     {
         "id": "3mU4UR7aVPCCCogvfikJ",
         "doctor_name": "Dipendu Das",
@@ -28,3 +26,5 @@ export const dummyDoctorList = [
         }
     }
 ]
+
+export default dummyDoctorList;

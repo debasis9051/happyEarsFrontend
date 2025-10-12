@@ -1,6 +1,4 @@
-//last updated: 15/08/2025
-
-export const dummyAudiometryList = [
+const dummyAudiometryList = [
     {
         "id": "WDTGtQeP72elORxKk2yp",
         "trial_mode": false,
@@ -75345,3 +75343,5 @@ export const dummyAudiometryList = [
         "patient_id": "HnEDV7atyYyojzrMkUt7"
     }
 ]
+
+export default dummyAudiometryList;

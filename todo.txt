@@ -1,21 +1,51 @@
 Todo:
 
+Service module
+1. multiple attachments(.jpeg, .png) for a single service,  --- DONE
+   - max 3 documents for "complete", max 1 document for "cancel" 
+   - minimum 1 document needs to be uploaded when marking service as completed
+   - when using phone image can be taken using mobile camera app
+3. per service
+   - service report generation that will open in a new tab with the print popup
+   - Branded with Happy Ears logo and footer, similar to invoice  
+   - Reports downloadable as PDF (naming convention: dd-mm-yy-PatientFullName.pdf) - TO BE DECIDED
+   - fields to be shown in the single service report template
+      -- Patient Number, Patient Name, Patient Address  
+      -- Request created on: Created At Time stamp  
+      -- Date of Visit: Closed At Time stamp (If status is COMPLETED or CANCELLED)  
+      -- Reported Problem  
+      -- Solution Provided  
+      -- Proof Attachments(image files .jpeg/.jpg/.png) displayed with time stamp (time stamp written below the proof from metadata; if metadata not available, leave as N/A)
+      -- Service Status: Completed / Pending / Cancelled  
+
+Patient module
+1. Popup warning when adding a new patient with a name existing in database
+2. Cumulative report
+   - Chronological list of all visits with time stamp  
+   - For each visit: show the single visit report in each page
+   - Summary section: Total visits, Completed, Pending jobs, number of free services, number of paid services  
+   - Reports downloadable as PDF (naming convention: dd-mm-yy-PatientFullName.pdf) - TO BE DECIDED
+
+
+//////////////////////////////////
+### 2.4 Patient Validation Check
+- *Description:* Add a validation check while adding a new patient to prevent duplicate entries.  
+- *Acceptance Criteria:*  
+  - System should check for existing patients ignoring case sensitivity and blank spaces.  
+  - If a similar patient exists, show a warning: "Patient already exists."  
+  - Popup should allow the user to:  
+    - Confirm it is a new patient and proceed with creation, or  
+    - Select the existing patient from the list to avoid duplication.  
+///////////////////////////////////
+
 
 Current changes: 
-1. Add Print Terms & Conditions button - added in Audiometry and Sales Report - DONE
-2. Invoice - Remove branches segment - DONE
-3. Set marker and popup for New Feature for Service in all pages - DONE
-
-4. Invoice delete option - upon deleting invoice document the product should be marked as in stock again and product log should be added - DONE
-5. Product delete option - upon deleting remove product and product_logs - DONE
-6. Find associated invoice of the product - DONE
-
-7. pagination for all list apis
-8. restructuring invoices collection
-9. Restructuring all backend routes to use proper RESTFUL methods
-10. remove config structure from audiometry data
-11. change "decibal" -> "decibel" in all places
-12. why does accessory get saved when there is no data
+1. pagination for all list apis with tanstack react query
+2. restructuring invoices collection
+3. Restructuring all backend routes to use proper RESTFUL methods - authentication structure chnage
+4. remove config structure from audiometry data
+5. change "decibal" -> "decibel" in all places
+6. why does accessory get saved when there is no data
 
 
 

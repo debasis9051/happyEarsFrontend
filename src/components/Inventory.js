@@ -3,7 +3,6 @@ import { Modal, Button, Dropdown } from "react-bootstrap"
 import Select from "react-select"
 import axios from "axios";
 import Swal from "sweetalert2"
-import Dropzone from 'react-dropzone'
 import moment from "moment"
 import { saveAs } from "file-saver";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +14,7 @@ import { getProductList, getBranchList } from "../utils/getApis"
 import AuthWrapper from "./AuthWrapper";
 import { escapeRegex, dropDownStyle } from "../utils/commonUtils";
 import { printInvoice } from "../utils/printInvoice";
+import FileDropzone from "./FileDropzone";
 
 const Inventory = () => {
     const { currentUserInfo } = useFirebase()
@@ -511,7 +511,7 @@ const Inventory = () => {
                                                                                 const response = await axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/invoice/product/${x.id}`, data, { headers: { 'Content-Type': 'application/json' } })
                                                                                 const invoice = response.data.info;
 
-                                                                                if(invoice === null) {
+                                                                                if (invoice === null) {
                                                                                     Swal.fire('Oops!!', 'No invoice associated with this product yet', 'info');
                                                                                     return
                                                                                 }
@@ -659,30 +659,17 @@ const Inventory = () => {
 
                         <div className="row mb-3">
                             <div className="col-12">
-                                {
-                                    selectedFile === null ?
-                                        <Dropzone maxFiles={1} onDrop={acceptedFiles => { setSelectedFile(acceptedFiles[0]) }}
-                                            accept={{
-                                                "application/vnd.ms-excel": [".xls"],
-                                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"]
-                                            }}
-                                        >
-                                            {({ getRootProps, getInputProps }) => (
-                                                <section>
-                                                    <div {...getRootProps()} style={{ border: "2px dotted green", borderRadius: "10px", fontSize: "x-large", fontWeight: "bolder", padding: "20px" }}>
-                                                        <input {...getInputProps()} />
-                                                        <span>Drag 'n' drop some files here, or click to select files</span>
-                                                    </div>
-                                                </section>
-                                            )}
-                                        </Dropzone>
-                                        :
-                                        <div className="fs-5">
-                                            <span className="me-3 fw-bold">Selected File:</span> {selectedFile.path}
-                                            <button className="btn btn-outline-danger ms-3 rounded-pill" onClick={() => { setSelectedFile(null) }}>🗙</button>
-                                        </div>
-                                }
-
+                                <FileDropzone
+                                    uploadedFiles={selectedFile ? [selectedFile] : []}
+                                    onFilesChange={(newFiles) => {
+                                        setSelectedFile(newFiles[0]);
+                                    }}
+                                    maxFiles={1}
+                                    accept={{
+                                        "application/vnd.ms-excel": [".xls"],
+                                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"]
+                                    }}
+                                />
                             </div>
                         </div>
 

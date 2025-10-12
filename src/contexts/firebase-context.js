@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import axios from "axios";
 import Swal from "sweetalert2"
 import firebaseConfig from '../happy-ears-firebase-config.js'
 import { initializeApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
+import { defaultAccess } from '../components/AdminPanel.js';
 
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
@@ -16,24 +17,12 @@ export const useFirebase = () => useContext(FirebaseContext)
 
 export const FirebaseProvider = ({ children }) => {
 
+    const [loading, setLoading] = useState(false)
     const [user, setUser] = useState(null)
-    const [userAccess, setUserAccess] = useState({
-        audiometry: false,
-        inventory: false,
-        generate_invoice: false,
-        sales_report: false,
-        admin_panel: false,
-    })
+    const [userAccess, setUserAccess] = useState(defaultAccess)
 
     //defaulting userAccess to true for testing purposes
-    // const [userAccess, setUserAccess] = useState({
-    //     audiometry: true,
-    //     inventory: true,
-    //     generate_invoice: true,
-    //     sales_report: true,
-    //     admin_panel: true,
-    // })
-    const [loading, setLoading] = useState(false)
+    // const [userAccess, setUserAccess] = useState(Object.fromEntries(Object.keys(defaultAccess).map(key => [key, true])))
 
     const getUserDetails = (user_uid) => {
         return axios.post(`${process.env.REACT_APP_BACKEND_ORIGIN}/get-user-details`, { user_uid }, { headers: { 'Content-Type': 'application/json' } })

@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 import axios from "axios";
 import Swal from "sweetalert2"
-import Dropzone from 'react-dropzone'
 import { Accordion } from 'react-bootstrap';
 import { Helmet } from "react-helmet-async";
 import Select from "react-select"
@@ -9,8 +8,9 @@ import Select from "react-select"
 import { useFirebase } from "../contexts/firebase-context";
 import AuthWrapper from "./AuthWrapper";
 import { getUserList } from "../utils/getApis"
+import FileDropzone from "./FileDropzone";
 
-const defaultAccess = {
+export const defaultAccess = {
     admin_panel: false,
     audiometry: false,
     generate_invoice: false,
@@ -34,7 +34,6 @@ const AdminPanel = () => {
     const [selectedDoctorQualification, setSelectedDoctorQualification] = useState(null)
     const [doctorRegistrationNumber, setDoctorRegistrationNumber] = useState("")
     const [doctorSignatureFile, setDoctorSignatureFile] = useState(null)
-    const [doctorSignatureImage, setDoctorSignatureImage] = useState(null)
     const [doctorApiState, setDoctorApiState] = useState(false)
 
     const [scriptApiState, setScriptApiState] = useState(false)
@@ -200,8 +199,8 @@ const AdminPanel = () => {
                                     <div className="col-md-4 p-1">
                                         <label className="required form-label my-1 text-black">Enter Doctor Qualification</label>
                                         <Select
-                                            options={["MASLP","BASLP"].map(x => ({ label: x, value: x }))}
-                                            value={selectedDoctorQualification? {label: selectedDoctorQualification, value: selectedDoctorQualification}: null}
+                                            options={["MASLP", "BASLP"].map(x => ({ label: x, value: x }))}
+                                            value={selectedDoctorQualification ? { label: selectedDoctorQualification, value: selectedDoctorQualification } : null}
                                             onChange={(val) => { setSelectedDoctorQualification(val.value); }}
                                             styles={dropDownStyle}
                                             placeholder="Select a Qualification..."
@@ -215,35 +214,17 @@ const AdminPanel = () => {
                                 <div className="row g-0 align-items-end">
                                     <div className="col-md-10 p-1">
                                         <label className="required form-label my-1 text-black">Choose Doctor Signature</label>
-                                        {
-                                            doctorSignatureFile === null ?
-                                                <Dropzone maxFiles={1}
-                                                    onDrop={acceptedFiles => {
-                                                        if (acceptedFiles.length) {
-                                                            setDoctorSignatureFile(acceptedFiles[0]);
-                                                            setDoctorSignatureImage(URL.createObjectURL(acceptedFiles[0]));
-                                                        }
-                                                    }}
-                                                    accept={{
-                                                        "image/png": [".png"],
-                                                    }}
-                                                >
-                                                    {({ getRootProps, getInputProps }) => (
-                                                        <section>
-                                                            <div {...getRootProps()} style={{ border: "2px dotted green", borderRadius: "10px", fontSize: "x-large", fontWeight: "bolder", padding: "20px" }}>
-                                                                <input {...getInputProps()} />
-                                                                <span className="text-white">Drag 'n' drop some files here, or click to select files</span>
-                                                            </div>
-                                                        </section>
-                                                    )}
-                                                </Dropzone>
-                                                :
-                                                <div className="fs-5 text-white">
-                                                    <img className="m-3" src={doctorSignatureImage} alt="signature" height="200" onLoad={() => { URL.revokeObjectURL(doctorSignatureImage); }} /><br />
-                                                    <span className="me-3 fw-bold">Selected File:</span> {doctorSignatureFile.path}
-                                                    <button className="btn btn-outline-danger ms-3 rounded-pill" onClick={() => { setDoctorSignatureFile(null); setDoctorSignatureImage(null); }}>🗙</button>
-                                                </div>
-                                        }
+                                        <FileDropzone
+                                            uploadedFiles={doctorSignatureFile ? [doctorSignatureFile] : []}
+                                            onFilesChange={(newFiles) => {
+                                                setDoctorSignatureFile(newFiles[0]);
+                                            }}
+                                            maxFiles={1}
+                                            maxSize={2 * 1024 * 1024} // 2 MB
+                                            accept={{
+                                                "image/png": [".png"]
+                                            }}
+                                        />
                                     </div>
                                     <div className="col-md-2 p-1">
                                         <button className="btn mx-2 text-white" style={{ backgroundColor: "brown" }} disabled={doctorApiState} onClick={() => {
@@ -273,7 +254,6 @@ const AdminPanel = () => {
                                                         setSelectedDoctorQualification(null)
                                                         setDoctorRegistrationNumber("")
                                                         setDoctorSignatureFile(null)
-                                                        setDoctorSignatureImage(null)
                                                     }
                                                     else {
                                                         Swal.fire('Oops!', res.data.message, 'error');
@@ -396,7 +376,7 @@ const AdminPanel = () => {
                                                 .then((res) => {
                                                     setScriptApiState(false)
                                                     console.log(res.data)
-                                                    
+
                                                     if (res.data.operation === "success") {
                                                         Swal.fire('Success!', res.data.message, 'success');
                                                     }

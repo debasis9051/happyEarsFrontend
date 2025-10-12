@@ -1,6 +1,4 @@
-//last updated: 21/08/2025
-
-export const dummyBranchList = [
+const dummyBranchList = [
     {
         "id": "OMlGOKm5LKM1HWm0UZV7",
         "branch_invoice_code": "JOKA",
@@ -35,3 +33,5 @@ export const dummyBranchList = [
         }
     }
 ]
+
+export default dummyBranchList;
