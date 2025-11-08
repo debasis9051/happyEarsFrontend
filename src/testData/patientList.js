@@ -1,5 +1,465 @@
 const dummyPatientList = [
   {
+    "id": "vUGuOjiTya5aS2b5ogCG",
+    "patient_name": "BULA CHAKRABORTY",
+    "contact_number": "7980352675",
+    "patient_number": 660,
+    "age": "64",
+    "sex": "female",
+    "patient_address": "6b/2B Naktala ",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "Uyq4btP1RVWTDb1nTtdvrCzcs913",
+    "added_by_user_name": "Bhaswati Deb Bakshi",
+    "created_at": {
+      "_seconds": 1761204770,
+      "_nanoseconds": 253000000
+    }
+  },
+  {
+    "id": "0G4TZPLfGJJUaMAwJI6h",
+    "patient_name": "KANTI DEVI",
+    "contact_number": "000000",
+    "patient_number": 659,
+    "age": "55",
+    "sex": "female",
+    "patient_address": "JOKA",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "Uyq4btP1RVWTDb1nTtdvrCzcs913",
+    "added_by_user_name": "Bhaswati Deb Bakshi",
+    "created_at": {
+      "_seconds": 1761200756,
+      "_nanoseconds": 105000000
+    }
+  },
+  {
+    "id": "TIuGZY0874vfnIbU3IZV",
+    "patient_name": "MITU DAS",
+    "contact_number": "0000000",
+    "patient_number": 658,
+    "age": "60",
+    "sex": "female",
+    "patient_address": "JOKA",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "Uyq4btP1RVWTDb1nTtdvrCzcs913",
+    "added_by_user_name": "Bhaswati Deb Bakshi",
+    "created_at": {
+      "_seconds": 1761199484,
+      "_nanoseconds": 267000000
+    }
+  },
+  {
+    "id": "QQ4LTTEqRnQ7Q4dw4krH",
+    "patient_name": "SABYASACHI PAL",
+    "contact_number": "9007257717",
+    "patient_number": 657,
+    "age": "39",
+    "sex": "male",
+    "patient_address": "KOLKATA-47",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "sIfUsJw0NjapikSnIj7yFPkYexB3",
+    "added_by_user_name": "Happy Ears",
+    "created_at": {
+      "_seconds": 1761037807,
+      "_nanoseconds": 303000000
+    }
+  },
+  {
+    "id": "cEnCwBzX0W1XgbyDwqZ0",
+    "patient_name": "BELA DEY",
+    "contact_number": "9831067475",
+    "patient_number": 656,
+    "age": "68",
+    "sex": "female",
+    "patient_address": "CHANDITALA, SUBHASGRAM",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "sIfUsJw0NjapikSnIj7yFPkYexB3",
+    "added_by_user_name": "Happy Ears",
+    "created_at": {
+      "_seconds": 1761037734,
+      "_nanoseconds": 850000000
+    }
+  },
+  {
+    "id": "yz3tu6WjkhpFCBHgkKBq",
+    "patient_name": "RITA MUKTA MONDAL",
+    "contact_number": "000000",
+    "patient_number": 655,
+    "age": "32",
+    "sex": "female",
+    "patient_address": "JOKA",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "sIfUsJw0NjapikSnIj7yFPkYexB3",
+    "added_by_user_name": "Happy Ears",
+    "created_at": {
+      "_seconds": 1760772661,
+      "_nanoseconds": 485000000
+    }
+  },
+  {
+    "id": "L3C1ZJhgQxZI6T2C4PwE",
+    "patient_name": "S P DUTTA",
+    "contact_number": "000000",
+    "patient_number": 654,
+    "age": "72",
+    "sex": "male",
+    "patient_address": "JOKA",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "sIfUsJw0NjapikSnIj7yFPkYexB3",
+    "added_by_user_name": "Happy Ears",
+    "created_at": {
+      "_seconds": 1760771873,
+      "_nanoseconds": 817000000
+    }
+  },
+  {
+    "id": "BQvBcpE7xAzRTMq64Kr6",
+    "patient_name": "SAMPA SEN",
+    "contact_number": "00000",
+    "patient_number": 653,
+    "age": "36",
+    "sex": "female",
+    "patient_address": "JOKA",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "sIfUsJw0NjapikSnIj7yFPkYexB3",
+    "added_by_user_name": "Happy Ears",
+    "created_at": {
+      "_seconds": 1760690230,
+      "_nanoseconds": 302000000
+    }
+  },
+  {
+    "id": "KPGKHIQoZZ537EJddTZl",
+    "patient_name": "SAMPA SEN",
+    "contact_number": "000000",
+    "patient_number": 652,
+    "age": "36",
+    "sex": "female",
+    "patient_address": "JOKA",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "sIfUsJw0NjapikSnIj7yFPkYexB3",
+    "added_by_user_name": "Happy Ears",
+    "created_at": {
+      "_seconds": 1760690101,
+      "_nanoseconds": 547000000
+    }
+  },
+  {
+    "id": "phbZrqaygN1NY7nyw1nM",
+    "patient_name": "SAMPA SEN",
+    "contact_number": "0000",
+    "patient_number": 651,
+    "age": "36",
+    "sex": "female",
+    "patient_address": "JOKA",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "sIfUsJw0NjapikSnIj7yFPkYexB3",
+    "added_by_user_name": "Happy Ears",
+    "created_at": {
+      "_seconds": 1760689951,
+      "_nanoseconds": 313000000
+    }
+  },
+  {
+    "id": "VGqZNqn6GONT56Ur4iqp",
+    "patient_name": "sampa sen",
+    "contact_number": "00000",
+    "patient_number": 650,
+    "age": "36",
+    "sex": "female",
+    "patient_address": "joka",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "sIfUsJw0NjapikSnIj7yFPkYexB3",
+    "added_by_user_name": "Happy Ears",
+    "created_at": {
+      "_seconds": 1760689058,
+      "_nanoseconds": 834000000
+    }
+  },
+  {
+    "id": "UdLw9KnKj5cXA3jnPfp8",
+    "patient_name": "JAYANTI PAL",
+    "contact_number": "9836960165",
+    "patient_number": 649,
+    "age": "85",
+    "sex": "female",
+    "patient_address": "SUCASA TWINS, JAGADDAL",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "sIfUsJw0NjapikSnIj7yFPkYexB3",
+    "added_by_user_name": "Happy Ears",
+    "created_at": {
+      "_seconds": 1760608696,
+      "_nanoseconds": 839000000
+    }
+  },
+  {
+    "id": "M02t2u0fN4RzW0PH51qQ",
+    "patient_name": "SANATAN SETH",
+    "contact_number": "7980648750",
+    "patient_number": 648,
+    "age": "76",
+    "sex": "male",
+    "patient_address": "115 DATTABAD ROAD, SALTLAKE SEC-1, KOLKATA-64",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "sIfUsJw0NjapikSnIj7yFPkYexB3",
+    "added_by_user_name": "Happy Ears",
+    "created_at": {
+      "_seconds": 1760606205,
+      "_nanoseconds": 683000000
+    }
+  },
+  {
+    "id": "MFi1YVmUm4CvZzVxOFnj",
+    "patient_name": "SIDHESWAR BAR",
+    "contact_number": "7980648750",
+    "patient_number": 647,
+    "age": "78",
+    "sex": "male",
+    "patient_address": "115 DATTABAD ROAD, SALTLAKE SEC-1, KOLKATA-64",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "sIfUsJw0NjapikSnIj7yFPkYexB3",
+    "added_by_user_name": "Happy Ears",
+    "created_at": {
+      "_seconds": 1760453092,
+      "_nanoseconds": 888000000
+    }
+  },
+  {
+    "id": "R2iWr74utcznjvVoOyuy",
+    "patient_name": "SANTI DAS GUPTA",
+    "contact_number": "00000",
+    "patient_number": 646,
+    "age": "66",
+    "sex": "female",
+    "patient_address": "25/1 BIRAN ROY ROAD KOL- 8",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "sIfUsJw0NjapikSnIj7yFPkYexB3",
+    "added_by_user_name": "Happy Ears",
+    "created_at": {
+      "_seconds": 1760441254,
+      "_nanoseconds": 517000000
+    }
+  },
+  {
+    "id": "jFh9TYYTn9kgid5hLQmT",
+    "patient_name": "PARUL MONDAL",
+    "contact_number": "000000",
+    "patient_number": 645,
+    "age": "56",
+    "sex": "female",
+    "patient_address": "JOKA",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "Uyq4btP1RVWTDb1nTtdvrCzcs913",
+    "added_by_user_name": "Bhaswati Deb Bakshi",
+    "created_at": {
+      "_seconds": 1760425084,
+      "_nanoseconds": 59000000
+    }
+  },
+  {
+    "id": "KJC8W7ei5ktuCagySuH5",
+    "patient_name": "SANTI DAS GUPTA",
+    "contact_number": "9830483971",
+    "patient_number": 644,
+    "age": "66",
+    "sex": "female",
+    "patient_address": "KOLKATA -8",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "Uyq4btP1RVWTDb1nTtdvrCzcs913",
+    "added_by_user_name": "Bhaswati Deb Bakshi",
+    "created_at": {
+      "_seconds": 1760424947,
+      "_nanoseconds": 421000000
+    }
+  },
+  {
+    "id": "5HfLiFqeSclGkVSMN8HX",
+    "patient_name": "SANTI DAS GUPTA",
+    "contact_number": "9830483971",
+    "patient_number": 643,
+    "age": "66",
+    "sex": "female",
+    "patient_address": "25/1 biran roy road kol -8",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "Uyq4btP1RVWTDb1nTtdvrCzcs913",
+    "added_by_user_name": "Bhaswati Deb Bakshi",
+    "created_at": {
+      "_seconds": 1760424836,
+      "_nanoseconds": 891000000
+    }
+  },
+  {
+    "id": "VlqKSfctWDCFkYeWBu0F",
+    "patient_name": "SANTI DAS GUPTA",
+    "contact_number": "9830483971",
+    "patient_number": 642,
+    "age": "66",
+    "sex": "female",
+    "patient_address": "25/1 biran roy road kol - 8",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "Uyq4btP1RVWTDb1nTtdvrCzcs913",
+    "added_by_user_name": "Bhaswati Deb Bakshi",
+    "created_at": {
+      "_seconds": 1760424560,
+      "_nanoseconds": 755000000
+    }
+  },
+  {
+    "id": "2oKHbpG7wimMbj4Qimx5",
+    "patient_name": "SANTI DAS GUPTA",
+    "contact_number": "9830483971",
+    "patient_number": 641,
+    "age": "66",
+    "sex": "male",
+    "patient_address": "25/1 BIRAN ROY ROAD KOL-8",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "Uyq4btP1RVWTDb1nTtdvrCzcs913",
+    "added_by_user_name": "Bhaswati Deb Bakshi",
+    "created_at": {
+      "_seconds": 1760423441,
+      "_nanoseconds": 680000000
+    }
+  },
+  {
+    "id": "eMXTHRxojpEeyFgmRPLw",
+    "patient_name": "SANTI DAS GUPTA",
+    "contact_number": "9830483971",
+    "patient_number": 640,
+    "age": "66",
+    "sex": "female",
+    "patient_address": "25/BIRAN ROY ROAD,KOL -8",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "Uyq4btP1RVWTDb1nTtdvrCzcs913",
+    "added_by_user_name": "Bhaswati Deb Bakshi",
+    "created_at": {
+      "_seconds": 1760423307,
+      "_nanoseconds": 694000000
+    }
+  },
+  {
+    "id": "3NEb3OFPYtEHrPDM0piz",
+    "patient_name": "KALIPADA  BANERJEE",
+    "contact_number": "8100433168",
+    "patient_number": 639,
+    "age": "94",
+    "sex": "male",
+    "patient_address": "ATCHALA, SHAKHER BAZAR, BEHALA.",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "sIfUsJw0NjapikSnIj7yFPkYexB3",
+    "added_by_user_name": "Happy Ears",
+    "created_at": {
+      "_seconds": 1760422689,
+      "_nanoseconds": 925000000
+    }
+  },
+  {
+    "id": "46ZeM1sagnHq9DYko3Nq",
+    "patient_name": "TRIBID RAKSHIT",
+    "contact_number": "9231587015",
+    "patient_number": 638,
+    "age": "68",
+    "sex": "male",
+    "patient_address": "7/24 BIJOYGARH",
+    "notes": "",
+    "map_coordinates": {
+      "latitude": "",
+      "longitude": ""
+    },
+    "added_by_user_uid": "sIfUsJw0NjapikSnIj7yFPkYexB3",
+    "added_by_user_name": "Happy Ears",
+    "created_at": {
+      "_seconds": 1760349076,
+      "_nanoseconds": 433000000
+    }
+  },
+  {
     "id": "KVPmyYiElOTVRhTlR7fJ",
     "patient_name": "TAPAN KR. CHOWDHURY",
     "contact_number": "8961585176",
@@ -137,26 +597,6 @@ const dummyPatientList = [
     "created_at": {
       "_seconds": 1759824500,
       "_nanoseconds": 543000000
-    }
-  },
-  {
-    "id": "fiTrmJEP6QYSv5S7cKrF",
-    "patient_name": "SUHANI SINGH",
-    "contact_number": "0000000",
-    "patient_number": 630,
-    "age": "19",
-    "sex": "female",
-    "patient_address": "BAGHAJATIN",
-    "notes": "",
-    "map_coordinates": {
-      "latitude": "",
-      "longitude": ""
-    },
-    "added_by_user_uid": "sIfUsJw0NjapikSnIj7yFPkYexB3",
-    "added_by_user_name": "Happy Ears",
-    "created_at": {
-      "_seconds": 1759823145,
-      "_nanoseconds": 906000000
     }
   },
   {
